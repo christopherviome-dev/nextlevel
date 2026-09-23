@@ -1,0 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #20101b;
+  --color-plum: #6b2447;
+  --color-hibiscus: #e63875;
+  --color-hibiscus-deep: #b81e58;
+  --color-marigold: #f5a623;
+  --color-marigold-deep: #c97d0a;
+  --color-violet: #4b2069;
+  --color-violet-deep: #33124a;
+  --color-surface: #fff8f3;
+  --color-surface-2: #fbeae0;
+  --color-line: #f0dad0;
+  --font-display: 'Unbounded', sans-serif;
+  --font-body: 'Manrope', sans-serif;
+}
+
+body {
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+}
