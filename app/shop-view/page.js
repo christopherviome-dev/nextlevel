@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { apiFetch } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 
@@ -24,7 +23,7 @@ export default function ShopView() {
     <div>
       <div className="flex items-center justify-between px-5 py-4 bg-white border-b border-line">
         <div className="font-display font-extrabold text-lg text-hibiscus-deep">SHEE<span className="text-violet">BA</span></div>
-        <Link href="/" className="px-4 py-2 rounded-full border border-line text-sm font-bold">Explore more shops →</Link>
+        <a href="/" className="px-4 py-2 rounded-full border border-line text-sm font-bold">Explore more shops →</a>
       </div>
       <div className="max-w-xl mx-auto px-5 pt-6">
         {error && <div className="text-plum/70 py-6">This shop isn't currently available.</div>}

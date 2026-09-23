@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { apiFetch } from "../lib/api";
 import Nav from "../components/Nav";
 
@@ -18,7 +17,6 @@ function distanceKm(lat1, lng1, lat2, lng2) {
 }
 
 export default function Discover() {
-  const router = useRouter();
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -96,14 +94,14 @@ export default function Discover() {
 
         <div className="space-y-3">
           {results.map((st) => (
-            <div key={st._id} onClick={() => router.push(`/shop/${st._id}`)} className="cursor-pointer bg-white border border-line rounded-2xl p-4 hover:border-hibiscus transition-colors">
+            <a key={st._id} href={`/shop/${st._id}`} className="block bg-white border border-line rounded-2xl p-4 hover:border-hibiscus transition-colors">
               <b className="text-ink">{st.salonName || st.name}</b>{" "}
               {st.verified && <span className="text-xs font-bold text-hibiscus-deep">✓ Verified</span>}
               <div className="text-sm text-plum/80 mt-1">
                 {st.category} · {st.area}
                 {st._distanceKm != null && ` · 📍 ${st._distanceKm < 1 ? Math.round(st._distanceKm * 1000) + "m" : st._distanceKm.toFixed(1) + "km"}`}
               </div>
-            </div>
+            </a>
           ))}
         </div>
       </div>
