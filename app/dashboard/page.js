@@ -4,11 +4,22 @@ import Link from "next/link";
 import { useAuth } from "../../context/AuthContext";
 import { apiFetch } from "../../lib/api";
 import VerificationCard from "../../components/VerificationCard";
+import Toast from "../../components/Toast";
 
 export default function Dashboard() {
   const { authToken, myAccount, refreshMyAccount, login, hydrated } = useAuth();
   const [requests, setRequests] = useState([]);
   const [loaded, setLoaded] = useState(false);
+  const [welcome, setWelcome] = useState(false);
+
+  // Show the "you're logged in" pop-up once, right after logging in or
+  // registering, instead of a permanent bar on every visit.
+  useEffect(() => {
+    if (myAccount && sessionStorage.getItem("sheeba:welcome")) {
+      sessionStorage.removeItem("sheeba:welcome");
+      setWelcome(true);
+    }
+  }, [myAccount]);
 
   useEffect(() => { if (hydrated) refreshMyAccount(); }, [authToken, hydrated]);
 
@@ -28,16 +39,19 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div className="flex items-center justify-between px-5 py-4 bg-white border-b border-line">
-        <div className="font-display font-extrabold text-lg text-hibiscus-deep">
-          SHEE<span className="text-violet">BA</span> <span className="text-plum text-xs font-body font-semibold">Business</span>
+      {welcome && (
+        <Toast message={`✅ You're logged in. Welcome, ${myAccount.salonName || myAccount.name}!`} onDone={() => setWelcome(false)} />
+      )}
+      <div className="flex items-center justify-between px-5 py-4 bg-white border-b border-line gap-3">
+        <div>
+          <div className="font-display font-extrabold text-lg text-hibiscus-deep">
+            SHEE<span className="text-violet">BA</span> <span className="text-plum text-xs font-body font-semibold">Business</span>
+          </div>
+          <div className="text-xs text-plum/70">Signed in as <b>{myAccount.name}</b></div>
         </div>
         <Link href="/" className="px-4 py-2 rounded-full border border-line text-sm font-bold">← Back to Discover</Link>
       </div>
       <div className="max-w-xl mx-auto px-5 pt-6">
-        <div className="bg-emerald-700 text-white rounded-xl px-4 py-3 mb-4 text-sm font-semibold">
-          ✅ You're logged in — this is your dashboard for <b>{myAccount.salonName || myAccount.name}</b>.
-        </div>
         <div className="bg-white border border-line rounded-2xl p-4">
           <b>{myAccount.salonName || myAccount.name}</b> · {myAccount.category} · {myAccount.area}
         </div>

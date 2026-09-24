@@ -42,6 +42,7 @@ export function AuthProvider({ children }) {
     setAuthToken(data.token); localStorage.setItem("sheeba:token", data.token);
     setMyStylistId(data.stylist._id); localStorage.setItem("sheeba:my-stylist-id", data.stylist._id);
     setMyAccount(data.stylist);
+    sessionStorage.setItem("sheeba:welcome", "1"); // dashboard shows a one-time welcome pop-up
     return data.stylist;
   }, []);
 
@@ -50,6 +51,7 @@ export function AuthProvider({ children }) {
     setAuthToken(data.token); localStorage.setItem("sheeba:token", data.token);
     setMyStylistId(data.stylist._id); localStorage.setItem("sheeba:my-stylist-id", data.stylist._id);
     setMyAccount(data.stylist);
+    sessionStorage.setItem("sheeba:welcome", "1"); // dashboard shows a one-time welcome pop-up
     return data.stylist;
   }, []);
 
