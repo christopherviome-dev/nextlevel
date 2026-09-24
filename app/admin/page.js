@@ -1,9 +1,10 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useAuth } from "../../context/AuthContext";
 import { apiFetch } from "../../lib/api";
 import VerificationQueue from "../../components/VerificationQueue";
+import ShopReviewQueue from "../../components/ShopReviewQueue";
 
 export default function Admin() {
   const { authToken, myAccount, isAdmin, refreshMyAccount, hydrated } = useAuth();
@@ -11,10 +12,10 @@ export default function Admin() {
 
   useEffect(() => { if (hydrated) refreshMyAccount(); }, [authToken, hydrated]);
 
-  const loadAudit = () => apiFetch("/admin/audit").then(setAudit).catch(() => {});
+  const loadAudit = useCallback(() => apiFetch("/admin/audit").then(setAudit).catch(() => {}), []);
   useEffect(() => {
     if (isAdmin) loadAudit();
-  }, [isAdmin]);
+  }, [isAdmin, loadAudit]);
 
   if (!hydrated) return null;
 
@@ -37,6 +38,7 @@ export default function Admin() {
         <Link href="/" className="px-3 py-2 rounded-full border border-[#3a2028] text-sm">← Exit Admin</Link>
       </div>
       <div className="max-w-4xl mx-auto px-5 pt-6">
+        <ShopReviewQueue onDecision={loadAudit} />
         <VerificationQueue onDecision={loadAudit} />
         <div className="text-xs font-extrabold tracking-wide text-marigold uppercase mb-2">Recent Admin Actions</div>
         {audit.length === 0 && <div className="text-[#a88b95]">No admin actions recorded yet.</div>}

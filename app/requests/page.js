@@ -22,6 +22,12 @@ export default function Requests() {
     try {
       if (mode === "login") await customerLogin(phone, password);
       else await customerRegister(phone, password, name);
+      // Came here from a shop's "Log in to request" button? Go straight back.
+      const back = sessionStorage.getItem("sheeba:return");
+      if (back && back.startsWith("/shop/")) {
+        sessionStorage.removeItem("sheeba:return");
+        window.location.href = back;
+      }
     } catch (err) { setError(err.message); }
   };
 

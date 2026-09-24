@@ -16,11 +16,13 @@ export function AuthProvider({ children }) {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- deliberate: saved logins can only be read in the browser, after load */
     setAuthToken(localStorage.getItem("sheeba:token"));
     setMyStylistId(localStorage.getItem("sheeba:my-stylist-id"));
     setCustomerToken(localStorage.getItem("sheeba:customer-token"));
     setCustomerName(localStorage.getItem("sheeba:customer-name"));
     setHydrated(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   const refreshMyAccount = useCallback(async () => {

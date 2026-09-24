@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 export default function Toast({ message, onDone, duration = 4000 }) {
   const [visible, setVisible] = useState(false);
   const onDoneRef = useRef(onDone);
-  onDoneRef.current = onDone;
+  useEffect(() => { onDoneRef.current = onDone; }, [onDone]);
 
   useEffect(() => {
     const show = setTimeout(() => setVisible(true), 20);

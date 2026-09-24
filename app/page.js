@@ -94,6 +94,8 @@ export default function Discover() {
 
         <div className="space-y-3">
           {results.map((st) => (
+            // A plain link on purpose, not Next.js navigation: /shop/... only
+            // exists via the Netlify redirect rule, so it needs a real page load.
             <a key={st._id} href={`/shop/${st._id}`} className="block bg-white border border-line rounded-2xl p-4 hover:border-hibiscus transition-colors">
               <b className="text-ink">{st.salonName || st.name}</b>{" "}
               {st.verified && <span className="text-xs font-bold text-hibiscus-deep">✓ Verified</span>}

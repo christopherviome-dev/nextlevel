@@ -2,14 +2,12 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "../../context/AuthContext";
-import { apiFetch } from "../../lib/api";
 import VerificationCard from "../../components/VerificationCard";
 import Toast from "../../components/Toast";
+import RequestsPanel from "../../components/RequestsPanel";
 
 export default function Dashboard() {
   const { authToken, myAccount, refreshMyAccount, login, hydrated } = useAuth();
-  const [requests, setRequests] = useState([]);
-  const [loaded, setLoaded] = useState(false);
   const [welcome, setWelcome] = useState(false);
 
   // Show the "you're logged in" pop-up once, right after logging in or
@@ -17,25 +15,17 @@ export default function Dashboard() {
   useEffect(() => {
     if (myAccount && sessionStorage.getItem("sheeba:welcome")) {
       sessionStorage.removeItem("sheeba:welcome");
+      // Deliberate: sessionStorage only exists in the browser, after the page loads.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setWelcome(true);
     }
   }, [myAccount]);
 
-  useEffect(() => { if (hydrated) refreshMyAccount(); }, [authToken, hydrated]);
-
-  useEffect(() => {
-    if (!myAccount) return;
-    apiFetch("/requests").then((all) => {
-      setRequests(all.filter((r) => r.stylistId === myAccount._id));
-      setLoaded(true);
-    });
-  }, [myAccount]);
+  useEffect(() => { if (hydrated) refreshMyAccount(); }, [authToken, hydrated, refreshMyAccount]);
 
   if (!hydrated) return null;
   if (!authToken) return <LoginInline />;
   if (!myAccount) return <div className="max-w-xl mx-auto px-5 pt-10 text-plum/70">Loading your shop…</div>;
-
-  const pending = requests.filter((r) => r.status === "pending");
 
   return (
     <div>
@@ -51,20 +41,12 @@ export default function Dashboard() {
         </div>
         <Link href="/" className="px-4 py-2 rounded-full border border-line text-sm font-bold">← Back to Discover</Link>
       </div>
-      <div className="max-w-xl mx-auto px-5 pt-6">
+      <div className="max-w-xl mx-auto px-5 pt-6 pb-16">
         <div className="bg-white border border-line rounded-2xl p-4">
           <b>{myAccount.salonName || myAccount.name}</b> · {myAccount.category} · {myAccount.area}
         </div>
         <VerificationCard account={myAccount} onUpdated={refreshMyAccount} />
-        <div className="text-xs font-extrabold tracking-wide text-plum uppercase mt-6 mb-2">Pending Requests</div>
-        {!loaded && <div className="text-plum/70">Loading…</div>}
-        {loaded && pending.length === 0 && <div className="text-plum/70">No pending requests right now.</div>}
-        {pending.map((r) => (
-          <div key={r._id} className="bg-white border border-line rounded-xl p-3 mb-2"><b>{r.clientName}</b> — {r.serviceNameSnapshot || "Service"}</div>
-        ))}
-        <p className="text-sm text-plum/70 mt-6">
-          Real, working foundation — full business tools (Customers, Growth, Sharing, Payments) are being ported next, not faked here.
-        </p>
+        <RequestsPanel account={myAccount} />
       </div>
     </div>
   );
