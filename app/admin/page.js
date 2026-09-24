@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "../../context/AuthContext";
 import { apiFetch } from "../../lib/api";
+import VerificationQueue from "../../components/VerificationQueue";
 
 export default function Admin() {
   const { authToken, myAccount, isAdmin, refreshMyAccount, hydrated } = useAuth();
@@ -10,8 +11,9 @@ export default function Admin() {
 
   useEffect(() => { if (hydrated) refreshMyAccount(); }, [authToken, hydrated]);
 
+  const loadAudit = () => apiFetch("/admin/audit").then(setAudit).catch(() => {});
   useEffect(() => {
-    if (isAdmin) apiFetch("/admin/audit").then(setAudit).catch(() => {});
+    if (isAdmin) loadAudit();
   }, [isAdmin]);
 
   if (!hydrated) return null;
@@ -34,11 +36,12 @@ export default function Admin() {
         <span className="font-display font-extrabold text-[#f0dad0]">SHEEBA <span className="text-marigold">ADMIN</span></span>
         <Link href="/" className="px-3 py-2 rounded-full border border-[#3a2028] text-sm">← Exit Admin</Link>
       </div>
-      <div className="max-w-xl mx-auto px-5 pt-6">
+      <div className="max-w-4xl mx-auto px-5 pt-6">
+        <VerificationQueue onDecision={loadAudit} />
         <div className="text-xs font-extrabold tracking-wide text-marigold uppercase mb-2">Recent Admin Actions</div>
         {audit.length === 0 && <div className="text-[#a88b95]">No admin actions recorded yet.</div>}
         {audit.map((a) => (
-          <div key={a._id} className="bg-[#241318] border border-[#3a2028] rounded-xl p-3 mb-2"><b>{a.action}</b> on {a.targetType} {a.targetId.slice(-6)}</div>
+          <div key={a._id} className="bg-[#241318] border border-[#3a2028] rounded-xl p-3 mb-2"><b>{a.action}</b> on {a.targetType} {a.targetId.slice(-6)}{a.reason ? ` — ${a.reason}` : ""}</div>
         ))}
         <p className="text-sm text-[#a88b95] mt-6">
           Real, live audit data. Full shop review, reports, and account restriction tools are being ported next.

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "../../context/AuthContext";
 import { apiFetch } from "../../lib/api";
+import VerificationCard from "../../components/VerificationCard";
 
 export default function Dashboard() {
   const { authToken, myAccount, refreshMyAccount, login, hydrated } = useAuth();
@@ -40,6 +41,7 @@ export default function Dashboard() {
         <div className="bg-white border border-line rounded-2xl p-4">
           <b>{myAccount.salonName || myAccount.name}</b> · {myAccount.category} · {myAccount.area}
         </div>
+        <VerificationCard account={myAccount} onUpdated={refreshMyAccount} />
         <div className="text-xs font-extrabold tracking-wide text-plum uppercase mt-6 mb-2">Pending Requests</div>
         {!loaded && <div className="text-plum/70">Loading…</div>}
         {loaded && pending.length === 0 && <div className="text-plum/70">No pending requests right now.</div>}
