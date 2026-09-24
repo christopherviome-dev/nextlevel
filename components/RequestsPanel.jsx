@@ -100,7 +100,6 @@ function RequestCard({ r, onChanged, onStale }) {
             </div>
           )}
         </div>
-        {r.emergency && r.emergency !== "no" && <span className="text-xs font-bold text-red-700 bg-red-50 border border-red-200 rounded-full px-2 py-1 h-fit">Urgent</span>}
       </div>
       <div className="text-sm mt-2">
         <b>{r.serviceNameSnapshot || "General request"}</b>
@@ -109,6 +108,8 @@ function RequestCard({ r, onChanged, onStale }) {
       </div>
       <div className="text-sm text-plum/80 mt-1">🗓 {whenLabel(r)}{r.meet && MEET[r.meet] ? ` · ${MEET[r.meet]}` : ""}</div>
       {r.note && <div className="text-sm mt-2 bg-surface rounded-lg p-2">“{r.note}”</div>}
+      {/* The customer's emergency contact: someone who knows where they're going. Shared for safety. */}
+      {r.emergency && <div className="text-xs text-plum/70 mt-2">Customer's emergency contact: {r.emergency}</div>}
       {r.status === "completed" && r.rating && <div className="text-sm mt-2">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)} rated by the customer</div>}
       {error && <div className="text-sm text-hibiscus-deep mt-2">{error}</div>}
 
