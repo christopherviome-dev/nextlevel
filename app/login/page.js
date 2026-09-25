@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
+import Nav from "../../components/Nav";
 
 export default function Login() {
   const { login, register } = useAuth();
@@ -28,6 +29,8 @@ export default function Login() {
   };
 
   return (
+    <div>
+    <Nav />
     <div className="max-w-md mx-auto px-5 pt-12">
       <div className="text-xs font-extrabold tracking-wide text-plum uppercase mb-3">
         {mode === "login" ? "Log In" : "Create Your Shop"}
@@ -46,6 +49,7 @@ export default function Login() {
       <button className="mt-3 px-4 py-2 rounded-full border border-line bg-white text-sm" onClick={() => setMode(mode === "login" ? "register" : "login")}>
         {mode === "login" ? "New here? Create a shop" : "Already have an account? Log in"}
       </button>
+    </div>
     </div>
   );
 }

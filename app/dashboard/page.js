@@ -4,10 +4,12 @@ import Link from "next/link";
 import { useAuth } from "../../context/AuthContext";
 import VerificationCard from "../../components/VerificationCard";
 import Toast from "../../components/Toast";
+import Nav from "../../components/Nav";
+import ProLoginForm from "../../components/ProLoginForm";
 import RequestsPanel from "../../components/RequestsPanel";
 
 export default function Dashboard() {
-  const { authToken, myAccount, refreshMyAccount, login, hydrated } = useAuth();
+  const { authToken, myAccount, refreshMyAccount, hydrated, isAdmin } = useAuth();
   const [welcome, setWelcome] = useState(false);
 
   // Show the "you're logged in" pop-up once, right after logging in or
@@ -21,10 +23,9 @@ export default function Dashboard() {
     }
   }, [myAccount]);
 
-  useEffect(() => { if (hydrated) refreshMyAccount(); }, [authToken, hydrated, refreshMyAccount]);
 
   if (!hydrated) return null;
-  if (!authToken) return <LoginInline />;
+  if (!authToken) return (<div><Nav /><ProLoginForm title="Log In to Your Shop" /></div>);
   if (!myAccount) return <div className="max-w-xl mx-auto px-5 pt-10 text-plum/70">Loading your shop…</div>;
 
   return (
@@ -39,7 +40,10 @@ export default function Dashboard() {
           </div>
           <div className="text-xs text-plum/70">Signed in as <b>{myAccount.name}</b></div>
         </div>
-        <Link href="/" className="px-4 py-2 rounded-full border border-line text-sm font-bold">← Back to Discover</Link>
+        <div className="flex gap-2 flex-wrap justify-end">
+          {isAdmin && <Link href="/admin" className="px-4 py-2 rounded-full bg-ink text-white text-sm font-bold">Admin</Link>}
+          <Link href="/" className="px-4 py-2 rounded-full border border-line text-sm font-bold">← Discover</Link>
+        </div>
       </div>
       <div className="max-w-xl mx-auto px-5 pt-6 pb-16">
         <div className="bg-white border border-line rounded-2xl p-4">
@@ -48,29 +52,6 @@ export default function Dashboard() {
         <VerificationCard account={myAccount} onUpdated={refreshMyAccount} />
         <RequestsPanel account={myAccount} />
       </div>
-    </div>
-  );
-}
-
-function LoginInline() {
-  const { login } = useAuth();
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
-  const [busy, setBusy] = useState(false);
-  const submit = async (e) => {
-    e.preventDefault(); setBusy(true); setError(null);
-    try { await login(phone, password); } catch (err) { setError(err.message); } finally { setBusy(false); }
-  };
-  return (
-    <div className="max-w-md mx-auto px-5 pt-12">
-      <div className="text-xs font-extrabold tracking-wide text-plum uppercase mb-3">Log In to Your Shop</div>
-      <form onSubmit={submit} className="space-y-3">
-        <input type="tel" placeholder="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line" />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line" />
-        {error && <p className="text-hibiscus-deep text-sm">{error}</p>}
-        <button className="w-full py-3 rounded-full bg-hibiscus text-white font-bold" type="submit" disabled={busy}>{busy ? "One sec…" : "Log In"}</button>
-      </form>
     </div>
   );
 }

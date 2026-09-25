@@ -5,12 +5,13 @@ import { useAuth } from "../../context/AuthContext";
 import { apiFetch } from "../../lib/api";
 import VerificationQueue from "../../components/VerificationQueue";
 import ShopReviewQueue from "../../components/ShopReviewQueue";
+import Nav from "../../components/Nav";
+import ProLoginForm from "../../components/ProLoginForm";
 
 export default function Admin() {
-  const { authToken, myAccount, isAdmin, refreshMyAccount, hydrated } = useAuth();
+  // The account itself is loaded automatically on every page (AuthContext).
+  const { authToken, myAccount, isAdmin, hydrated } = useAuth();
   const [audit, setAudit] = useState([]);
-
-  useEffect(() => { if (hydrated) refreshMyAccount(); }, [authToken, hydrated]);
 
   const loadAudit = useCallback(() => apiFetch("/admin/audit").then(setAudit).catch(() => {}), []);
   useEffect(() => {
@@ -19,23 +20,32 @@ export default function Admin() {
 
   if (!hydrated) return null;
 
-  if (!authToken || !myAccount) {
+  if (!authToken) {
     return (
-      <div className="max-w-md mx-auto px-5 pt-10">
-        <div className="text-plum/70 mb-3">Log in from your shop dashboard first — this area is admin-only.</div>
-        <Link href="/dashboard" className="inline-block px-5 py-3 rounded-full bg-hibiscus text-white font-bold">Go to Dashboard</Link>
+      <div>
+        <Nav />
+        <ProLoginForm title="Sheeba Admin" note="Log in with your Sheeba account. Only accounts with admin permission can open this area." />
       </div>
     );
   }
+  if (!myAccount) return <div><Nav /><div className="max-w-md mx-auto px-5 pt-10 text-plum/70">Checking your account…</div></div>;
   if (!isAdmin) {
-    return <div className="max-w-md mx-auto px-5 pt-10 text-plum/70">This account isn't an admin.</div>;
+    return (
+      <div>
+        <Nav />
+        <div className="max-w-md mx-auto px-5 pt-10 text-plum/80">This account doesn't have admin permission.</div>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-[#1a1015] text-[#f0dad0]">
       <div className="flex items-center justify-between px-5 py-4 bg-[#241318] border-b border-[#3a2028]">
         <span className="font-display font-extrabold text-[#f0dad0]">SHEEBA <span className="text-marigold">ADMIN</span></span>
-        <Link href="/" className="px-3 py-2 rounded-full border border-[#3a2028] text-sm">← Exit Admin</Link>
+        <div className="flex gap-2">
+          <Link href="/dashboard" className="px-3 py-2 rounded-full border border-[#3a2028] text-sm">My Shop</Link>
+          <Link href="/" className="px-3 py-2 rounded-full border border-[#3a2028] text-sm">← Exit Admin</Link>
+        </div>
       </div>
       <div className="max-w-4xl mx-auto px-5 pt-6">
         <ShopReviewQueue onDecision={loadAudit} />

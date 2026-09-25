@@ -25,19 +25,39 @@ export function AuthProvider({ children }) {
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
+  // Shared by the two ways an account gets loaded (below).
+  const applyAccount = useCallback((me) => {
+    setMyStylistId(me._id);
+    localStorage.setItem("sheeba:my-stylist-id", me._id);
+    setMyAccount(me);
+  }, []);
+  // Same stale-session recovery as before: a saved login that no longer
+  // matches a real account is cleared rather than left half-working.
+  const clearStaleSession = useCallback(() => {
+    setAuthToken(null); setMyStylistId(null); setMyAccount(null);
+    localStorage.removeItem("sheeba:token");
+    localStorage.removeItem("sheeba:my-stylist-id");
+  }, []);
+
+  // For pages that want a fresh copy on demand (e.g. after an edit).
   const refreshMyAccount = useCallback(async () => {
-    if (!authToken) { setMyAccount(null); return; }
-    try {
-      const me = await apiFetch("/stylists/me");
-      setMyStylistId(me._id);
-      localStorage.setItem("sheeba:my-stylist-id", me._id);
-      setMyAccount(me);
-    } catch (e) {
-      setAuthToken(null); setMyStylistId(null); setMyAccount(null);
-      localStorage.removeItem("sheeba:token");
-      localStorage.removeItem("sheeba:my-stylist-id");
-    }
-  }, [authToken]);
+    if (!authToken) return; // no saved login: nothing to load
+    try { applyAccount(await apiFetch("/stylists/me")); }
+    catch (e) { clearStaleSession(); }
+  }, [authToken, applyAccount, clearStaleSession]);
+
+  // Load the professional account on every page as soon as a saved login
+  // exists, so the whole site knows who you are (e.g. whether to show the
+  // Admin link) without having to visit My Shop first. The `cancelled` flag
+  // stops a slow response from bringing back an account you just logged out of.
+  useEffect(() => {
+    if (!hydrated || !authToken) return;
+    let cancelled = false;
+    apiFetch("/stylists/me")
+      .then((me) => { if (!cancelled) applyAccount(me); })
+      .catch(() => { if (!cancelled) clearStaleSession(); });
+    return () => { cancelled = true; };
+  }, [hydrated, authToken, applyAccount, clearStaleSession]);
 
   const login = useCallback(async (phone, password) => {
     const data = await apiFetch("/auth/login", { method: "POST", body: JSON.stringify({ phone, password }) });
