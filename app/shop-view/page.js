@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { apiFetch } from "../../lib/api";
 import RequestForm from "../../components/RequestForm";
+import ThemeToggle from "../../components/ThemeToggle";
 
 export default function ShopView() {
   const [shop, setShop] = useState(null);
@@ -21,21 +22,21 @@ export default function ShopView() {
 
   return (
     <div>
-      <div className="flex items-center justify-between px-5 py-4 bg-white border-b border-line">
+      <div className="flex items-center justify-between px-5 py-4 bg-card border-b border-line">
         <div className="font-display font-extrabold text-lg text-hibiscus-deep">SHEE<span className="text-violet">BA</span></div>
         {/* Deliberately a plain link, not next/link: this page is served through a Netlify rewrite,
             and Next.js navigation from here breaks (the bug fixed in commit ad6f851). */}
         {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-        <a href="/" className="px-4 py-2 rounded-full border border-line text-sm font-bold">Explore more shops →</a>
+        <div className="flex items-center gap-2"><ThemeToggle /><a href="/" className="px-4 py-2 rounded-full border border-line text-sm font-bold">Explore more shops →</a></div>
       </div>
       <div className="max-w-xl mx-auto px-5 pt-6">
-        {error && <div className="text-plum/70 py-6">This shop isn't currently available.</div>}
-        {!error && !shop && <div className="text-plum/70 py-6">Loading…</div>}
+        {error && <div className="text-muted py-6">This shop isn't currently available.</div>}
+        {!error && !shop && <div className="text-muted py-6">Loading…</div>}
         {shop && (
-          <div className="bg-white border border-line rounded-2xl p-5">
+          <div className="bg-card border border-line rounded-2xl p-5">
             <b className="text-lg">{shop.salonName || shop.name}</b>{" "}
             {shop.verified && <span className="text-xs font-bold text-hibiscus-deep">✓ Verified</span>}
-            <div className="text-sm text-plum/80 mt-1">{shop.category} · {shop.area}</div>
+            <div className="text-sm text-muted-strong mt-1">{shop.category} · {shop.area}</div>
             {shop.bio && <p className="mt-3 text-sm">{shop.bio}</p>}
             <div className="text-xs font-extrabold tracking-wide text-plum uppercase mt-5 mb-2">Services</div>
             {(shop.styles || []).filter((s) => s.active !== false).map((s) => (

@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
 import { useAuth } from "../../context/AuthContext";
 import { apiFetch } from "../../lib/api";
 import VerificationQueue from "../../components/VerificationQueue";
@@ -29,35 +28,33 @@ export default function Admin() {
       </div>
     );
   }
-  if (!myAccount) return <div><Nav /><div className="max-w-md mx-auto px-5 pt-10 text-plum/70">Checking your account…</div></div>;
+  if (!myAccount) return <div><Nav /><div className="max-w-md mx-auto px-5 pt-10 text-muted">Checking your account…</div></div>;
   if (!isAdmin) {
     return (
       <div>
         <Nav />
-        <div className="max-w-md mx-auto px-5 pt-10 text-plum/80">This account doesn't have admin permission.</div>
+        <div className="max-w-md mx-auto px-5 pt-10 text-muted-strong">This account doesn't have admin permission.</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#1a1015] text-[#f0dad0]">
-      <div className="flex items-center justify-between px-5 py-4 bg-[#241318] border-b border-[#3a2028]">
-        <span className="font-display font-extrabold text-[#f0dad0]">SHEEBA <span className="text-marigold">ADMIN</span></span>
-        <div className="flex gap-2">
-          <Link href="/dashboard" className="px-3 py-2 rounded-full border border-[#3a2028] text-sm">My Shop</Link>
-          <Link href="/" className="px-3 py-2 rounded-full border border-[#3a2028] text-sm">← Exit Admin</Link>
+    <div className="min-h-screen bg-surface text-ink">
+      <Nav />
+      <div className="max-w-4xl mx-auto px-5 pt-6 pb-16">
+        <div className="mb-5">
+          <h1 className="font-display font-extrabold text-xl text-ink">Admin</h1>
+          <div className="text-sm text-muted">Reviews, verification and account help. Every decision here is logged.</div>
         </div>
-      </div>
-      <div className="max-w-4xl mx-auto px-5 pt-6">
         <ShopReviewQueue onDecision={loadAudit} />
         <VerificationQueue onDecision={loadAudit} />
         <PasswordResetQueue onDecision={loadAudit} />
-        <div className="text-xs font-extrabold tracking-wide text-marigold uppercase mb-2">Recent Admin Actions</div>
-        {audit.length === 0 && <div className="text-[#a88b95]">No admin actions recorded yet.</div>}
+        <div className="text-xs font-extrabold tracking-wide text-plum uppercase mb-2">Recent Admin Actions</div>
+        {audit.length === 0 && <div className="text-muted">No admin actions recorded yet.</div>}
         {audit.map((a) => (
-          <div key={a._id} className="bg-[#241318] border border-[#3a2028] rounded-xl p-3 mb-2"><b>{a.action}</b> on {a.targetType} {a.targetId.slice(-6)}{a.reason ? ` — ${a.reason}` : ""}</div>
+          <div key={a._id} className="bg-card border border-line rounded-xl p-3 mb-2"><b>{a.action}</b> on {a.targetType} {a.targetId.slice(-6)}{a.reason ? ` — ${a.reason}` : ""}</div>
         ))}
-        <p className="text-sm text-[#a88b95] mt-6">
+        <p className="text-sm text-muted mt-6">
           Real, live audit data. Reports and account restriction tools are coming next.
         </p>
       </div>

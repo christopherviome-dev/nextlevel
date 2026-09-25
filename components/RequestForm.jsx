@@ -45,7 +45,7 @@ export default function RequestForm({ shop }) {
     return (
       <div className="mt-5 bg-surface-2 rounded-xl p-4">
         <div className="font-bold">Want to book {shop.salonName || shop.name}?</div>
-        <p className="text-sm text-plum/80 mt-1">Log in or create a free account to send a request. You'll come straight back here.</p>
+        <p className="text-sm text-muted-strong mt-1">Log in or create a free account to send a request. You'll come straight back here.</p>
         <button onClick={goLogin} className="mt-3 px-5 py-3 rounded-full bg-hibiscus text-white font-bold">Log in to request</button>
       </div>
     );
@@ -53,8 +53,8 @@ export default function RequestForm({ shop }) {
 
   if (sent) {
     return (
-      <div className="mt-5 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-        <div className="font-bold text-emerald-800">✓ Request sent</div>
+      <div className="mt-5 bg-ok-bg border border-ok-line rounded-xl p-4">
+        <div className="font-bold text-ok-fg">✓ Request sent</div>
         <p className="text-sm mt-1">{shop.salonName || shop.name} will reply soon, and we'll notify you.</p>
         <a href="/requests" className="inline-block mt-3 text-sm font-bold text-hibiscus-deep underline">See my requests</a>
       </div>
@@ -97,7 +97,7 @@ export default function RequestForm({ shop }) {
         {services.length > 0 && (
           <div>
             <label className="block text-sm font-bold mb-1">Service</label>
-            <select value={styleId} onChange={(e) => setStyleId(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line bg-white">
+            <select value={styleId} onChange={(e) => setStyleId(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line bg-card">
               <option value="">Choose a service</option>
               {services.map((s) => (
                 <option key={s.id} value={s.id}>{s.name}{s.price != null ? ` · GH₵${s.price}` : ""}{s.duration ? ` · ${s.duration}` : ""}</option>
@@ -108,11 +108,11 @@ export default function RequestForm({ shop }) {
         <div>
           <label className="block text-sm font-bold mb-1">When would you like it?</label>
           <input type="datetime-local" value={when} min={localInputValue(new Date())} onChange={(e) => setWhen(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-line bg-white" />
+            className="w-full px-4 py-3 rounded-xl border border-line bg-card" />
         </div>
         <div>
           <label className="block text-sm font-bold mb-1">Where?</label>
-          <select value={meet} onChange={(e) => setMeet(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line bg-white">
+          <select value={meet} onChange={(e) => setMeet(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line bg-card">
             <option value="provider">At the professional's place</option>
             <option value="client">At my place</option>
             <option value="midway">Somewhere in between</option>
@@ -121,9 +121,9 @@ export default function RequestForm({ shop }) {
         <div>
           <label className="block text-sm font-bold mb-1">Anything they should know? (optional)</label>
           <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} maxLength={1000}
-            placeholder="e.g. waist-length, medium size" className="w-full px-4 py-3 rounded-xl border border-line bg-white" />
+            placeholder="e.g. waist-length, medium size" className="w-full px-4 py-3 rounded-xl border border-line bg-card" />
         </div>
-        {me && <p className="text-xs text-plum/60">They'll see your name ({me.name}) and phone number so they can reach you.</p>}
+        {me && <p className="text-xs text-muted">They'll see your name ({me.name}) and phone number so they can reach you.</p>}
         {error && <p className="text-sm text-hibiscus-deep">{error}</p>}
         <button onClick={send} disabled={!canSend} className="w-full py-3 rounded-full bg-hibiscus text-white font-bold disabled:opacity-40">
           {busy ? "Sending…" : "Send request"}

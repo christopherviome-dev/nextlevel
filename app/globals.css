@@ -1,24 +1,67 @@
 @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
+/* Sheeba colours, by MEANING. Components use these names only
+   (bg-card, text-ink, text-ok-fg ...), never raw colours, so every screen
+   supports light and dark mode automatically. Dark values are below. */
 @theme {
-  --color-ink: #20101b;
-  --color-plum: #6b2447;
-  --color-hibiscus: #e63875;
-  --color-hibiscus-deep: #b81e58;
+  /* brand */
+  --color-hibiscus: #e31f64;       /* primary buttons: white text on top passes 4.5:1 */
+  --color-hibiscus-deep: #b81e58;  /* links, emphasis, error text */
+  --color-violet: #4b2069;         /* selected chips, logo accent */
+  --color-violet-deep: #33124a;
   --color-marigold: #f5a623;
   --color-marigold-deep: #c97d0a;
-  --color-violet: #4b2069;
-  --color-violet-deep: #33124a;
-  --color-surface: #fff8f3;
-  --color-surface-2: #fbeae0;
-  --color-line: #f0dad0;
+
+  /* surfaces and text */
+  --color-surface: #fff8f3;        /* page background */
+  --color-surface-2: #fbeae0;      /* tinted panels */
+  --color-card: #ffffff;           /* cards, forms, panels */
+  --color-line: #f0dad0;           /* borders */
+  --color-ink: #20101b;            /* main text */
+  --color-plum: #6b2447;           /* secondary text */
+  --color-muted: #905b75;          /* helper text; solid so it works in every browser */
+  --color-muted-strong: #89506c;   /* slightly stronger helper text */
+  --color-faint: #d3bdc8;          /* decorative only (placeholder initials) */
+
+  /* messages: ok (success), warn (check this), bad (problem) */
+  --color-ok-bg: #ecfdf5;   --color-ok-fg: #065f46;   --color-ok-line: #6ee7b7;
+  --color-warn-bg: #fffbeb; --color-warn-fg: #92400e; --color-warn-line: #fcd34d;
+  --color-bad-bg: #fef2f2;  --color-bad-fg: #b91c1c;  --color-bad-line: #fca5a5;
+
   --font-display: 'Unbounded', sans-serif;
   --font-body: 'Manrope', sans-serif;
+}
+
+:root { color-scheme: light; }
+
+/* Dark mode: warm and readable, never pure black. Every text colour here
+   keeps at least a 4.5:1 contrast with the card and page colours. */
+:root[data-theme="dark"] {
+  color-scheme: dark; /* dark native controls: date pickers, dropdowns, scrollbars */
+  --color-hibiscus-deep: #ff7aa8;
+  --color-violet: #8a5cc4;
+  --color-surface: #1b1316;
+  --color-surface-2: #2a1e22;
+  --color-card: #241a1e;
+  --color-line: #3f2f35;
+  --color-ink: #f6ece7;
+  --color-plum: #dcb2c3;
+  --color-muted: #a58492;
+  --color-muted-strong: #b794a2;
+  --color-faint: #5b4850;
+  --color-ok-bg: #0f2e24;   --color-ok-fg: #7ee8c0;   --color-ok-line: #1f6f55;
+  --color-warn-bg: #33250b; --color-warn-fg: #fcd34d; --color-warn-line: #8a6414;
+  --color-bad-bg: #3a1518;  --color-bad-fg: #fca5a5;  --color-bad-line: #8a2c33;
 }
 
 body {
   background: var(--color-surface);
   color: var(--color-ink);
   font-family: var(--font-body);
+}
+
+/* Phones: leave room for the bottom navigation bar (and the iPhone home bar). */
+@media (max-width: 639px) {
+  body { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
 }

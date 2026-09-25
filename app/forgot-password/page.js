@@ -32,17 +32,17 @@ export default function ForgotPassword() {
       <div className="max-w-md mx-auto px-5 pt-10">
         <div className="text-xs font-extrabold tracking-wide text-plum uppercase mb-3">Forgot your password?</div>
         {done ? (
-          <div className="bg-white border border-line rounded-2xl p-4 space-y-2">
-            <div className="font-bold text-emerald-800">Request received</div>
-            <p className="text-sm text-plum/80">{done}</p>
-            <p className="text-sm text-plum/80">Keep your phone nearby. Sheeba will only ever call the number on your account, and will never ask for your old password.</p>
+          <div className="bg-card border border-line rounded-2xl p-4 space-y-2">
+            <div className="font-bold text-ok-fg">Request received</div>
+            <p className="text-sm text-muted-strong">{done}</p>
+            <p className="text-sm text-muted-strong">Keep your phone nearby. Sheeba will only ever call the number on your account, and will never ask for your old password.</p>
           </div>
         ) : (
           <form onSubmit={submit} className="space-y-3">
             <div className="flex gap-2">
               {[["stylist", "I have a shop"], ["customer", "I'm a customer"]].map(([v, label]) => (
                 <button type="button" key={v} onClick={() => setAccountType(v)}
-                  className={"flex-1 py-2 rounded-full border text-sm font-bold " + (accountType === v ? "bg-violet text-white border-violet" : "bg-white border-line text-plum")}>
+                  className={"flex-1 py-2 rounded-full border text-sm font-bold " + (accountType === v ? "bg-violet text-white border-violet" : "bg-card border-line text-plum")}>
                   {label}
                 </button>
               ))}
@@ -54,7 +54,7 @@ export default function ForgotPassword() {
               className="w-full py-3 rounded-full bg-hibiscus text-white font-bold disabled:opacity-40">
               {busy ? "Sending…" : "Ask Sheeba for help"}
             </button>
-            <p className="text-xs text-plum/60">Sheeba will call the number on your account to confirm it's you, then give you a temporary password.</p>
+            <p className="text-xs text-muted">Sheeba will call the number on your account to confirm it's you, then give you a temporary password.</p>
           </form>
         )}
       </div>

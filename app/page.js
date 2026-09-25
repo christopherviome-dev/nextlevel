@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { apiFetch } from "../lib/api";
 import Nav from "../components/Nav";
+import { LoadingState, EmptyState, ErrorState } from "../components/States";
 
 const CATEGORIES = ["All", "Hair Braiding", "Barbering", "Makeup", "Nails & Pedicure", "Locs & Twists"];
 
@@ -23,6 +24,7 @@ export default function Discover() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
   const [myLocation, setMyLocation] = useState(null);
+  const [reloadKey, setReloadKey] = useState(0); // bumped by "Try again"
 
   useEffect(() => {
     let cancelled = false;
@@ -31,7 +33,10 @@ export default function Discover() {
       .catch((e) => { if (!cancelled) setError(e.message); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, []);
+  }, [reloadKey]);
+
+  const retry = () => { setError(null); setLoading(true); setReloadKey((k) => k + 1); };
+  const clearFilters = () => { setQuery(""); setCategory("All"); };
 
   const findNearMe = () => {
     if (!navigator.geolocation) { alert("GPS not available on this device."); return; }
@@ -69,9 +74,9 @@ export default function Discover() {
           placeholder="Try 'bridal makeup near Osu'"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-full px-4 py-3 rounded-full border border-line bg-white"
+          className="w-full px-4 py-3 rounded-full border border-line bg-card"
         />
-        <button className="mt-2 px-4 py-2 rounded-full border border-line bg-white text-sm font-bold" onClick={findNearMe}>
+        <button className="mt-2 px-4 py-2 rounded-full border border-line bg-card text-sm font-bold" onClick={findNearMe}>
           📍 {myLocation ? "Near Me — updated" : "Near Me"}
         </button>
 
@@ -81,25 +86,30 @@ export default function Discover() {
             <button
               key={c}
               onClick={() => setCategory(c)}
-              className={"px-4 py-2 rounded-full text-sm font-bold border " + (category === c ? "bg-violet text-white border-violet" : "bg-white text-plum border-line")}
+              className={"px-4 py-2 rounded-full text-sm font-bold border " + (category === c ? "bg-violet text-white border-violet" : "bg-card text-plum border-line")}
             >
               {c}
             </button>
           ))}
         </div>
 
-        {loading && <div className="text-plum/70 py-4">Loading real shops…</div>}
-        {error && <div className="text-plum/70 py-4">Couldn't load shops: {error}</div>}
-        {!loading && !error && results.length === 0 && <div className="text-plum/70 py-4">No shops found yet.</div>}
+        {loading && <LoadingState label="Loading shops" />}
+        {error && <ErrorState message={`We couldn't load shops right now. (${error})`} onRetry={retry} />}
+        {!loading && !error && shops.length === 0 && (
+          <EmptyState title="No shops on Sheeba yet" hint="New professionals are joining. Check back soon." />
+        )}
+        {!loading && !error && shops.length > 0 && results.length === 0 && (
+          <EmptyState title="No shops match" hint="Try another category, or clear your search." actionLabel="Clear search and filters" onAction={clearFilters} />
+        )}
 
         <div className="space-y-3">
           {results.map((st) => (
             // A plain link on purpose, not Next.js navigation: /shop/... only
             // exists via the Netlify redirect rule, so it needs a real page load.
-            <a key={st._id} href={`/shop/${st._id}`} className="block bg-white border border-line rounded-2xl p-4 hover:border-hibiscus transition-colors">
+            <a key={st._id} href={`/shop/${st._id}`} className="block bg-card border border-line rounded-2xl p-4 hover:border-hibiscus transition-colors">
               <b className="text-ink">{st.salonName || st.name}</b>{" "}
               {st.verified && <span className="text-xs font-bold text-hibiscus-deep">✓ Verified</span>}
-              <div className="text-sm text-plum/80 mt-1">
+              <div className="text-sm text-muted-strong mt-1">
                 {st.category} · {st.area}
                 {st._distanceKm != null && ` · 📍 ${st._distanceKm < 1 ? Math.round(st._distanceKm * 1000) + "m" : st._distanceKm.toFixed(1) + "km"}`}
               </div>

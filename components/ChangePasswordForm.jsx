@@ -26,7 +26,7 @@ export default function ChangePasswordForm({ endpoint, actor = null, forced = fa
     } catch (err) { setError(err.message); } finally { setBusy(false); }
   };
 
-  if (saved && !forced) return <p className="text-sm text-emerald-800 font-semibold">✓ Password changed.</p>;
+  if (saved && !forced) return <p className="text-sm text-ok-fg font-semibold">✓ Password changed.</p>;
 
   return (
     <form onSubmit={submit} className="space-y-2">

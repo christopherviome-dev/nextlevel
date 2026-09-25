@@ -21,7 +21,7 @@ export default function ProLoginForm({ title = "Log In", note }) {
   return (
     <div className="max-w-md mx-auto px-5 pt-12">
       <div className="text-xs font-extrabold tracking-wide text-plum uppercase mb-3">{title}</div>
-      {note && <p className="text-sm text-plum/80 mb-3">{note}</p>}
+      {note && <p className="text-sm text-muted-strong mb-3">{note}</p>}
       <form onSubmit={submit} className="space-y-3">
         {/* autoComplete lets phones offer saved logins */}
         <input type="tel" autoComplete="username" placeholder="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)}

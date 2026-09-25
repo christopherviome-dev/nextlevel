@@ -48,7 +48,7 @@ export default function Login() {
         </button>
       </form>
       {mode === "login" && <Link href="/forgot-password?type=stylist" className="block mt-3 text-sm text-hibiscus-deep font-semibold">Forgot password?</Link>}
-      <button className="mt-3 px-4 py-2 rounded-full border border-line bg-white text-sm" onClick={() => setMode(mode === "login" ? "register" : "login")}>
+      <button className="mt-3 px-4 py-2 rounded-full border border-line bg-card text-sm" onClick={() => setMode(mode === "login" ? "register" : "login")}>
         {mode === "login" ? "New here? Create a shop" : "Already have an account? Log in"}
       </button>
     </div>

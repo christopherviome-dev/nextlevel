@@ -47,15 +47,15 @@ export default function RequestsPanel({ account }) {
       <div className="flex gap-2 mb-3">
         {tabs.map(([key, label]) => (
           <button key={key} onClick={() => setTab(key)}
-            className={"px-4 py-2 rounded-full text-sm font-bold border " + (tab === key ? "bg-ink text-white border-ink" : "bg-white text-plum border-line")}>
+            className={"px-4 py-2 rounded-full text-sm font-bold border " + (tab === key ? "bg-violet text-white border-violet" : "bg-card text-plum border-line")}>
             {label}{requests && byTab[key].length > 0 ? ` (${byTab[key].length})` : ""}
           </button>
         ))}
       </div>
       {error && <div className="text-hibiscus-deep text-sm">{error} <button className="underline" onClick={load}>Try again</button></div>}
-      {!requests && !error && <div className="text-plum/70">Loading…</div>}
+      {!requests && !error && <div className="text-muted">Loading…</div>}
       {requests && byTab[tab].length === 0 && (
-        <div className="text-plum/70 text-sm bg-white border border-line rounded-xl p-4">
+        <div className="text-muted text-sm bg-card border border-line rounded-xl p-4">
           {tab === "pending" && "No new requests. Share your shop link so customers can find you."}
           {tab === "accepted" && "No upcoming appointments. Requests you accept will appear here."}
           {tab === "completed" && "No completed services yet. When you finish a service, mark it completed and it's recorded here."}
@@ -87,7 +87,7 @@ function RequestCard({ r, onChanged, onStale }) {
   };
 
   return (
-    <div className="bg-white border border-line rounded-2xl p-4 mb-3">
+    <div className="bg-card border border-line rounded-2xl p-4 mb-3">
       <div className="flex justify-between gap-3">
         <div>
           <div className="font-bold">{r.clientName}</div>
@@ -95,7 +95,7 @@ function RequestCard({ r, onChanged, onStale }) {
             <div className="flex gap-3 flex-wrap">
               <a href={`tel:${r.clientPhone}`} className="text-sm text-hibiscus-deep font-semibold">📞 {r.clientPhone}</a>
               {whatsappLink(r.clientPhone) && (
-                <a href={whatsappLink(r.clientPhone)} target="_blank" rel="noopener noreferrer" className="text-sm text-emerald-700 font-semibold">WhatsApp</a>
+                <a href={whatsappLink(r.clientPhone)} target="_blank" rel="noopener noreferrer" className="text-sm text-ok-fg font-semibold">WhatsApp</a>
               )}
             </div>
           )}
@@ -106,10 +106,10 @@ function RequestCard({ r, onChanged, onStale }) {
         {r.priceSnapshot != null && <> · {r.currencySnapshot || "GHS"} {r.priceSnapshot}</>}
         {r.durationSnapshot && <> · {r.durationSnapshot}</>}
       </div>
-      <div className="text-sm text-plum/80 mt-1">🗓 {whenLabel(r)}{r.meet && MEET[r.meet] ? ` · ${MEET[r.meet]}` : ""}</div>
+      <div className="text-sm text-muted-strong mt-1">🗓 {whenLabel(r)}{r.meet && MEET[r.meet] ? ` · ${MEET[r.meet]}` : ""}</div>
       {r.note && <div className="text-sm mt-2 bg-surface rounded-lg p-2">“{r.note}”</div>}
       {/* The customer's emergency contact: someone who knows where they're going. Shared for safety. */}
-      {r.emergency && <div className="text-xs text-plum/70 mt-2">Customer's emergency contact: {r.emergency}</div>}
+      {r.emergency && <div className="text-xs text-muted mt-2">Customer's emergency contact: {r.emergency}</div>}
       {r.status === "completed" && r.rating && <div className="text-sm mt-2">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)} rated by the customer</div>}
       {error && <div className="text-sm text-hibiscus-deep mt-2">{error}</div>}
 
