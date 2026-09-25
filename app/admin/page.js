@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import { apiFetch } from "../../lib/api";
 import VerificationQueue from "../../components/VerificationQueue";
 import ShopReviewQueue from "../../components/ShopReviewQueue";
+import PasswordResetQueue from "../../components/PasswordResetQueue";
 import Nav from "../../components/Nav";
 import ProLoginForm from "../../components/ProLoginForm";
 
@@ -50,6 +51,7 @@ export default function Admin() {
       <div className="max-w-4xl mx-auto px-5 pt-6">
         <ShopReviewQueue onDecision={loadAudit} />
         <VerificationQueue onDecision={loadAudit} />
+        <PasswordResetQueue onDecision={loadAudit} />
         <div className="text-xs font-extrabold tracking-wide text-marigold uppercase mb-2">Recent Admin Actions</div>
         {audit.length === 0 && <div className="text-[#a88b95]">No admin actions recorded yet.</div>}
         {audit.map((a) => (

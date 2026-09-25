@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import Nav from "../../components/Nav";
+import Link from "next/link";
 
 export default function Login() {
   const { login, register } = useAuth();
@@ -46,6 +47,7 @@ export default function Login() {
           {busy ? "One sec…" : mode === "login" ? "Log In" : "Create Account"}
         </button>
       </form>
+      {mode === "login" && <Link href="/forgot-password?type=stylist" className="block mt-3 text-sm text-hibiscus-deep font-semibold">Forgot password?</Link>}
       <button className="mt-3 px-4 py-2 rounded-full border border-line bg-white text-sm" onClick={() => setMode(mode === "login" ? "register" : "login")}>
         {mode === "login" ? "New here? Create a shop" : "Already have an account? Log in"}
       </button>

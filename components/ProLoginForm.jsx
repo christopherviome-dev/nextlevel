@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import { useAuth } from "../context/AuthContext";
 
 // One login form for professional accounts, used by My Shop and Admin.
@@ -32,6 +33,7 @@ export default function ProLoginForm({ title = "Log In", note }) {
           {busy ? "One sec…" : "Log In"}
         </button>
       </form>
+      <Link href="/forgot-password?type=stylist" className="block mt-3 text-sm text-hibiscus-deep font-semibold">Forgot password?</Link>
     </div>
   );
 }

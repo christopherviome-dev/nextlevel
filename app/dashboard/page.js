@@ -7,6 +7,7 @@ import Toast from "../../components/Toast";
 import Nav from "../../components/Nav";
 import ProLoginForm from "../../components/ProLoginForm";
 import RequestsPanel from "../../components/RequestsPanel";
+import ChangePasswordForm from "../../components/ChangePasswordForm";
 
 export default function Dashboard() {
   const { authToken, myAccount, refreshMyAccount, hydrated, isAdmin } = useAuth();
@@ -46,11 +47,22 @@ export default function Dashboard() {
         </div>
       </div>
       <div className="max-w-xl mx-auto px-5 pt-6 pb-16">
+        {myAccount.mustChangePassword && (
+          <div className="bg-amber-50 border border-amber-300 rounded-2xl p-4 mb-4">
+            <div className="font-bold mb-1">You're using a temporary password</div>
+            <p className="text-sm text-plum/80 mb-3">Choose your own password now, so only you know it.</p>
+            <ChangePasswordForm endpoint="/auth/change-password" forced onDone={refreshMyAccount} />
+          </div>
+        )}
         <div className="bg-white border border-line rounded-2xl p-4">
           <b>{myAccount.salonName || myAccount.name}</b> · {myAccount.category} · {myAccount.area}
         </div>
         <VerificationCard account={myAccount} onUpdated={refreshMyAccount} />
         <RequestsPanel account={myAccount} />
+        <details className="mt-8 bg-white border border-line rounded-2xl p-4">
+          <summary className="font-bold cursor-pointer">Account security</summary>
+          <div className="mt-3"><ChangePasswordForm endpoint="/auth/change-password" onDone={refreshMyAccount} /></div>
+        </details>
       </div>
     </div>
   );
