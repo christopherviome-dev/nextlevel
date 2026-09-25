@@ -58,7 +58,7 @@ export default function Admin() {
           <div key={a._id} className="bg-[#241318] border border-[#3a2028] rounded-xl p-3 mb-2"><b>{a.action}</b> on {a.targetType} {a.targetId.slice(-6)}{a.reason ? ` — ${a.reason}` : ""}</div>
         ))}
         <p className="text-sm text-[#a88b95] mt-6">
-          Real, live audit data. Full shop review, reports, and account restriction tools are being ported next.
+          Real, live audit data. Reports and account restriction tools are coming next.
         </p>
       </div>
     </div>
