@@ -26,7 +26,9 @@ function whenLabel(r) {
 
 export default function RequestsPanel({ account }) {
   const [requests, setRequests] = useState(null);
-  const [tab, setTab] = useState("pending");
+  const [chosenTab, setTab] = useState(null); // null = not chosen yet: use the sensible default
+  const [now] = useState(() => Date.now()); // read the time once, not on every redraw
+  const [code, setCode] = useState("");
   const [error, setError] = useState(null);
   const [toast, setToast] = useState(null);
 
@@ -37,18 +39,39 @@ export default function RequestsPanel({ account }) {
   }, [account._id]);
   useEffect(() => { load(); }, [load]);
 
+  // Day boundaries in the professional's own time zone.
+  const today0 = (() => { const d = new Date(now); d.setHours(0, 0, 0, 0); return d.getTime(); })();
+  const DAY = 24 * 3600 * 1000;
+  const accepted = (requests || []).filter((r) => r.status === "accepted");
   const byTab = {
+    today: accepted.filter((r) => r.preferredAt >= today0 && r.preferredAt < today0 + DAY).sort((a, b) => a.preferredAt - b.preferredAt),
     pending: (requests || []).filter((r) => r.status === "pending").sort((a, b) => b.createdAt - a.createdAt),
     accepted: (requests || []).filter((r) => r.status === "accepted").sort((a, b) => (a.preferredAt || a.createdAt) - (b.preferredAt || b.createdAt)),
     completed: (requests || []).filter((r) => r.status === "completed").sort((a, b) => b.updatedAt - a.updatedAt),
   };
-  const tabs = [["pending", "New"], ["accepted", "Upcoming"], ["completed", "Completed"]];
+  const tabs = [["today", "Today"], ["pending", "New"], ["accepted", "Upcoming"], ["completed", "Completed"]];
+  // Open on Today when someone is coming today, otherwise on New requests.
+  const tab = chosenTab || (byTab.today.length > 0 ? "today" : "pending");
+  // Upcoming, grouped under day headings.
+  const dayLabel = (t) => {
+    if (!t) return "No date set";
+    if (t < today0 + DAY) return t < today0 ? "Earlier" : "Today";
+    if (t < today0 + 2 * DAY) return "Tomorrow";
+    return new Date(t).toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "short" });
+  };
+  const groups = [];
+  for (const r of byTab.accepted) {
+    const label = dayLabel(r.preferredAt);
+    const g = groups.find((x) => x[0] === label);
+    if (g) g[1].push(r); else groups.push([label, [r]]);
+  }
+  const card = (r) => <RequestCard key={r._id} r={r} country={account.country} onChanged={(msg) => { setToast(msg); load(); }} onStale={load} />;
 
   return (
     <div className="mt-6">
       {toast && <Toast message={toast} onDone={() => setToast(null)} />}
       <div className="text-xs font-extrabold tracking-wide text-plum uppercase mb-2">Requests</div>
-      <div className="flex gap-2 mb-3">
+      <div className="flex gap-2 mb-3 overflow-x-auto no-scrollbar">
         {tabs.map(([key, label]) => (
           <button key={key} onClick={() => setTab(key)}
             className={"px-4 py-2 rounded-full text-sm font-bold border " + (tab === key ? "bg-violet text-white border-violet" : "bg-card text-plum border-line")}>
@@ -60,14 +83,33 @@ export default function RequestsPanel({ account }) {
       {!requests && !error && <div className="text-muted">Loading…</div>}
       {requests && byTab[tab].length === 0 && (
         <div className="text-muted text-sm bg-card border border-line rounded-xl p-4">
+          {tab === "today" && "No one is booked for today."}
           {tab === "pending" && "No new requests. Share your shop link so customers can find you."}
           {tab === "accepted" && "No upcoming appointments. Requests you accept will appear here."}
           {tab === "completed" && "No completed services yet. When you finish a service, mark it completed and it's recorded here."}
         </div>
       )}
-      {requests && byTab[tab].map((r) => (
-        <RequestCard key={r._id} r={r} country={account.country} onChanged={(msg) => { setToast(msg); load(); }} onStale={load} />
-      ))}
+      {tab === "today" && (
+        <form onSubmit={(e) => { e.preventDefault(); if (code.trim()) window.location.href = `/u/${encodeURIComponent(code.trim())}`; }}
+          className="flex gap-2 mb-3 bg-card border border-line rounded-xl p-3">
+          <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} maxLength={8} placeholder="Customer's code, e.g. K7M 2QX"
+            aria-label="Check in a customer by their Sheeba code" className="flex-1 min-w-0 px-3 py-2 rounded-lg border border-line bg-surface font-mono tracking-widest" />
+          <button type="submit" disabled={!code.trim()} className="px-4 py-2 rounded-full bg-violet text-white text-sm font-bold disabled:opacity-40">Check in</button>
+        </form>
+      )}
+      {tab === "today" && byTab.pending.some((r) => r.preferredAt >= today0 && r.preferredAt < today0 + DAY) && (
+        <button onClick={() => setTab("pending")} className="w-full text-left text-sm bg-warn-bg border border-warn-line text-warn-fg rounded-xl p-3 mb-3">
+          Someone wants to come today but you haven't answered yet. See New requests →
+        </button>
+      )}
+      {requests && tab === "accepted"
+        ? groups.map(([label, items]) => (
+          <div key={label} className="mb-2">
+            <div className="text-xs font-bold text-muted uppercase tracking-wide mt-3 mb-1">{label}</div>
+            {items.map(card)}
+          </div>
+        ))
+        : requests && byTab[tab].map(card)}
     </div>
   );
 }
@@ -124,6 +166,9 @@ function RequestCard({ r, country, onChanged, onStale }) {
           <button disabled={busy} onClick={() => move("declined", `Decline ${r.clientName}'s request? They'll be notified.`, "Request declined.")}
             className="px-5 py-2 rounded-full border border-line font-bold disabled:opacity-40">Decline</button>
         </div>
+      )}
+      {r.checkedInAt && (
+        <div className="text-sm font-bold text-ok-fg mt-1">✓ Checked in {new Date(r.checkedInAt).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}</div>
       )}
       {r.status === "accepted" && (
         <div className="flex gap-2 mt-3">

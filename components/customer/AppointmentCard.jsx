@@ -38,6 +38,7 @@ export default function AppointmentCard({ r, onChanged }) {
         </div>
         <span className={"text-xs px-2 py-1 rounded-full border whitespace-nowrap " + cls}>{label}</span>
       </div>
+      {r.checkedInAt && <div className="text-sm font-bold text-ok-fg mt-1">✓ Checked in {new Date(r.checkedInAt).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}</div>}
       {r.priceSnapshot != null && <div className="text-sm text-muted-strong mt-1">{formatMoney(r.priceSnapshot, r.currencySnapshot || "GHS")}</div>}
 
       {r.status === "completed" && (
