@@ -3,6 +3,8 @@ import { useState } from "react";
 import { apiFetch } from "../lib/api";
 import { fitImage } from "../lib/image";
 import { CATEGORIES, WORK_MODES } from "../lib/shop";
+import { countryInfo } from "../lib/countries";
+import { currencySymbol } from "../lib/money";
 
 const AVAILABILITY = [
   ["AVAILABLE", "Available"],
@@ -74,8 +76,13 @@ export default function ShopProfileEditor({ account, onSaved }) {
   const shownCover = coverPhoto === undefined ? account.coverPhoto : coverPhoto;
   const hasLocation = location || (account.location && account.location.lat != null);
 
+  const country = countryInfo(account.country);
   return (
     <div className="space-y-4">
+      <div className="text-sm bg-surface rounded-xl px-3 py-2 text-muted-strong">
+        <span aria-hidden>{country.flag}</span> {country.name} · prices in {currencySymbol(account.currency || country.currency)}
+        <span className="text-muted"> · to change your country, contact Sheeba</span>
+      </div>
       <div>
         <label className="block text-sm font-bold mb-1">Profile photo</label>
         <div className="flex items-center gap-3">

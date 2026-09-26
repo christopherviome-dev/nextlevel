@@ -10,11 +10,11 @@ const NAME_CHECK = {
 };
 
 const QUICK_REASONS = [
-  "The name you typed doesn't match the name on your card.",
-  "The card photo is unclear or unreadable. Please upload a sharper photo.",
-  "The card number you typed doesn't match the card in the photo.",
-  "Please resubmit with your full legal name exactly as on your card.",
-  "This card number is already linked to another Sheeba account.",
+  "The name you typed doesn't match the name on your document.",
+  "The document photo is unclear or unreadable. Please upload a sharper photo.",
+  "The document number you typed doesn't match the photo.",
+  "Please resubmit with your full legal name exactly as on your document.",
+  "This document is already linked to another Sheeba account.",
 ];
 
 export default function VerificationQueue({ onDecision }) {
@@ -71,7 +71,7 @@ function Submission({ item, onDone }) {
           <div><span className="text-muted">Registered as:</span> {item.name}{item.salonName ? ` · ${item.salonName}` : ""}</div>
           <div className={`border rounded-lg px-3 py-2 ${check.cls}`}>{check.text}</div>
           <div>
-            <span className="text-muted">Card number:</span> <b className="text-ink">{item.ghanaCardNum || "Missing"}</b>{" "}
+            <span className="text-muted">{item.idLabel || "Card"} number{item.country ? ` (${item.country})` : ""}:</span> <b className="text-ink">{item.ghanaCardNum || "Missing"}</b>{" "}
             {item.ghanaCardNum && !item.cardFormatValid && <span className="text-bad-fg">(invalid format)</span>}
           </div>
           {item.duplicateAccounts.length > 0 && (

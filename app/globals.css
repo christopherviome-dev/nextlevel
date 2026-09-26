@@ -77,3 +77,13 @@ body {
 /* Horizontal rows: swipe on phones, no visible scrollbar clutter. */
 .no-scrollbar { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Printing "My code": only the code card prints (for a salon mirror or stall). */
+.print-only { display: none; }
+@media print {
+  body * { visibility: hidden; }
+  .print-area, .print-area * { visibility: visible; }
+  .print-area { position: absolute; inset: 0; margin: auto; border: none; }
+  .print-only { display: block; }
+  .no-print { display: none !important; }
+}

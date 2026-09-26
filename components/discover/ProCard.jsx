@@ -1,6 +1,7 @@
 "use client";
 import { workModeLabel } from "../../lib/shop";
-import { formatKm } from "../../lib/geo";
+import { formatDistance } from "../../lib/geo";
+import { formatMoney } from "../../lib/money";
 
 export const AVAILABILITY_LABEL = {
   AVAILABLE: ["Available", "bg-ok-bg text-ok-fg border-ok-line"],
@@ -29,10 +30,10 @@ export default function ProCard({ shop, onOpen, wide = false }) {
       </div>
       <div className="p-3 pt-8">
         <div className="font-bold text-ink truncate">{name} {shop.verified && <span className="text-xs text-hibiscus-deep">✓</span>}</div>
-        <div className="text-xs text-muted truncate">{[shop.category, shop.area, formatKm(shop._distanceKm)].filter(Boolean).join(" · ")}</div>
+        <div className="text-xs text-muted truncate">{[shop.category, shop.area, formatDistance(shop._distanceKm, shop.country)].filter(Boolean).join(" · ")}</div>
         <div className="flex flex-wrap gap-1 mt-2">
           <span className={"text-[11px] px-2 py-0.5 rounded-full border " + availCls}>{availText}</span>
-          {from != null && <span className="text-[11px] px-2 py-0.5 rounded-full border border-line text-plum">From GH₵{from}</span>}
+          {from != null && <span className="text-[11px] px-2 py-0.5 rounded-full border border-line text-plum">From {formatMoney(from, shop.currency)}</span>}
           {(shop.workModes || []).slice(0, 1).map((m) => <span key={m} className="text-[11px] px-2 py-0.5 rounded-full border border-line text-plum">{workModeLabel(m)}</span>)}
         </div>
       </div>

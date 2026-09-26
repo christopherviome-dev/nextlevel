@@ -3,8 +3,9 @@ import { useEffect, useRef } from "react";
 import { HeartButton } from "./WorkTile";
 import { AVAILABILITY_LABEL } from "./ProCard";
 import { workModeLabel } from "../../lib/shop";
-import { formatKm } from "../../lib/geo";
+import { formatDistance } from "../../lib/geo";
 import { likeKey } from "../../lib/clientId";
+import { formatMoney } from "../../lib/money";
 
 // Opens in place instead of navigating away, so browsing context is kept.
 // Walks the chain from the interface plan:
@@ -54,7 +55,7 @@ export default function ContextPanel({ selection, onClose, onSelect, likedIds, o
               </div>
               <div className="flex items-baseline justify-between gap-3 mt-3">
                 <div className="text-lg font-bold text-ink">{item.name}</div>
-                <div className="text-lg font-bold text-hibiscus-deep whitespace-nowrap">GH₵{item.price}</div>
+                <div className="text-lg font-bold text-hibiscus-deep whitespace-nowrap">{formatMoney(item.price, shop.currency)}</div>
               </div>
               {item.duration && <div className="text-sm text-muted">Takes about {item.duration}</div>}
             </div>
@@ -67,7 +68,7 @@ export default function ContextPanel({ selection, onClose, onSelect, likedIds, o
                 : <div className="w-12 h-12 rounded-full bg-violet text-white font-bold flex items-center justify-center">{name.slice(0, 1).toUpperCase()}</div>}
               <div className="min-w-0">
                 <div className="font-bold text-ink truncate">{name} {shop.verified && <span className="text-xs text-hibiscus-deep">✓ Verified</span>}</div>
-                <div className="text-sm text-muted truncate">{[shop.category, shop.area, formatKm(shop._distanceKm)].filter(Boolean).join(" · ")}</div>
+                <div className="text-sm text-muted truncate">{[shop.category, shop.area, formatDistance(shop._distanceKm, shop.country)].filter(Boolean).join(" · ")}</div>
               </div>
             </div>
             <div className="flex flex-wrap gap-1 mt-3">
@@ -82,7 +83,7 @@ export default function ContextPanel({ selection, onClose, onSelect, likedIds, o
               <div className="text-xs font-extrabold tracking-wide text-plum uppercase mb-2">Services</div>
               {services.slice(0, 8).map((w) => (
                 <div key={w.id} className="flex justify-between gap-3 text-sm py-1.5 border-b border-line last:border-0">
-                  <span className="text-ink truncate">{w.name}</span><span className="text-muted-strong whitespace-nowrap">GH₵{w.price}</span>
+                  <span className="text-ink truncate">{w.name}</span><span className="text-muted-strong whitespace-nowrap">{formatMoney(w.price, shop.currency)}</span>
                 </div>
               ))}
             </div>
@@ -94,7 +95,7 @@ export default function ContextPanel({ selection, onClose, onSelect, likedIds, o
               <div className="grid grid-cols-3 gap-2">
                 {otherWork.slice(0, 9).map((w) => (
                   <button key={w.id} type="button" onClick={() => onSelect({ type: "work", item: { ...w, shop } })}
-                    className="rounded-xl overflow-hidden border border-line" aria-label={`${w.name}, GH₵${w.price}`}>
+                    className="rounded-xl overflow-hidden border border-line" aria-label={`${w.name}, ${formatMoney(w.price, shop.currency)}`}>
                     <img src={w.thumb} alt="" loading="lazy" className="w-full aspect-square object-cover" />
                   </button>
                 ))}

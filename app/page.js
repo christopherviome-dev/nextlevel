@@ -6,6 +6,8 @@ import { LoadingState, EmptyState, ErrorState } from "../components/States";
 import { CATEGORIES as SHOP_CATEGORIES } from "../lib/shop";
 import { distanceKm } from "../lib/geo";
 import { getClientId, likedSet, saveLiked, likeKey } from "../lib/clientId";
+import { COUNTRIES, countryInfo, detectCountry, saveCountry } from "../lib/countries";
+import { formatMoney } from "../lib/money";
 import LiveStrip from "../components/discover/LiveStrip";
 import Row from "../components/discover/Row";
 import WorkTile from "../components/discover/WorkTile";
@@ -13,7 +15,6 @@ import ProCard from "../components/discover/ProCard";
 import ContextPanel from "../components/discover/ContextPanel";
 
 const CATEGORIES = ["All", ...SHOP_CATEGORIES];
-const BUDGETS = [["any", "Any budget", Infinity], ["100", "Under GH₵100", 100], ["200", "Under GH₵200", 200], ["500", "Under GH₵500", 500]];
 
 // Spread work across professionals so one busy shop can't fill the feed.
 function interleave(shops) {
@@ -40,20 +41,36 @@ export default function Discover() {
   const [locError, setLocError] = useState(null);
   const [selection, setSelection] = useState(null); // ids only; resolved against fresh data below
   const [focusTab, setFocusTab] = useState("work");
+  // Which country's shops to show. Worked out in the browser (device time zone,
+  // language, or an earlier choice), so it starts unknown.
+  const [country, setCountry] = useState(null);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the device's location settings only exist in the browser
+    setCountry(detectCountry());
+  }, []);
   // Tiles only appear after the feed loads in the browser, so reading saved likes here is safe.
   const [liked, setLiked] = useState(() => (typeof window === "undefined" ? new Set() : likedSet()));
 
   useEffect(() => {
+    if (!country) return;
     let cancelled = false;
-    apiFetch("/stylists/discover")
+    apiFetch(`/stylists/discover?country=${country}`)
       .then((list) => { if (!cancelled) setShops(list); })
       .catch((e) => { if (!cancelled) setError(e.message); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [reloadKey]);
+  }, [reloadKey, country]);
 
   const retry = () => { setError(null); setLoading(true); setReloadKey((k) => k + 1); };
   const clearFilters = () => { setQuery(""); setCategory("All"); setBudget("any"); };
+  const switchCountry = (c) => {
+    if (c === country) return;
+    saveCountry(c); setCountry(c); setBudget("any"); setSelection(null); setMyLocation(null);
+    setShops([]); setError(null); setLoading(true);
+  };
+  // Budgets in the local currency: GH₵100 and £20 mean very different things.
+  const info = countryInfo(country);
+  const BUDGETS = [["any", "Any budget", Infinity], ...info.budgets.map((n) => [String(n), `Under ${formatMoney(n, info.currency)}`, n])];
 
   const toggleNearMe = () => {
     if (myLocation) { setMyLocation(null); return; }
@@ -72,7 +89,7 @@ export default function Discover() {
   })), [shops, myLocation]);
 
   const allWork = useMemo(() => interleave(withDistance), [withDistance]);
-  const maxPrice = BUDGETS.find((b) => b[0] === budget)[2];
+  const maxPrice = (BUDGETS.find((b) => b[0] === budget) || BUDGETS[0])[2];
   const q = query.trim().toLowerCase();
   const focus = !!q || category !== "All" || budget !== "any";
 
@@ -158,6 +175,17 @@ export default function Discover() {
             </button>
           </div>
           {locError && <p className="text-sm text-bad-fg mt-2">{locError}</p>}
+          {country && (
+            <div className="flex items-center gap-2 mt-3 text-sm">
+              <span className="text-muted">Showing shops in</span>
+              {Object.entries(COUNTRIES).map(([code, c]) => (
+                <button key={code} type="button" onClick={() => switchCountry(code)} aria-pressed={country === code}
+                  className={"px-3 py-1 rounded-full border font-bold " + (country === code ? "bg-ink text-card border-ink" : "bg-card text-plum border-line")}>
+                  <span aria-hidden>{c.flag}</span> {code === "GB" ? "UK" : c.name}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="flex gap-2 overflow-x-auto no-scrollbar mt-3">{CATEGORIES.map((c) => chip(category === c, () => setCategory(c), c))}</div>
           <div className="flex gap-2 overflow-x-auto no-scrollbar mt-2">{BUDGETS.map(([k, label]) => chip(budget === k, () => setBudget(k), label))}</div>
         </div>

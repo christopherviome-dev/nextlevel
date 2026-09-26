@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { apiFetch } from "../lib/api";
 import { fitImage } from "../lib/image";
+import { formatMoney, currencySymbol } from "../lib/money";
 import { EmptyState } from "./States";
 
 const MAX_SERVICES = 40; // matches the server's limit
@@ -36,7 +37,7 @@ export default function ServicesEditor({ account, onSaved }) {
       {error && <p className="text-sm text-bad-fg mb-3">{error}</p>}
 
       {editing === "new" && (
-        <ServiceForm
+        <ServiceForm currency={account.currency}
           onCancel={() => setEditing(null)}
           onSubmit={async (data) => {
             await apiFetch("/stylists/me/styles", { method: "POST", body: JSON.stringify(data) });
@@ -52,7 +53,7 @@ export default function ServicesEditor({ account, onSaved }) {
 
       <div className="space-y-2">
         {services.map((s) => editing === s.id ? (
-          <ServiceForm key={s.id} initial={s}
+          <ServiceForm key={s.id} initial={s} currency={account.currency}
             onCancel={() => setEditing(null)}
             onSubmit={async (data) => {
               await apiFetch(`/stylists/me/styles/${s.id}`, { method: "PUT", body: JSON.stringify(data) });
@@ -65,7 +66,7 @@ export default function ServicesEditor({ account, onSaved }) {
               : <div className="w-16 h-16 rounded-xl bg-surface-2 border border-line shrink-0 flex items-center justify-center text-[10px] text-muted text-center px-1">No photo</div>}
             <div className="flex-1 min-w-0">
               <div className="font-bold truncate">{s.name}{s.active === false && <span className="ml-2 text-xs font-semibold text-warn-fg">Hidden</span>}</div>
-              <div className="text-sm text-muted">GH₵{s.price}{s.duration ? ` · ${s.duration}` : ""}</div>
+              <div className="text-sm text-muted">{formatMoney(s.price, account.currency)}{s.duration ? ` · ${s.duration}` : ""}</div>
             </div>
             <div className="flex flex-col sm:flex-row gap-1 shrink-0">
               <button onClick={() => setEditing(s.id)} disabled={busyId === s.id} className="px-3 py-1.5 rounded-full border border-line text-xs font-bold">Edit</button>
@@ -79,7 +80,7 @@ export default function ServicesEditor({ account, onSaved }) {
   );
 }
 
-function ServiceForm({ initial, onSubmit, onCancel }) {
+function ServiceForm({ initial, onSubmit, onCancel, currency }) {
   const [name, setName] = useState(initial ? initial.name : "");
   const [price, setPrice] = useState(initial ? String(initial.price ?? "") : "");
   const [duration, setDuration] = useState(initial ? initial.duration || "" : "");
@@ -116,7 +117,7 @@ function ServiceForm({ initial, onSubmit, onCancel }) {
       <div className="font-bold">{initial ? "Edit service" : "New service"}</div>
       <div className="grid sm:grid-cols-2 gap-3">
         <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} placeholder="Service name, e.g. Knotless braids" className="w-full px-4 py-3 rounded-xl border border-line sm:col-span-2" />
-        <input value={price} onChange={(e) => setPrice(e.target.value)} type="number" inputMode="decimal" min="0" step="any" placeholder="Price (GH₵)" className="w-full px-4 py-3 rounded-xl border border-line" />
+        <input value={price} onChange={(e) => setPrice(e.target.value)} type="number" inputMode="decimal" min="0" step="any" placeholder={`Price (${currencySymbol(currency)})`} className="w-full px-4 py-3 rounded-xl border border-line" />
         <input value={duration} onChange={(e) => setDuration(e.target.value)} maxLength={30} placeholder="How long, e.g. 3 hours" className="w-full px-4 py-3 rounded-xl border border-line" />
       </div>
       {price && !priceOk && <p className="text-xs text-bad-fg">Enter a price of 0 or more.</p>}
