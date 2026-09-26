@@ -6,6 +6,8 @@ import Nav from "../../components/Nav";
 import Link from "next/link";
 import ChangePasswordForm from "../../components/ChangePasswordForm";
 import { EmptyState } from "../../components/States";
+import { pendingInvite } from "../../lib/invite";
+import MyCodeCard from "../../components/MyCodeCard";
 
 export default function Requests() {
   const { customerToken, customerName, customerLogin, customerRegister, customerLogout, hydrated } = useAuth();
@@ -16,6 +18,7 @@ export default function Requests() {
   const [error, setError] = useState(null);
   const [history, setHistory] = useState([]);
   const [me, setMe] = useState(null); // the customer account, to know about temporary passwords
+  const [invite, setInvite] = useState(() => (typeof window === "undefined" ? "" : pendingInvite()));
 
   useEffect(() => {
     if (customerToken) apiFetch("/customers/me/history", {}, "customer").then(setHistory).catch(() => {});
@@ -26,7 +29,7 @@ export default function Requests() {
     e.preventDefault();
     try {
       if (mode === "login") await customerLogin(phone, password);
-      else await customerRegister(phone, password, name);
+      else await customerRegister(phone, password, name, invite);
       // Came here from a shop's "Log in to request" button? Go straight back.
       const back = sessionStorage.getItem("sheeba:return");
       if (back && back.startsWith("/shop/")) {
@@ -61,6 +64,10 @@ export default function Requests() {
             {history.map((r) => (
               <div key={r._id} className="bg-card border border-line rounded-xl p-3 mb-2"><b>{r.serviceNameSnapshot || "Service"}</b> — {r.status}</div>
             ))}
+            <div className="mt-8">
+              <div className="text-xs font-extrabold tracking-wide text-plum uppercase mb-2">Invite friends</div>
+              <MyCodeCard actor="customer" />
+            </div>
             <details className="mt-8 bg-card border border-line rounded-2xl p-4">
               <summary className="font-bold cursor-pointer">Account security</summary>
               <div className="mt-3"><ChangePasswordForm endpoint="/customers/me/change-password" actor="customer" /></div>
@@ -73,6 +80,10 @@ export default function Requests() {
               {mode === "register" && <input placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line" />}
               <input type="tel" placeholder="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line" />
               <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line" />
+              {mode === "register" && (
+                <input placeholder="Invite code (optional)" value={invite} onChange={(e) => setInvite(e.target.value.toUpperCase())} maxLength={8}
+                  className="w-full px-4 py-3 rounded-xl border border-line font-mono tracking-widest" />
+              )}
               {error && <p className="text-hibiscus-deep text-sm">{error}</p>}
               <button className="w-full py-3 rounded-full bg-hibiscus text-white font-bold" type="submit">{mode === "login" ? "Log In" : "Create Account"}</button>
             </form>

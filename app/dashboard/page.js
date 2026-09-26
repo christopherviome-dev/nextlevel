@@ -10,11 +10,13 @@ import ChangePasswordForm from "../../components/ChangePasswordForm";
 import ShopChecklist from "../../components/ShopChecklist";
 import ShopProfileEditor from "../../components/ShopProfileEditor";
 import ServicesEditor from "../../components/ServicesEditor";
+import MyCodeCard from "../../components/MyCodeCard";
 
 const TABS = [
   ["requests", "Requests"],
   ["shop", "Shop page"],
   ["services", "Services"],
+  ["share", "Share & earn"],
   ["account", "Account"],
 ];
 
@@ -88,6 +90,7 @@ export default function Dashboard() {
           </div>
         )}
         {active === "services" && <ServicesEditor account={myAccount} onSaved={refreshMyAccount} />}
+        {active === "share" && <MyCodeCard shareName={myAccount.salonName || myAccount.name} />}
         {active === "account" && (
           <div className="bg-card border border-line rounded-2xl p-4">
             <div className="font-bold mb-3">Change password</div>

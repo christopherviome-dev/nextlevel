@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { pendingInvite } from "../../lib/invite";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import Nav from "../../components/Nav";
@@ -14,13 +15,20 @@ export default function Login() {
   const [name, setName] = useState("");
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [invite, setInvite] = useState(() => (typeof window === "undefined" ? "" : pendingInvite()));
+
+  // "Join as a professional" links here with ?mode=register.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time read of the page address after load
+    if (new URLSearchParams(window.location.search).get("mode") === "register") setMode("register");
+  }, []);
 
   const submit = async (e) => {
     e.preventDefault();
     setBusy(true); setError(null);
     try {
       if (mode === "login") await login(phone, password);
-      else await register(phone, password, name);
+      else await register(phone, password, name, invite);
       router.push("/dashboard");
     } catch (err) {
       setError(err.message);
@@ -42,6 +50,10 @@ export default function Login() {
         )}
         <input type="tel" placeholder="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line" />
         <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line" />
+        {mode === "register" && (
+          <input placeholder="Invite code (optional)" value={invite} onChange={(e) => setInvite(e.target.value.toUpperCase())} maxLength={8}
+            className="w-full px-4 py-3 rounded-xl border border-line font-mono tracking-widest" />
+        )}
         {error && <p className="text-hibiscus-deep text-sm">{error}</p>}
         <button className="w-full py-3 rounded-full bg-hibiscus text-white font-bold" type="submit" disabled={busy}>
           {busy ? "One sec…" : mode === "login" ? "Log In" : "Create Account"}
