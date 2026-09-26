@@ -7,6 +7,7 @@ import Link from "next/link";
 import ChangePasswordForm from "../../components/ChangePasswordForm";
 import { EmptyState } from "../../components/States";
 import { pendingInvite } from "../../lib/invite";
+import { COUNTRIES, countryInfo, detectCountry } from "../../lib/countries";
 import MyCodeCard from "../../components/MyCodeCard";
 
 export default function Requests() {
@@ -19,6 +20,11 @@ export default function Requests() {
   const [history, setHistory] = useState([]);
   const [me, setMe] = useState(null); // the customer account, to know about temporary passwords
   const [invite, setInvite] = useState(() => (typeof window === "undefined" ? "" : pendingInvite()));
+  const [country, setCountry] = useState(null); // worked out in the browser
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the device's location settings only exist in the browser
+    setCountry(detectCountry());
+  }, []);
 
   useEffect(() => {
     if (customerToken) apiFetch("/customers/me/history", {}, "customer").then(setHistory).catch(() => {});
@@ -29,7 +35,7 @@ export default function Requests() {
     e.preventDefault();
     try {
       if (mode === "login") await customerLogin(phone, password);
-      else await customerRegister(phone, password, name, invite);
+      else await customerRegister(phone, password, name, invite, country);
       // Came here from a shop's "Log in to request" button? Go straight back.
       const back = sessionStorage.getItem("sheeba:return");
       if (back && back.startsWith("/shop/")) {
@@ -78,7 +84,12 @@ export default function Requests() {
             <div className="font-bold mb-3">Log in to see your requests</div>
             <form onSubmit={submit} className="space-y-3">
               {mode === "register" && <input placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line" />}
-              <input type="tel" placeholder="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line" />
+              {mode === "register" && country && (
+                <select value={country} onChange={(e) => setCountry(e.target.value)} aria-label="Country" className="w-full px-4 py-3 rounded-xl border border-line bg-card">
+                  {Object.entries(COUNTRIES).map(([code, c]) => <option key={code} value={code}>{c.flag} {c.name}</option>)}
+                </select>
+              )}
+              <input type="tel" placeholder={country ? `Phone number, e.g. ${countryInfo(country).phoneExample}` : "Phone number"} value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line" />
               <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line" />
               {mode === "register" && (
                 <input placeholder="Invite code (optional)" value={invite} onChange={(e) => setInvite(e.target.value.toUpperCase())} maxLength={8}

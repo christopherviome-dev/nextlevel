@@ -69,8 +69,8 @@ export function AuthProvider({ children }) {
     return data.stylist;
   }, []);
 
-  const register = useCallback(async (phone, password, name, inviteCode) => {
-    const data = await apiFetch("/auth/register", { method: "POST", body: JSON.stringify({ phone, password, name, inviteCode: inviteCode || undefined }) });
+  const register = useCallback(async (phone, password, name, inviteCode, country) => {
+    const data = await apiFetch("/auth/register", { method: "POST", body: JSON.stringify({ phone, password, name, inviteCode: inviteCode || undefined, country }) });
     clearPendingInvite(); // an invite only ever counts once, at signup
     setAuthToken(data.token); localStorage.setItem("sheeba:token", data.token);
     setMyStylistId(data.stylist._id); localStorage.setItem("sheeba:my-stylist-id", data.stylist._id);
@@ -92,8 +92,8 @@ export function AuthProvider({ children }) {
     return data.customer;
   }, []);
 
-  const customerRegister = useCallback(async (phone, password, name, inviteCode) => {
-    const data = await apiFetch("/customers/register", { method: "POST", body: JSON.stringify({ phone, password, name, inviteCode: inviteCode || undefined }) });
+  const customerRegister = useCallback(async (phone, password, name, inviteCode, country) => {
+    const data = await apiFetch("/customers/register", { method: "POST", body: JSON.stringify({ phone, password, name, inviteCode: inviteCode || undefined, country }) });
     clearPendingInvite();
     setCustomerToken(data.token); localStorage.setItem("sheeba:customer-token", data.token);
     setCustomerName(data.customer.name); localStorage.setItem("sheeba:customer-name", data.customer.name);

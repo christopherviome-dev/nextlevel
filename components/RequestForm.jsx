@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { apiFetch } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
+import { formatMoney } from "../lib/money";
 
 // datetime-local wants "YYYY-MM-DDTHH:MM" in the user's local time.
 function localInputValue(date) {
@@ -100,7 +101,7 @@ export default function RequestForm({ shop }) {
             <select value={styleId} onChange={(e) => setStyleId(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line bg-card">
               <option value="">Choose a service</option>
               {services.map((s) => (
-                <option key={s.id} value={s.id}>{s.name}{s.price != null ? ` · GH₵${s.price}` : ""}{s.duration ? ` · ${s.duration}` : ""}</option>
+                <option key={s.id} value={s.id}>{s.name}{s.price != null ? ` · ${formatMoney(s.price, shop.currency)}` : ""}{s.duration ? ` · ${s.duration}` : ""}</option>
               ))}
             </select>
           </div>

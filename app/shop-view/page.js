@@ -5,6 +5,7 @@ import RequestForm from "../../components/RequestForm";
 import ThemeToggle from "../../components/ThemeToggle";
 import { workModeLabel } from "../../lib/shop";
 import { getClientId } from "../../lib/clientId";
+import { formatMoney } from "../../lib/money";
 
 export default function ShopView() {
   const [shop, setShop] = useState(null);
@@ -67,7 +68,7 @@ export default function ShopView() {
                   {s.photo && <img src={s.photo} alt={s.name} className="w-20 h-20 rounded-lg object-cover border border-line shrink-0" />}
                   <div className="min-w-0">
                     <b>{s.name}</b>
-                    <div className="text-sm text-muted-strong">GH₵{s.price}{s.duration ? ` · ${s.duration}` : ""}</div>
+                    <div className="text-sm text-muted-strong">{formatMoney(s.price, shop.currency)}{s.duration ? ` · ${s.duration}` : ""}</div>
                     {s.desc && <div className="text-sm text-muted mt-1">{s.desc}</div>}
                   </div>
                 </div>

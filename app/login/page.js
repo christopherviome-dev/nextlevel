@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { pendingInvite } from "../../lib/invite";
+import { COUNTRIES, countryInfo, detectCountry } from "../../lib/countries";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import Nav from "../../components/Nav";
@@ -16,6 +17,11 @@ export default function Login() {
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
   const [invite, setInvite] = useState(() => (typeof window === "undefined" ? "" : pendingInvite()));
+  const [country, setCountry] = useState(null); // worked out in the browser
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the device's location settings only exist in the browser
+    setCountry(detectCountry());
+  }, []);
 
   // "Join as a professional" links here with ?mode=register.
   useEffect(() => {
@@ -28,7 +34,7 @@ export default function Login() {
     setBusy(true); setError(null);
     try {
       if (mode === "login") await login(phone, password);
-      else await register(phone, password, name, invite);
+      else await register(phone, password, name, invite, country);
       router.push("/dashboard");
     } catch (err) {
       setError(err.message);
@@ -48,7 +54,12 @@ export default function Login() {
         {mode === "register" && (
           <input placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line" />
         )}
-        <input type="tel" placeholder="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line" />
+        {mode === "register" && country && (
+          <select value={country} onChange={(e) => setCountry(e.target.value)} aria-label="Country" className="w-full px-4 py-3 rounded-xl border border-line bg-card">
+            {Object.entries(COUNTRIES).map(([code, c]) => <option key={code} value={code}>{c.flag} {c.name}</option>)}
+          </select>
+        )}
+        <input type="tel" placeholder={country ? `Phone number, e.g. ${countryInfo(country).phoneExample}` : "Phone number"} value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line" />
         <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line" />
         {mode === "register" && (
           <input placeholder="Invite code (optional)" value={invite} onChange={(e) => setInvite(e.target.value.toUpperCase())} maxLength={8}

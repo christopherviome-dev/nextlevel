@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { apiFetch } from "../lib/api";
 import { shopChecks, coverPhoto } from "../lib/shop";
+import { formatMoney } from "../lib/money";
 
 // New shops start UNDER_REVIEW and are invisible to customers until an admin
 // approves them here. (Separate from ID verification, on purpose: a shop's
@@ -143,7 +144,7 @@ function ShopDetail({ shop, onClose, onApproved }) {
             {services.slice(0, 6).map((s) => (
               <div key={s.id} className="text-sm flex justify-between border-b border-line py-1">
                 <span className="text-ink">{s.name}{s.active === false ? " (switched off)" : ""}</span>
-                <span className="text-muted">{s.price != null ? `GH₵${s.price}` : ""}{s.duration ? ` · ${s.duration}` : ""}</span>
+                <span className="text-muted">{s.price != null ? formatMoney(s.price, shop.currency) : ""}{s.duration ? ` · ${s.duration}` : ""}</span>
               </div>
             ))}
           </div>

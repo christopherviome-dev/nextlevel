@@ -2,14 +2,18 @@
 import { useState, useEffect, useCallback } from "react";
 import { apiFetch } from "../lib/api";
 import Toast from "./Toast";
+import { countryInfo } from "../lib/countries";
 
 const MEET = { provider: "At my place", client: "At the customer's place", midway: "Meet halfway" };
 
-// WhatsApp needs the international format: a Ghana number like 0241234567
-// becomes 233241234567. Numbers already starting with a country code are kept.
-export function whatsappLink(phone) {
+// WhatsApp needs the international format: Ghana 0241234567 → 233241234567,
+// UK 07700900123 → 447700900123. Local numbers are read using the shop's
+// country (customers usually book locally); numbers already written with a
+// country code are kept as they are.
+export function whatsappLink(phone, country = "GH") {
+  const c = countryInfo(country);
   let d = String(phone || "").replace(/\D/g, "");
-  if (d.startsWith("0") && d.length === 10) d = "233" + d.slice(1);
+  if (d.startsWith(c.trunk) && d.length === c.trunk.length + c.nsnLength) d = c.dial + d.slice(c.trunk.length);
   return d.length >= 9 ? `https://wa.me/${d}` : null;
 }
 
@@ -62,13 +66,13 @@ export default function RequestsPanel({ account }) {
         </div>
       )}
       {requests && byTab[tab].map((r) => (
-        <RequestCard key={r._id} r={r} onChanged={(msg) => { setToast(msg); load(); }} onStale={load} />
+        <RequestCard key={r._id} r={r} country={account.country} onChanged={(msg) => { setToast(msg); load(); }} onStale={load} />
       ))}
     </div>
   );
 }
 
-function RequestCard({ r, onChanged, onStale }) {
+function RequestCard({ r, country, onChanged, onStale }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
 
@@ -94,8 +98,8 @@ function RequestCard({ r, onChanged, onStale }) {
           {r.clientPhone && (
             <div className="flex gap-3 flex-wrap">
               <a href={`tel:${r.clientPhone}`} className="text-sm text-hibiscus-deep font-semibold">📞 {r.clientPhone}</a>
-              {whatsappLink(r.clientPhone) && (
-                <a href={whatsappLink(r.clientPhone)} target="_blank" rel="noopener noreferrer" className="text-sm text-ok-fg font-semibold">WhatsApp</a>
+              {whatsappLink(r.clientPhone, country) && (
+                <a href={whatsappLink(r.clientPhone, country)} target="_blank" rel="noopener noreferrer" className="text-sm text-ok-fg font-semibold">WhatsApp</a>
               )}
             </div>
           )}
