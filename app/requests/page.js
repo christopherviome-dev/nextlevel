@@ -8,7 +8,8 @@ import ChangePasswordForm from "../../components/ChangePasswordForm";
 import { EmptyState } from "../../components/States";
 import { pendingInvite } from "../../lib/invite";
 import { COUNTRIES, countryInfo, detectCountry } from "../../lib/countries";
-import MyCodeCard from "../../components/MyCodeCard";
+import AppointmentCard from "../../components/customer/AppointmentCard";
+import Toast from "../../components/Toast";
 
 export default function Requests() {
   const { customerToken, customerName, customerLogin, customerRegister, customerLogout, hydrated } = useAuth();
@@ -19,6 +20,9 @@ export default function Requests() {
   const [error, setError] = useState(null);
   const [history, setHistory] = useState([]);
   const [me, setMe] = useState(null); // the customer account, to know about temporary passwords
+  const [tab, setTab] = useState("upcoming");
+  const [toast, setToast] = useState(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const [invite, setInvite] = useState(() => (typeof window === "undefined" ? "" : pendingInvite()));
   const [country, setCountry] = useState(null); // worked out in the browser
   useEffect(() => {
@@ -29,7 +33,13 @@ export default function Requests() {
   useEffect(() => {
     if (customerToken) apiFetch("/customers/me/history", {}, "customer").then(setHistory).catch(() => {});
     if (customerToken) apiFetch("/customers/me", {}, "customer").then(setMe).catch(() => {});
-  }, [customerToken]);
+  }, [customerToken, reloadKey]);
+
+  // Upcoming: soonest first. Past: most recent first.
+  const upcoming = history.filter((r) => ["pending", "accepted", "open"].includes(r.status))
+    .sort((a, b) => (a.preferredAt || Infinity) - (b.preferredAt || Infinity));
+  const past = history.filter((r) => ["completed", "declined"].includes(r.status));
+  const changed = (msg) => { setToast(msg); setReloadKey((k) => k + 1); };
 
   const submit = async (e) => {
     e.preventDefault();
@@ -51,6 +61,7 @@ export default function Requests() {
     <div>
       <Nav />
       <div className="max-w-xl mx-auto px-5 pt-6">
+        {toast && <Toast message={`✅ ${toast}`} onDone={() => setToast(null)} />}
         {customerToken ? (
           <>
             <div className="flex items-center justify-between bg-surface-2 rounded-xl px-4 py-3 mb-4">
@@ -65,19 +76,20 @@ export default function Requests() {
                   onDone={() => apiFetch("/customers/me", {}, "customer").then(setMe)} />
               </div>
             )}
-            <div className="text-xs font-extrabold tracking-wide text-plum uppercase mb-2">Your Requests</div>
-            {history.length === 0 && <EmptyState title="No requests yet" hint="Find a professional you like and send your first request." actionLabel="Browse Discover" actionHref="/" />}
-            {history.map((r) => (
-              <div key={r._id} className="bg-card border border-line rounded-xl p-3 mb-2"><b>{r.serviceNameSnapshot || "Service"}</b> — {r.status}</div>
-            ))}
-            <div className="mt-8">
-              <div className="text-xs font-extrabold tracking-wide text-plum uppercase mb-2">Invite friends</div>
-              <MyCodeCard actor="customer" />
+            <h1 className="font-display font-extrabold text-xl text-ink mb-3">Appointments</h1>
+            <div role="tablist" className="flex gap-2 mb-4">
+              {[["upcoming", `Upcoming (${upcoming.length})`], ["past", `Past (${past.length})`]].map(([k, label]) => (
+                <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
+                  className={"px-4 py-2 rounded-full text-sm font-bold border " + (tab === k ? "bg-violet text-white border-violet" : "bg-card text-plum border-line")}>{label}</button>
+              ))}
             </div>
-            <details className="mt-8 bg-card border border-line rounded-2xl p-4">
-              <summary className="font-bold cursor-pointer">Account security</summary>
-              <div className="mt-3"><ChangePasswordForm endpoint="/customers/me/change-password" actor="customer" /></div>
-            </details>
+            {tab === "upcoming" && (upcoming.length
+              ? upcoming.map((r) => <AppointmentCard key={r._id} r={r} onChanged={changed} />)
+              : <EmptyState title="Nothing coming up" hint="Find a professional you like and send a request." actionLabel="Browse Discover" actionHref="/" />)}
+            {tab === "past" && (past.length
+              ? past.map((r) => <AppointmentCard key={r._id} r={r} onChanged={changed} />)
+              : <EmptyState title="No past appointments yet" hint="Once a service is done, you can book it again, save the style, or set a reminder here." />)}
+            <p className="text-sm text-muted mt-6">Your saved styles, reminders and invite code are in <Link href="/my-sheeba" className="text-hibiscus-deep font-bold underline">My Sheeba</Link>.</p>
           </>
         ) : (
           <div className="bg-surface-2 rounded-xl p-4">

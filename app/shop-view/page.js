@@ -6,6 +6,7 @@ import ThemeToggle from "../../components/ThemeToggle";
 import { workModeLabel } from "../../lib/shop";
 import { getClientId } from "../../lib/clientId";
 import { formatMoney } from "../../lib/money";
+import SaveShopButton from "../../components/customer/SaveShopButton";
 
 export default function ShopView() {
   const [shop, setShop] = useState(null);
@@ -56,6 +57,7 @@ export default function ShopView() {
               ) : (
                 <p className="mt-4 text-sm text-muted">{shop.salonName || shop.name} isn't taking bookings right now.</p>
               )}
+              <div className="flex justify-end mt-3"><SaveShopButton shopId={shop._id} /></div>
               {(shop.workModes || []).length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-3">
                   {shop.workModes.map((m) => <span key={m} className="text-xs px-3 py-1 rounded-full bg-surface-2 text-plum font-semibold">{workModeLabel(m)}</span>)}
