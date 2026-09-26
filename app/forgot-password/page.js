@@ -2,10 +2,13 @@
 import { useState, useEffect } from "react";
 import { apiFetch } from "../../lib/api";
 import Nav from "../../components/Nav";
+import PhoneInput from "../../components/PhoneInput";
+import { detectCountry, toE164 } from "../../lib/countries";
 
 export default function ForgotPassword() {
   const [accountType, setAccountType] = useState("stylist");
   const [phone, setPhone] = useState("");
+  const [phoneCountry, setPhoneCountry] = useState(null);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(null);
   const [error, setError] = useState(null);
@@ -16,12 +19,16 @@ export default function ForgotPassword() {
     const t = new URLSearchParams(window.location.search).get("type");
     // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time read of the page address after load
     if (t === "customer" || t === "stylist") setAccountType(t);
+    setPhoneCountry(detectCountry());
   }, []);
 
   const submit = async (e) => {
-    e.preventDefault(); setBusy(true); setError(null);
+    e.preventDefault();
+    const p = toE164(phone, phoneCountry);
+    if (!p.ok) { setError(p.error); return; }
+    setBusy(true); setError(null);
     try {
-      const r = await apiFetch("/auth/forgot-password", { method: "POST", body: JSON.stringify({ phone, accountType }) });
+      const r = await apiFetch("/auth/forgot-password", { method: "POST", body: JSON.stringify({ phone: p.value, accountType }) });
       setDone(r.message);
     } catch (err) { setError(err.message); } finally { setBusy(false); }
   };
@@ -47,8 +54,7 @@ export default function ForgotPassword() {
                 </button>
               ))}
             </div>
-            <input type="tel" autoComplete="tel" placeholder="The phone number on your account" value={phone} onChange={(e) => setPhone(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-line" />
+            {phoneCountry && <PhoneInput country={phoneCountry} onCountryChange={setPhoneCountry} value={phone} onChange={setPhone} />}
             {error && <p className="text-hibiscus-deep text-sm">{error}</p>}
             <button type="submit" disabled={busy || phone.replace(/\D/g, "").length < 9}
               className="w-full py-3 rounded-full bg-hibiscus text-white font-bold disabled:opacity-40">

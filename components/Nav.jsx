@@ -19,29 +19,32 @@ const Icon = {
   admin: <path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5l-8-3Zm0 2.2 6 2.2V11c0 4-2.6 7.8-6 8.9-3.4-1.1-6-4.9-6-8.9V6.4l6-2.2Zm-1 11.3-3-3 1.4-1.4 1.6 1.6 4.6-4.6L17 9.5l-6 6Z" />,
 };
 
-// Role-aware and short: customers get their workspace, visitors get a way in,
-// professionals and admins get theirs. Phones never get more than five tabs.
-function tabsFor({ isAdmin, isCustomer }) {
+// One purpose per view, kept short:
+//  - customers: their workspace (never My Shop)
+//  - professionals: their shop (plus Admin for admins)
+//  - visitors: Discover and a way in
+function tabsFor({ isAdmin, activeRole }) {
   const tabs = [{ href: "/", label: "Discover", icon: Icon.discover }];
-  if (isCustomer) {
+  if (activeRole === "customer") {
     tabs.push(
       { href: "/requests", label: "Appointments", short: "Bookings", icon: Icon.requests },
       { href: "/my-sheeba", label: "My Sheeba", icon: Icon.me },
       { href: "/saved", label: "Saved", icon: Icon.saved },
     );
+  } else if (activeRole === "pro") {
+    tabs.push({ href: "/dashboard", label: "My Shop", icon: Icon.shop });
+    if (isAdmin) tabs.push({ href: "/admin", label: "Admin", icon: Icon.admin });
   } else {
     tabs.push({ href: "/requests", label: "Sign in", icon: Icon.me });
   }
-  tabs.push({ href: "/dashboard", label: "My Shop", icon: Icon.shop });
-  if (isAdmin) tabs.push({ href: "/admin", label: "Admin", icon: Icon.admin });
-  // Saved is also reachable from My Sheeba, so it's the one to fold away.
-  return tabs.length > 5 ? tabs.filter((t) => t.href !== "/saved") : tabs;
+  return tabs;
 }
 
 export default function Nav() {
   const pathname = usePathname();
-  const { authToken, myAccount, isAdmin, logout, customerToken } = useAuth();
-  const tabs = tabsFor({ isAdmin, isCustomer: !!customerToken });
+  const { myAccount, isAdmin, logout, customerLogout, customerName, activeRole, hasBothRoles, switchRole } = useAuth();
+  const tabs = tabsFor({ isAdmin, activeRole });
+  const who = activeRole === "pro" ? (myAccount && myAccount.name) : activeRole === "customer" ? customerName : null;
   const active = (href) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   return (
@@ -63,12 +66,17 @@ export default function Nav() {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          {authToken && myAccount && (
-            <span className="hidden lg:inline text-xs text-muted">Signed in as <b className="text-plum">{myAccount.name}</b></span>
+          {who && <span className="hidden lg:inline text-xs text-muted">Signed in as <b className="text-plum">{who}</b></span>}
+          {/* Only for people who have BOTH a shop and a customer login on this phone. */}
+          {hasBothRoles && (
+            <Link href={activeRole === "pro" ? "/my-sheeba" : "/dashboard"} onClick={() => switchRole(activeRole === "pro" ? "customer" : "pro")}
+              className="hidden sm:inline px-3 py-2 rounded-full text-sm font-bold border border-line bg-card text-plum whitespace-nowrap">
+              {activeRole === "pro" ? "Switch to customer" : "Switch to my shop"}
+            </Link>
           )}
           <ThemeToggle />
-          {authToken && (
-            <button onClick={logout} className="px-3 py-2 rounded-full text-sm font-bold border border-line bg-card text-plum">Log out</button>
+          {activeRole && (
+            <button onClick={activeRole === "pro" ? logout : customerLogout} className="px-3 py-2 rounded-full text-sm font-bold border border-line bg-card text-plum">Log out</button>
           )}
         </div>
       </nav>

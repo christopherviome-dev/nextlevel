@@ -12,7 +12,7 @@ import { useAuth } from "../../context/AuthContext";
 // so if the visitor creates an account, the person who invited them is credited.
 export default function CodeView() {
   const [state, setState] = useState({ status: "loading" });
-  const { authToken, hydrated } = useAuth();
+  const { authToken, customerToken, activeRole, hydrated } = useAuth();
   const [busyId, setBusyId] = useState(null);
   const [error, setError] = useState(null);
 
@@ -23,8 +23,19 @@ export default function CodeView() {
     if (!code) { setState({ status: "invalid" }); return; } // eslint-disable-line react-hooks/set-state-in-effect -- the code only exists in the browser address
     apiFetch(`/u/${encodeURIComponent(code)}`)
       .then(async (r) => {
-        if (r.type === "professional") { if (!authToken) savePendingInvite(r.code); window.location.replace(`/shop/${r.id}`); return; }
-        if (authToken) {
+        if (r.type === "professional") {
+          // A customer scanning a shop's QR: have they just arrived for an appointment?
+          if (customerToken) {
+            try {
+              const c = await apiFetch(`/checkin/self/${encodeURIComponent(r.code)}`, {}, "customer");
+              if (c.found) { setState({ status: "self", code: r.code, shopId: r.id, ...c }); return; }
+            } catch (e) { /* no appointment right now: just open the shop */ }
+          }
+          if (!authToken && !customerToken) savePendingInvite({ code: r.code, name: r.name, country: r.country, type: "professional" });
+          window.location.replace(`/shop/${r.id}`);
+          return;
+        }
+        if (authToken && activeRole !== "customer") {
           // A professional scanned a customer's code: offer check-in, but only
           // reveal anything if they already have an appointment together.
           try {
@@ -33,17 +44,24 @@ export default function CodeView() {
           } catch (e) { setState({ status: "no-appointment" }); }
           return;
         }
-        savePendingInvite(r.code);
+        savePendingInvite({ code: r.code, country: r.country, type: "member" });
         setState({ status: "member" });
       })
       .catch(() => setState({ status: "invalid" }));
-  }, [hydrated, authToken]);
+  }, [hydrated, authToken, customerToken, activeRole]);
 
   const checkIn = async (id) => {
     setBusyId(id); setError(null);
     try {
       const r = await apiFetch(`/checkin/${id}`, { method: "POST", body: JSON.stringify({ code: state.code }) });
       setState((s) => ({ ...s, appointments: s.appointments.map((a) => (String(a._id) === String(id) ? { ...a, checkedInAt: r.checkedInAt } : a)) }));
+    } catch (e) { setError(e.message); } finally { setBusyId(null); }
+  };
+  const selfCheckIn = async () => {
+    setBusyId("self"); setError(null);
+    try {
+      const r = await apiFetch(`/checkin/self/${encodeURIComponent(state.code)}`, { method: "POST" }, "customer");
+      setState((s) => ({ ...s, appointment: { ...s.appointment, checkedInAt: r.checkedInAt } }));
     } catch (e) { setError(e.message); } finally { setBusyId(null); }
   };
   const time = (t) => new Date(t).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
@@ -74,6 +92,21 @@ export default function CodeView() {
             <Link href="/dashboard" className="block text-center text-sm text-hibiscus-deep font-semibold mt-4">Back to My Shop</Link>
           </div>
         )}
+        {state.status === "self" && (
+          <div className="bg-card border border-line rounded-2xl p-6">
+            <div className="font-display font-extrabold text-xl text-ink">You're at {state.shopName}?</div>
+            <div className="bg-surface rounded-xl p-3 mt-4 text-left">
+              <div className="font-bold text-ink">{state.appointment.service}</div>
+              <div className="text-sm text-muted">{time(state.appointment.preferredAt)}</div>
+            </div>
+            {state.appointment.checkedInAt
+              ? <div className="text-ok-fg font-bold mt-4">✓ You're checked in. {state.shopName} knows you've arrived.</div>
+              : <button onClick={selfCheckIn} disabled={busyId === "self"} className="mt-4 w-full py-3 rounded-full bg-hibiscus text-white font-bold disabled:opacity-40">{busyId === "self" ? "Checking in…" : "I'm here: check in"}</button>}
+            {error && <p className="text-sm text-bad-fg mt-2">{error}</p>}
+            {/* A plain link: shop pages load through the Netlify redirect rule. */}
+            <a href={`/shop/${state.shopId}`} className="block text-sm text-hibiscus-deep font-semibold mt-4">View the shop instead</a>
+          </div>
+        )}
         {state.status === "no-appointment" && (
           <div className="bg-card border border-line rounded-2xl p-6">
             <div className="font-bold text-ink">No appointment with this customer</div>
@@ -95,6 +128,7 @@ export default function CodeView() {
             <div className="flex flex-col gap-2 mt-5">
               <Link href="/requests" className="px-5 py-3 rounded-full bg-hibiscus text-white font-bold">Join as a customer</Link>
               <Link href="/login?mode=register" className="px-5 py-3 rounded-full border border-line bg-card text-plum font-bold">Join as a professional</Link>
+              <Link href="/login?mode=register&role=apprentice" className="px-5 py-3 rounded-full border border-line bg-card text-plum font-bold">I'm training (apprentice)</Link>
               <Link href="/" className="text-sm text-hibiscus-deep font-semibold mt-1">Just browse for now</Link>
             </div>
           </div>

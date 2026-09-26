@@ -21,7 +21,7 @@ export default function ShopReviewQueue({ onDecision }) {
   const load = useCallback(() => {
     apiFetch("/stylists")
       .then((list) => setShops(
-        list.filter((s) => s.status === "UNDER_REVIEW" && (s.accountStatus || "ACTIVE") === "ACTIVE")
+        list.filter((s) => s.status === "UNDER_REVIEW" && (s.accountStatus || "ACTIVE") === "ACTIVE" && s.role !== "APPRENTICE") // apprentices aren't shops
           .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
       ))
       .catch((e) => setError(e.message));

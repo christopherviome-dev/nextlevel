@@ -23,7 +23,7 @@ export default function MySheebaPage() {
 
 // My Sheeba: what's happening now for this customer, not a directory of features.
 function MySheeba() {
-  const { customerName, customerLogout } = useAuth();
+  const { customerName, customerLogout, hasBothRoles, switchRole } = useAuth();
   const [history, setHistory] = useState([]);
   const [prefs, setPrefs] = useState([]);
   const [styles, setStyles] = useState([]);
@@ -54,7 +54,10 @@ function MySheeba() {
             <h1 className="font-display font-extrabold text-xl text-ink">Hi {customerName ? customerName.split(" ")[0] : "there"}</h1>
             <p className="text-sm text-muted">Your beauty, all in one place.</p>
           </div>
-          <button onClick={customerLogout} className="px-3 py-1.5 rounded-full border border-line bg-card text-sm font-bold text-plum">Log out</button>
+          <div className="flex gap-2">
+            {hasBothRoles && <Link href="/dashboard" onClick={() => switchRole("pro")} className="px-3 py-1.5 rounded-full border border-line bg-card text-sm font-bold text-plum">My shop</Link>}
+            <button onClick={customerLogout} className="px-3 py-1.5 rounded-full border border-line bg-card text-sm font-bold text-plum">Log out</button>
+          </div>
         </div>
 
         {next && (

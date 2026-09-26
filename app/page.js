@@ -70,7 +70,8 @@ export default function Discover() {
   };
   // Budgets in the local currency: GH₵100 and £20 mean very different things.
   const info = countryInfo(country);
-  const BUDGETS = [["any", "Any budget", Infinity], ...info.budgets.map((n) => [String(n), `Under ${formatMoney(n, info.currency)}`, n])];
+  // (Countries without preset budgets get none until real local price ranges replace these.)
+  const BUDGETS = [["any", "Any budget", Infinity], ...(info.budgets || []).map((n) => [String(n), `Under ${formatMoney(n, info.currency)}`, n])];
 
   const toggleNearMe = () => {
     if (myLocation) { setMyLocation(null); return; }
@@ -169,19 +170,26 @@ export default function Discover() {
           <div className="flex gap-2">
             <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search styles, services, professionals or areas"
               placeholder="Try 'knotless braids' or 'Kasoa'" className="flex-1 min-w-0 px-4 py-3 rounded-full border border-line bg-surface" />
+            {/* A small on/off location toggle, like the one on a phone. */}
             <button type="button" onClick={toggleNearMe} disabled={locating} aria-pressed={!!myLocation}
-              className={"px-4 py-3 rounded-full text-sm font-bold border whitespace-nowrap " + (myLocation ? "bg-hibiscus text-white border-hibiscus" : "bg-card text-plum border-line")}>
-              {locating ? "Finding you…" : myLocation ? "📍 Near me ✓" : "📍 Near me"}
+              aria-label={myLocation ? "Stop using my location" : "Use my location to show what's near me"}
+              title={myLocation ? "Location on" : "Location off"}
+              className={"w-12 h-12 shrink-0 rounded-full border flex items-center justify-center transition-colors " +
+                (myLocation ? "bg-hibiscus text-white border-hibiscus" : "bg-card text-plum border-line") + (locating ? " motion-safe:animate-pulse" : "")}>
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden fill={myLocation ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinejoin="round">
+                <path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z" />
+                <circle cx="12" cy="9.5" r="2.5" fill={myLocation ? "var(--color-hibiscus)" : "none"} />
+              </svg>
             </button>
           </div>
           {locError && <p className="text-sm text-bad-fg mt-2">{locError}</p>}
           {country && (
             <div className="flex items-center gap-2 mt-3 text-sm">
               <span className="text-muted">Showing shops in</span>
-              {Object.entries(COUNTRIES).map(([code, c]) => (
-                <button key={code} type="button" onClick={() => switchCountry(code)} aria-pressed={country === code}
+              {Object.entries({ ...COUNTRIES, ...(country && !COUNTRIES[country] ? { [country]: countryInfo(country) } : {}) }).map(([code, c]) => (
+                <button key={code} type="button" onClick={() => switchCountry(code)} aria-pressed={country === code} aria-label={`Show shops in ${c.name}`}
                   className={"px-3 py-1 rounded-full border font-bold " + (country === code ? "bg-ink text-card border-ink" : "bg-card text-plum border-line")}>
-                  <span aria-hidden>{c.flag}</span> {code === "GB" ? "UK" : c.name}
+                  <span aria-hidden>{c.flag}</span> {code === "GB" ? "UK" : code}
                 </button>
               ))}
             </div>

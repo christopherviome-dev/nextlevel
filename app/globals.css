@@ -87,3 +87,8 @@ body {
   .print-only { display: block; }
   .no-print { display: none !important; }
 }
+
+/* No accidental pull-to-refresh: dragging down at the top of a page no longer
+   reloads it (which used to wipe half-filled forms). Behaves like an installed
+   app. People can still refresh from the browser menu when they mean to. */
+html, body { overscroll-behavior-y: none; }

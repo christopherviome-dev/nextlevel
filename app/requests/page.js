@@ -1,4 +1,5 @@
 "use client";
+import { useDraft } from "../../lib/useDraft";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { apiFetch } from "../../lib/api";
@@ -6,29 +7,38 @@ import Nav from "../../components/Nav";
 import Link from "next/link";
 import ChangePasswordForm from "../../components/ChangePasswordForm";
 import { EmptyState } from "../../components/States";
-import { pendingInvite } from "../../lib/invite";
-import { COUNTRIES, countryInfo, detectCountry } from "../../lib/countries";
+import { pendingInviteInfo } from "../../lib/invite";
+import PhoneInput from "../../components/PhoneInput";
+import CountrySelect from "../../components/CountrySelect";
+import InviteLine from "../../components/InviteLine";
+import { detectCountry, toE164 } from "../../lib/countries";
 import AppointmentCard from "../../components/customer/AppointmentCard";
 import Toast from "../../components/Toast";
 
 export default function Requests() {
   const { customerToken, customerName, customerLogin, customerRegister, customerLogout, hydrated } = useAuth();
-  const [mode, setMode] = useState("login");
-  const [phone, setPhone] = useState("");
+  // Survive an accidental refresh halfway through (never the password).
+  const [mode, setMode, clearMode] = useDraft("customer-auth-mode", "login");
+  const [phone, setPhone, clearPhone] = useDraft("customer-auth-phone", "");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+  const [name, setName, clearName] = useDraft("customer-auth-name", "");
   const [error, setError] = useState(null);
   const [history, setHistory] = useState([]);
   const [me, setMe] = useState(null); // the customer account, to know about temporary passwords
   const [tab, setTab] = useState("upcoming");
   const [toast, setToast] = useState(null);
   const [reloadKey, setReloadKey] = useState(0);
-  const [invite, setInvite] = useState(() => (typeof window === "undefined" ? "" : pendingInvite()));
+  const [inviteInfo] = useState(() => (typeof window === "undefined" ? null : pendingInviteInfo()));
+  const [invite, setInvite] = useState(() => (inviteInfo && inviteInfo.code) || "");
+  const [phoneCountry, setPhoneCountry] = useState(null);
+  const [phoneCountryChosen, setPhoneCountryChosen] = useState(false);
   const [country, setCountry] = useState(null); // worked out in the browser
   useEffect(() => {
+    // Start on the inviter's country when there is one (a UK stylist's link starts on 🇬🇧).
+    const start = (inviteInfo && inviteInfo.country) || detectCountry();
     // eslint-disable-next-line react-hooks/set-state-in-effect -- the device's location settings only exist in the browser
-    setCountry(detectCountry());
-  }, []);
+    setCountry(start); setPhoneCountry(start);
+  }, [inviteInfo]);
 
   useEffect(() => {
     if (customerToken) apiFetch("/customers/me/history", {}, "customer").then(setHistory).catch(() => {});
@@ -43,9 +53,13 @@ export default function Requests() {
 
   const submit = async (e) => {
     e.preventDefault();
+    const p = toE164(phone, phoneCountry);
+    if (!p.ok) { setError(p.error); return; }
+    const e164 = p.value;
     try {
-      if (mode === "login") await customerLogin(phone, password);
-      else await customerRegister(phone, password, name, invite, country);
+      if (mode === "login") await customerLogin(e164, password);
+      else await customerRegister(e164, password, name, invite, country);
+      clearMode(); clearPhone(); clearName(); // signed in: the draft is no longer needed
       // Came here from a shop's "Log in to request" button? Go straight back.
       const back = sessionStorage.getItem("sheeba:return");
       if (back && back.startsWith("/shop/")) {
@@ -97,19 +111,15 @@ export default function Requests() {
             <form onSubmit={submit} className="space-y-3">
               {mode === "register" && <input placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line" />}
               {mode === "register" && country && (
-                <select value={country} onChange={(e) => setCountry(e.target.value)} aria-label="Country" className="w-full px-4 py-3 rounded-xl border border-line bg-card">
-                  {Object.entries(COUNTRIES).map(([code, c]) => <option key={code} value={code}>{c.flag} {c.name}</option>)}
-                </select>
+                <CountrySelect value={country} onChange={(c) => { setCountry(c); if (!phoneCountryChosen) setPhoneCountry(c); }} />
               )}
-              <input type="tel" placeholder={country ? `Phone number, e.g. ${countryInfo(country).phoneExample}` : "Phone number"} value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line" />
+              {phoneCountry && <PhoneInput country={phoneCountry} onCountryChange={(c) => { setPhoneCountry(c); setPhoneCountryChosen(true); }} value={phone} onChange={setPhone} />}
               <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line" />
-              {mode === "register" && (
-                <input placeholder="Invite code (optional)" value={invite} onChange={(e) => setInvite(e.target.value.toUpperCase())} maxLength={8}
-                  className="w-full px-4 py-3 rounded-xl border border-line font-mono tracking-widest" />
-              )}
+              {mode === "register" && <InviteLine code={invite} name={inviteInfo && inviteInfo.code === invite ? inviteInfo.name : null} onChange={setInvite} />}
               {error && <p className="text-hibiscus-deep text-sm">{error}</p>}
               <button className="w-full py-3 rounded-full bg-hibiscus text-white font-bold" type="submit">{mode === "login" ? "Log In" : "Create Account"}</button>
             </form>
+            <div className="mt-6 bg-surface rounded-xl px-4 py-3 text-sm text-muted-strong">Are you a beauty professional? <Link href="/dashboard" className="text-hibiscus-deep font-bold underline">Go to your shop</Link></div>
             {mode === "login" && <Link href="/forgot-password?type=customer" className="block mt-3 text-sm text-hibiscus-deep font-semibold">Forgot password?</Link>}
             <button className="mt-3 px-4 py-2 rounded-full border border-line bg-card text-sm" onClick={() => setMode(mode === "login" ? "register" : "login")}>
               {mode === "login" ? "New here? Create an account" : "Already have an account? Log in"}

@@ -36,6 +36,13 @@ export default function MyCodeCard({ actor = null, shareName }) {
   const copy = async () => {
     try { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch (e) { /* older phones */ }
   };
+  // The phone's own share menu: WhatsApp, Instagram, TikTok, Facebook, SMS,
+  // email… whatever is installed. (Computers without it keep the buttons.)
+  const canShare = typeof navigator !== "undefined" && !!navigator.share;
+  const share = async () => {
+    try { await navigator.share({ title: shareName ? `Book with ${shareName} on Sheeba` : "Join me on Sheeba", text: message, url: link }); }
+    catch (e) { /* they closed the menu: nothing to do */ }
+  };
   const reward = formatMinor(data.reward.amountMinor, data.reward.currency);
   const shown = `${data.code.slice(0, 3)} ${data.code.slice(3)}`;
 
@@ -48,6 +55,9 @@ export default function MyCodeCard({ actor = null, shareName }) {
         {shareName && <div className="text-sm font-bold text-ink mt-2 print-only">Scan to book with {shareName}</div>}
         <div className="text-sm text-muted mt-2 break-all">{link}</div>
         <div className="flex flex-wrap justify-center gap-2 mt-4 no-print">
+          {canShare && (
+            <button onClick={share} className="px-5 py-2 rounded-full bg-hibiscus text-white text-sm font-bold">Share…</button>
+          )}
           <button onClick={copy} className="px-4 py-2 rounded-full border border-line bg-card text-sm font-bold text-plum">{copied ? "✓ Copied" : "Copy link"}</button>
           <a href={`https://wa.me/?text=${encodeURIComponent(message)}`} target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-full bg-emerald-600 text-white text-sm font-bold">Share on WhatsApp</a>
           {qr && <a href={qr} download={`sheeba-${data.code}.png`} className="px-4 py-2 rounded-full border border-line bg-card text-sm font-bold text-plum">Download QR</a>}

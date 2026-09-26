@@ -15,6 +15,9 @@ export function AuthProvider({ children }) {
   const [customerToken, setCustomerToken] = useState(null);
   const [customerName, setCustomerName] = useState(null);
   const [hydrated, setHydrated] = useState(false);
+  // Which view to show when one phone is logged in as BOTH a professional
+  // and a customer: the one logged into most recently ("pro" | "customer").
+  const [role, setRole] = useState(null);
 
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect -- deliberate: saved logins can only be read in the browser, after load */
@@ -22,8 +25,14 @@ export function AuthProvider({ children }) {
     setMyStylistId(localStorage.getItem("sheeba:my-stylist-id"));
     setCustomerToken(localStorage.getItem("sheeba:customer-token"));
     setCustomerName(localStorage.getItem("sheeba:customer-name"));
+    setRole(localStorage.getItem("sheeba:role"));
     setHydrated(true);
     /* eslint-enable react-hooks/set-state-in-effect */
+  }, []);
+
+  const chooseRole = useCallback((r) => {
+    setRole(r);
+    try { if (r) localStorage.setItem("sheeba:role", r); else localStorage.removeItem("sheeba:role"); } catch (e) { /* private mode */ }
   }, []);
 
   // Shared by the two ways an account gets loaded (below).
@@ -65,53 +74,64 @@ export function AuthProvider({ children }) {
     setAuthToken(data.token); localStorage.setItem("sheeba:token", data.token);
     setMyStylistId(data.stylist._id); localStorage.setItem("sheeba:my-stylist-id", data.stylist._id);
     setMyAccount(data.stylist);
+    chooseRole("pro");
     sessionStorage.setItem("sheeba:welcome", "1"); // dashboard shows a one-time welcome pop-up
     return data.stylist;
-  }, []);
+  }, [chooseRole]);
 
-  const register = useCallback(async (phone, password, name, inviteCode, country) => {
-    const data = await apiFetch("/auth/register", { method: "POST", body: JSON.stringify({ phone, password, name, inviteCode: inviteCode || undefined, country }) });
+  const register = useCallback(async (phone, password, name, inviteCode, country, extra = {}) => {
+    // extra: { role: "APPRENTICE", supervisorCode } for professionals in training
+    const data = await apiFetch("/auth/register", { method: "POST", body: JSON.stringify({ phone, password, name, inviteCode: inviteCode || undefined, country, ...extra }) });
     clearPendingInvite(); // an invite only ever counts once, at signup
     setAuthToken(data.token); localStorage.setItem("sheeba:token", data.token);
     setMyStylistId(data.stylist._id); localStorage.setItem("sheeba:my-stylist-id", data.stylist._id);
     setMyAccount(data.stylist);
+    chooseRole("pro");
     sessionStorage.setItem("sheeba:welcome", "1"); // dashboard shows a one-time welcome pop-up
     return data.stylist;
-  }, []);
+  }, [chooseRole]);
 
   const logout = useCallback(() => {
     setAuthToken(null); setMyStylistId(null); setMyAccount(null);
     localStorage.removeItem("sheeba:token");
     localStorage.removeItem("sheeba:my-stylist-id");
-  }, []);
+    chooseRole(localStorage.getItem("sheeba:customer-token") ? "customer" : null);
+  }, [chooseRole]);
 
   const customerLogin = useCallback(async (phone, password) => {
     const data = await apiFetch("/customers/login", { method: "POST", body: JSON.stringify({ phone, password }) });
     setCustomerToken(data.token); localStorage.setItem("sheeba:customer-token", data.token);
     setCustomerName(data.customer.name); localStorage.setItem("sheeba:customer-name", data.customer.name);
+    chooseRole("customer");
     return data.customer;
-  }, []);
+  }, [chooseRole]);
 
   const customerRegister = useCallback(async (phone, password, name, inviteCode, country) => {
     const data = await apiFetch("/customers/register", { method: "POST", body: JSON.stringify({ phone, password, name, inviteCode: inviteCode || undefined, country }) });
     clearPendingInvite();
     setCustomerToken(data.token); localStorage.setItem("sheeba:customer-token", data.token);
     setCustomerName(data.customer.name); localStorage.setItem("sheeba:customer-name", data.customer.name);
+    chooseRole("customer");
     return data.customer;
-  }, []);
+  }, [chooseRole]);
 
   const customerLogout = useCallback(() => {
     setCustomerToken(null); setCustomerName(null);
     localStorage.removeItem("sheeba:customer-token");
     localStorage.removeItem("sheeba:customer-name");
-  }, []);
+    chooseRole(localStorage.getItem("sheeba:token") ? "pro" : null);
+  }, [chooseRole]);
 
   const isAdmin = !!(myAccount && myAccount.isAdmin);
+  const activeRole = role === "pro" && authToken ? "pro" : role === "customer" && customerToken ? "customer"
+    : authToken ? "pro" : customerToken ? "customer" : null;
+  const hasBothRoles = !!(authToken && customerToken);
 
   return (
     <AuthContext.Provider value={{
       authToken, myStylistId, myAccount, isAdmin, hydrated, refreshMyAccount, login, register, logout,
       customerToken, customerName, customerLogin, customerRegister, customerLogout,
+      activeRole, hasBothRoles, switchRole: chooseRole,
     }}>
       {children}
     </AuthContext.Provider>
