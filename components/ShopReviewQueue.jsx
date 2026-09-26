@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { apiFetch } from "../lib/api";
+import { shopChecks, coverPhoto } from "../lib/shop";
 
 // New shops start UNDER_REVIEW and are invisible to customers until an admin
 // approves them here. (Separate from ID verification, on purpose: a shop's
@@ -9,23 +10,6 @@ import { apiFetch } from "../lib/api";
 // Layout: a grid of cards to scan at a glance. Hovering with a mouse lifts
 // the card and dims the rest; clicking (or tapping on a phone, where there
 // is no hover) opens the full detail panel to decide from.
-
-function shopChecks(shop) {
-  const services = shop.styles || [];
-  return [
-    ["Profile photo", !!shop.profilePhoto],
-    ["Description", !!(shop.bio && shop.bio.trim())],
-    ["Area / location", !!(shop.area && shop.area.trim())],
-    ["At least one service", services.length > 0],
-    ["Photos of their work", services.some((s) => s.photo)],
-    ["Identity verified", !!shop.verified],
-  ];
-}
-
-function coverPhoto(shop) {
-  const work = (shop.styles || []).find((s) => s.photo);
-  return (work && work.photo) || shop.coverPhoto || shop.profilePhoto || null;
-}
 
 export default function ShopReviewQueue({ onDecision }) {
   const [shops, setShops] = useState(null);

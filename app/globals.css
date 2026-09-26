@@ -65,3 +65,15 @@ body {
 @media (max-width: 639px) {
   body { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
 }
+
+/* Live Mode: the featured strip drifts slowly. It pauses on hover, touch or
+   keyboard focus, and never moves for people who ask their device for
+   reduced motion (it becomes a normal swipeable row instead). */
+@keyframes sheeba-drift { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.live-drift { animation: sheeba-drift var(--drift-seconds, 60s) linear infinite; }
+.live-drift-paused { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .live-drift { animation: none; } }
+
+/* Horizontal rows: swipe on phones, no visible scrollbar clutter. */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
