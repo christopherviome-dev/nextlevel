@@ -1,10 +1,11 @@
 "use client";
 import Link from "next/link";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { apiFetch } from "../lib/api";
 import Nav from "../components/Nav";
 import { LoadingState, EmptyState, ErrorState } from "../components/States";
-import { CATEGORIES as SHOP_CATEGORIES } from "../lib/shop";
+import { useCatalog, styleIndex, photosFor, INSPIRATION_STYLES } from "../lib/catalog";
+import InspirationTile from "../components/discover/InspirationTile";
 import { distanceKm } from "../lib/geo";
 import { getClientId, likedSet, saveLiked, likeKey } from "../lib/clientId";
 import { COUNTRIES, countryInfo, detectCountry, saveCountry } from "../lib/countries";
@@ -15,7 +16,6 @@ import WorkTile from "../components/discover/WorkTile";
 import ProCard from "../components/discover/ProCard";
 import ContextPanel from "../components/discover/ContextPanel";
 
-const CATEGORIES = ["All", ...SHOP_CATEGORIES];
 
 // Spread work across professionals so one busy shop can't fill the feed.
 function interleave(shops) {
@@ -35,7 +35,8 @@ export default function Discover() {
   const [error, setError] = useState(null);
   const [reloadKey, setReloadKey] = useState(0);
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("All");
+  const [service, setService] = useState("all"); // a service key, or "all"
+  const [style, setStyle] = useState(null);       // a named style within it
   const [budget, setBudget] = useState("any");
   const [myLocation, setMyLocation] = useState(null);
   const [locating, setLocating] = useState(false);
@@ -63,7 +64,7 @@ export default function Discover() {
   }, [reloadKey, country]);
 
   const retry = () => { setError(null); setLoading(true); setReloadKey((k) => k + 1); };
-  const clearFilters = () => { setQuery(""); setCategory("All"); setBudget("any"); };
+  const clearFilters = () => { setQuery(""); setService("all"); setStyle(null); setBudget("any"); };
   const switchCountry = (c) => {
     if (c === country) return;
     saveCountry(c); setCountry(c); setBudget("any"); setSelection(null); setMyLocation(null);
@@ -93,23 +94,28 @@ export default function Discover() {
   const allWork = useMemo(() => interleave(withDistance), [withDistance]);
   const maxPrice = (BUDGETS.find((b) => b[0] === budget) || BUDGETS[0])[2];
   const q = query.trim().toLowerCase();
-  const focus = !!q || category !== "All" || budget !== "any";
+  const catalog = useCatalog();
+  const styles = useMemo(() => styleIndex(catalog), [catalog]);
+  const styleWords = useCallback((w) => (w.styleKey && styles[w.styleKey] ? [styles[w.styleKey].name, ...(styles[w.styleKey].aliases || [])] : []), [styles]);
+  const focus = !!q || service !== "all" || !!style || budget !== "any";
 
   const filteredShops = useMemo(() => {
     const list = withDistance.filter((s) =>
-      (category === "All" || s.category === category) &&
-      (!q || [s.salonName, s.name, s.category, s.area, s.bio, ...s.work.map((w) => w.name)].filter(Boolean).join(" ").toLowerCase().includes(q)) &&
+      (service === "all" || (s.services || []).includes(service)) &&
+      (!style || s.work.some((w) => w.styleKey === style)) &&
+      (!q || [s.salonName, s.name, s.area, s.bio, ...s.work.flatMap((w) => [w.name, ...styleWords(w)])].filter(Boolean).join(" ").toLowerCase().includes(q)) &&
       (budget === "any" || s.work.some((w) => typeof w.price === "number" && w.price <= maxPrice)));
     return myLocation ? [...list].sort(byNearest) : list;
-  }, [withDistance, category, q, budget, maxPrice, myLocation]);
+  }, [withDistance, service, style, q, budget, maxPrice, myLocation, styleWords]);
 
   const filteredWork = useMemo(() => {
     const list = allWork.filter((w) =>
-      (category === "All" || w.shop.category === category) &&
+      (service === "all" || w.serviceKey === service || (!w.serviceKey && (w.shop.services || []).includes(service))) &&
+      (!style || w.styleKey === style) &&
       (budget === "any" || (typeof w.price === "number" && w.price <= maxPrice)) &&
-      (!q || [w.name, w.shop.salonName, w.shop.name, w.shop.area, w.shop.category].filter(Boolean).join(" ").toLowerCase().includes(q)));
+      (!q || [w.name, ...styleWords(w), w.shop.salonName, w.shop.name, w.shop.area].filter(Boolean).join(" ").toLowerCase().includes(q)));
     return myLocation ? [...list].sort((a, b) => byNearest(a.shop, b.shop)) : list;
-  }, [allWork, category, q, budget, maxPrice, myLocation]);
+  }, [allWork, service, style, q, budget, maxPrice, myLocation, styleWords]);
 
   // Ambient rows, all from real data. Each only shows with enough real content.
   const live = useMemo(() => [...allWork].sort((a, b) => (b.likeCount - a.likeCount) || ((b.addedAt || 0) - (a.addedAt || 0))).slice(0, 12), [allWork]);
@@ -195,7 +201,18 @@ export default function Discover() {
               ))}
             </div>
           )}
-          <div className="flex gap-2 overflow-x-auto no-scrollbar mt-3">{CATEGORIES.map((c) => chip(category === c, () => setCategory(c), c))}</div>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar mt-3">
+            {[["all", "All"], ...catalog.map((c) => [c.key, c.name])].map(([k, label]) => chip(service === k, () => { setService(k); setStyle(null); }, label))}
+          </div>
+          {/* A service's own styles, once one is chosen (Barbering: Fade, Waves, Beard trim…) */}
+          {service !== "all" && ((catalog.find((c) => c.key === service) || {}).styles || []).length > 0 && (
+            <div className="flex gap-2 overflow-x-auto no-scrollbar mt-2">
+              {catalog.find((c) => c.key === service).styles.map((st) => (
+                <button key={st.key} type="button" onClick={() => setStyle(style === st.key ? null : st.key)} aria-pressed={style === st.key}
+                  className={"px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border " + (style === st.key ? "bg-hibiscus text-white border-hibiscus" : "bg-surface text-plum border-line")}>{st.name}</button>
+              ))}
+            </div>
+          )}
           <div className="flex gap-2 overflow-x-auto no-scrollbar mt-2">{BUDGETS.map(([k, label]) => chip(budget === k, () => setBudget(k), label))}</div>
         </div>
 
@@ -207,6 +224,17 @@ export default function Discover() {
 
         {!loading && !error && shops.length > 0 && focus && (
           <section aria-label="Search results">
+            {style && photosFor(style).length > 0 && styles[style] && (
+              <div className="flex gap-3 items-center bg-card border border-line rounded-2xl p-3 mb-4">
+                <img src={photosFor(style)[0].src} alt="" className="w-20 h-20 rounded-xl object-cover shrink-0" />
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-muted uppercase">Inspiration</div>
+                  <div className="font-bold text-ink">{styles[style].name}</div>
+                  <div className="text-sm text-muted">Professionals on Sheeba who do this style are below.</div>
+                  <a href={photosFor(style)[0].page} target="_blank" rel="noopener noreferrer" className="text-[11px] text-muted underline">Photo: {photosFor(style)[0].photographer} on {photosFor(style)[0].site}</a>
+                </div>
+              </div>
+            )}
             <div className="flex items-center justify-between gap-3 mb-3">
               <div role="tablist" aria-label="Result type" className="flex gap-2">
                 {chip(focusTab === "work", () => setFocusTab("work"), `Looks (${filteredWork.length})`)}
@@ -216,16 +244,21 @@ export default function Discover() {
             </div>
             {focusTab === "work" && (filteredWork.length
               ? <div className="columns-2 sm:columns-3 lg:columns-4 gap-3">{tiles(filteredWork, false)}</div>
-              : <EmptyState title="No looks match" hint="Try another category or budget, or search for a professional instead." actionLabel="Clear search and filters" onAction={clearFilters} />)}
+              : <EmptyState title="No looks match" hint="Try another service or budget, or search for a professional instead." actionLabel="Clear search and filters" onAction={clearFilters} />)}
             {focusTab === "pros" && (filteredShops.length
               ? <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">{filteredShops.map((s) => <ProCard key={s._id} shop={s} onOpen={open} wide />)}</div>
-              : <EmptyState title="No professionals match" hint="Try another category or budget." actionLabel="Clear search and filters" onAction={clearFilters} />)}
+              : <EmptyState title="No professionals match" hint="Try another service or budget." actionLabel="Clear search and filters" onAction={clearFilters} />)}
           </section>
         )}
 
         {!loading && !error && shops.length > 0 && !focus && (
           <>
             <LiveStrip items={live} onOpen={open} likedIds={liked} onLike={onLike} />
+            {INSPIRATION_STYLES.some((k) => styles[k]) && <Row title="Inspiration" subtitle="Tap a style to find professionals who do it">
+              {INSPIRATION_STYLES.filter((k) => styles[k]).map((k) => (
+                <InspirationTile key={k} style={styles[k]} photo={photosFor(k)[0]} onOpen={() => { setService(styles[k].serviceKey); setStyle(k); setFocusTab("pros"); }} />
+              ))}
+            </Row>}
             {nearYou.length > 0 && (
               <Row title="Near you" subtitle="Closest first">{nearYou.map((s) => <ProCard key={s._id} shop={s} onOpen={open} />)}</Row>
             )}

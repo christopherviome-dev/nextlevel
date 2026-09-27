@@ -4,6 +4,7 @@ import { HeartButton } from "./WorkTile";
 import { AVAILABILITY_LABEL } from "./ProCard";
 import { workModeLabel } from "../../lib/shop";
 import { formatDistance } from "../../lib/geo";
+import { useCatalog, serviceName } from "../../lib/catalog";
 import { likeKey } from "../../lib/clientId";
 import { formatMoney } from "../../lib/money";
 
@@ -12,6 +13,7 @@ import { formatMoney } from "../../lib/money";
 //   the work → service and price → professional → availability → action.
 // Phones: a sheet from the bottom. Larger screens: a panel on the right.
 export default function ContextPanel({ selection, onClose, onSelect, likedIds, onLike }) {
+  const catalog = useCatalog();
   const closeRef = useRef(null);
   const onCloseRef = useRef(onClose);
   useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
@@ -68,7 +70,7 @@ export default function ContextPanel({ selection, onClose, onSelect, likedIds, o
                 : <div className="w-12 h-12 rounded-full bg-violet text-white font-bold flex items-center justify-center">{name.slice(0, 1).toUpperCase()}</div>}
               <div className="min-w-0">
                 <div className="font-bold text-ink truncate">{name} {shop.verified && <span className="text-xs text-hibiscus-deep">✓ Verified</span>}</div>
-                <div className="text-sm text-muted truncate">{[shop.category, shop.area, formatDistance(shop._distanceKm, shop.country)].filter(Boolean).join(" · ")}</div>
+                <div className="text-sm text-muted truncate">{[(shop.services && shop.services.length ? serviceName(catalog, shop.services[0]) : shop.category), shop.area, formatDistance(shop._distanceKm, shop.country)].filter(Boolean).join(" · ")}</div>
               </div>
             </div>
             <div className="flex flex-wrap gap-1 mt-3">

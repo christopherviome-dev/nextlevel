@@ -4,6 +4,7 @@ import { apiFetch } from "../lib/api";
 import { fitImage } from "../lib/image";
 import { formatMoney, currencySymbol } from "../lib/money";
 import { EmptyState } from "./States";
+import { useCatalog } from "../lib/catalog";
 
 const MAX_SERVICES = 40; // matches the server's limit
 const WORK_PHOTO = { maxDim: 1000, maxChars: 290 * 1024 }; // server cap is 300 KB
@@ -12,6 +13,10 @@ const WORK_THUMB = { maxDim: 360, maxChars: 55 * 1024 }; // server cap is 60 KB
 
 export default function ServicesEditor({ account, onSaved }) {
   const services = account.styles || [];
+  const catalog = useCatalog();
+  // The shop's own services first in the picker, then everything else on Sheeba.
+  const mine = account.services && account.services.length ? account.services : [];
+  const serviceOptions = [...catalog.filter((c) => mine.includes(c.key)), ...catalog.filter((c) => !mine.includes(c.key))];
   const [editing, setEditing] = useState(null); // a service id, "new", or null
   const [busyId, setBusyId] = useState(null);
   const [error, setError] = useState(null);
@@ -37,7 +42,7 @@ export default function ServicesEditor({ account, onSaved }) {
       {error && <p className="text-sm text-bad-fg mb-3">{error}</p>}
 
       {editing === "new" && (
-        <ServiceForm currency={account.currency}
+        <ServiceForm currency={account.currency} serviceOptions={serviceOptions} defaultService={mine[0] || ""}
           onCancel={() => setEditing(null)}
           onSubmit={async (data) => {
             await apiFetch("/stylists/me/styles", { method: "POST", body: JSON.stringify(data) });
@@ -53,7 +58,7 @@ export default function ServicesEditor({ account, onSaved }) {
 
       <div className="space-y-2">
         {services.map((s) => editing === s.id ? (
-          <ServiceForm key={s.id} initial={s} currency={account.currency}
+          <ServiceForm key={s.id} initial={s} currency={account.currency} serviceOptions={serviceOptions} defaultService={mine[0] || ""}
             onCancel={() => setEditing(null)}
             onSubmit={async (data) => {
               await apiFetch(`/stylists/me/styles/${s.id}`, { method: "PUT", body: JSON.stringify(data) });
@@ -80,11 +85,14 @@ export default function ServicesEditor({ account, onSaved }) {
   );
 }
 
-function ServiceForm({ initial, onSubmit, onCancel, currency }) {
+function ServiceForm({ initial, onSubmit, onCancel, currency, serviceOptions = [], defaultService = "" }) {
   const [name, setName] = useState(initial ? initial.name : "");
   const [price, setPrice] = useState(initial ? String(initial.price ?? "") : "");
   const [duration, setDuration] = useState(initial ? initial.duration || "" : "");
   const [desc, setDesc] = useState(initial ? initial.desc || "" : "");
+  const [serviceKey, setServiceKey] = useState(initial ? initial.serviceKey || defaultService : defaultService);
+  const [styleKey, setStyleKey] = useState(initial ? initial.styleKey || "" : "");
+  const styleOptions = (serviceOptions.find((c) => c.key === serviceKey) || {}).styles || [];
   const [photo, setPhoto] = useState(undefined); // undefined = unchanged, null = remove
   const [thumb, setThumb] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -107,7 +115,7 @@ function ServiceForm({ initial, onSubmit, onCancel, currency }) {
 
   const submit = async () => {
     setBusy(true); setError(null);
-    const data = { name, price, duration, desc };
+    const data = { name, price, duration, desc, serviceKey: serviceKey || null, styleKey: styleKey || null };
     if (photo !== undefined) { data.photo = photo; if (photo) data.photoThumb = thumb; }
     try { await onSubmit(data); } catch (err) { setError(err.message); setBusy(false); }
   };
@@ -121,6 +129,17 @@ function ServiceForm({ initial, onSubmit, onCancel, currency }) {
         <input value={duration} onChange={(e) => setDuration(e.target.value)} maxLength={30} placeholder="How long, e.g. 3 hours" className="w-full px-4 py-3 rounded-xl border border-line" />
       </div>
       {price && !priceOk && <p className="text-xs text-bad-fg">Enter a price of 0 or more.</p>}
+      <div className="grid sm:grid-cols-2 gap-3">
+        <select value={serviceKey} onChange={(e) => { setServiceKey(e.target.value); setStyleKey(""); }} aria-label="Service" className="w-full px-4 py-3 rounded-xl border border-line bg-card">
+          <option value="">Which service?</option>
+          {serviceOptions.map((c) => <option key={c.key} value={c.key}>{c.name}</option>)}
+        </select>
+        <select value={styleKey} onChange={(e) => setStyleKey(e.target.value)} disabled={!styleOptions.length} aria-label="Style" className="w-full px-4 py-3 rounded-xl border border-line bg-card disabled:opacity-50">
+          <option value="">{styleOptions.length ? "Style (optional)" : "No styles listed"}</option>
+          {styleOptions.map((st) => <option key={st.key} value={st.key}>{st.name}</option>)}
+        </select>
+      </div>
+      <p className="text-xs text-muted">Choosing a style helps customers find you from Sheeba's inspiration photos.</p>
       <textarea value={desc} onChange={(e) => setDesc(e.target.value)} maxLength={300} rows={2} placeholder="Short description (optional)" className="w-full px-4 py-3 rounded-xl border border-line" />
       <div>
         <div className="text-sm font-bold mb-1">Photo of your work</div>
