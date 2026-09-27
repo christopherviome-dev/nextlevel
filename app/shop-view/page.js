@@ -9,6 +9,7 @@ import { formatMoney } from "../../lib/money";
 import SaveShopButton from "../../components/customer/SaveShopButton";
 import ReportForm from "../../components/ReportForm";
 import MessageButton from "../../components/customer/MessageButton";
+import ApprenticeWorkGallery from "../../components/ApprenticeWorkGallery";
 import { useAuth } from "../../context/AuthContext";
 import { useCatalog, serviceName } from "../../lib/catalog";
 
@@ -86,6 +87,7 @@ export default function ShopView() {
                   </div>
                 </div>
               ))}
+              <ApprenticeWorkGallery shopId={shop._id} shopName={shop.salonName || shop.name} />
               <div id="request" className="scroll-mt-24"><RequestForm shop={shop} /></div>
               <ReportForm stylistId={shop._id} name={shop.salonName || shop.name} country={shop.country} actor={customerToken ? "customer" : null} />
             </div>

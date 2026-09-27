@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { apiFetch } from "../lib/api";
+import TrainingEditor from "./training/TrainingEditor";
 
 // Apprentices who named this professional as their supervisor. Confirming
 // adds them to the shop's staff access, so they can help with its requests.
@@ -8,6 +9,7 @@ export default function ApprenticesPanel() {
   const [list, setList] = useState(null);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(null);
+  const [openId, setOpenId] = useState(null);
   const load = useCallback(() => { apiFetch("/stylists/me/apprentices").then(setList).catch((e) => setError(e.message)); }, []);
   useEffect(() => { load(); }, [load]);
 
@@ -19,8 +21,10 @@ export default function ApprenticesPanel() {
   };
 
   if (!list) return null;
+  if (openId) return <TrainingEditor apprenticeId={openId} onClose={() => { setOpenId(null); load(); }} onGraduated={load} />;
   const pending = list.filter((a) => a.status === "PENDING");
   const confirmed = list.filter((a) => a.status === "APPROVED");
+  const graduates = list.filter((a) => a.status === "GRADUATED");
   return (
     <div>
       <div className="font-bold mb-2">Apprentices</div>
@@ -36,7 +40,14 @@ export default function ApprenticesPanel() {
         </div>
       ))}
       {confirmed.map((a) => (
-        <div key={a._id} className="text-sm text-muted-strong py-1">✓ {a.name}: your apprentice</div>
+        <button key={a._id} onClick={() => setOpenId(a._id)} className="w-full flex items-center justify-between text-sm bg-surface rounded-xl p-3 mb-2 text-left">
+          <span className="text-ink">✓ {a.name}{a.isMinor ? " (under 18)" : ""}</span><span className="font-bold text-hibiscus-deep">Open training ›</span>
+        </button>
+      ))}
+      {graduates.map((a) => (
+        <button key={a._id} onClick={() => setOpenId(a._id)} className="w-full flex items-center justify-between text-sm py-2 text-left">
+          <span className="text-muted-strong">🎓 {a.name}: graduated</span><span className="text-xs text-hibiscus-deep underline">Training record</span>
+        </button>
       ))}
     </div>
   );

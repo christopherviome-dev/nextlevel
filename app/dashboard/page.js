@@ -15,6 +15,7 @@ import ApprenticesPanel from "../../components/ApprenticesPanel";
 import MessagesPanel from "../../components/MessagesPanel";
 import CustomersPanel from "../../components/pro/CustomersPanel";
 import EarningsPanel from "../../components/pro/EarningsPanel";
+import MyTraining from "../../components/training/MyTraining";
 import Link from "next/link";
 
 const TABS = [
@@ -50,7 +51,10 @@ export default function Dashboard() {
 
   // A shop still waiting for approval most needs its details filled in;
   // a live shop's daily work is its requests.
-  const active = tab || (myAccount.status === "APPROVED" ? "requests" : "shop");
+  // Apprentices (and graduates, for their record) get "My Training" first.
+  const inTraining = myAccount.supervisorStatus === "APPROVED" || myAccount.supervisorStatus === "GRADUATED";
+  const tabs = inTraining ? [["training", myAccount.supervisorStatus === "GRADUATED" ? "Training record" : "My Training"], ...TABS] : TABS;
+  const active = tab || (myAccount.supervisorStatus === "APPROVED" ? "training" : myAccount.status === "APPROVED" ? "requests" : "shop");
 
   return (
     <div>
@@ -88,10 +92,11 @@ export default function Dashboard() {
           </div>
         )}
 
-        <ShopChecklist account={myAccount} goTo={setTab} />
+        {/* Apprentices in training don't prepare a public shop yet; it appears once they graduate. */}
+        {myAccount.role !== "APPRENTICE" && <ShopChecklist account={myAccount} goTo={setTab} />}
 
         <div role="tablist" aria-label="My Shop sections" className="flex gap-2 overflow-x-auto pb-1 mb-4">
-          {TABS.map(([key, label]) => (
+          {tabs.map(([key, label]) => (
             <button key={key} role="tab" aria-selected={active === key} onClick={() => setTab(key)}
               className={"px-4 py-2 rounded-full text-sm font-bold border whitespace-nowrap " +
                 (active === key ? "bg-violet text-white border-violet" : "bg-card text-plum border-line")}>
@@ -100,6 +105,7 @@ export default function Dashboard() {
           ))}
         </div>
 
+        {active === "training" && <MyTraining onGoToShare={() => setTab("share")} />}
         {active === "requests" && <RequestsPanel account={myAccount} />}
         {active === "messages" && <MessagesPanel side="stylist" />}
         {active === "customers" && <CustomersPanel />}

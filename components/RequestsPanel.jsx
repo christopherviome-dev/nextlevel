@@ -33,9 +33,16 @@ export default function RequestsPanel({ account }) {
   const [error, setError] = useState(null);
   const [toast, setToast] = useState(null);
 
+  // Your own shop's requests, plus those of any shop you help with (staff, or
+  // a confirmed apprentice): the server already allows acting on those.
+  const [helpShops, setHelpShops] = useState({}); // shopId → { name, country }
   const load = useCallback(() => {
-    apiFetch("/requests")
-      .then((all) => setRequests(all.filter((r) => r.stylistId === account._id)))
+    Promise.all([apiFetch("/requests"), apiFetch("/stylists/managed-by-me").catch(() => [])])
+      .then(([all, managed]) => {
+        const shops = Object.fromEntries(managed.map((s) => [s._id, { name: s.salonName || s.name, country: s.country }]));
+        setHelpShops(shops);
+        setRequests(all.filter((r) => r.stylistId === account._id || shops[r.stylistId]));
+      })
       .catch((e) => setError(e.message));
   }, [account._id]);
   useEffect(() => { load(); }, [load]);
@@ -66,7 +73,8 @@ export default function RequestsPanel({ account }) {
     const g = groups.find((x) => x[0] === label);
     if (g) g[1].push(r); else groups.push([label, [r]]);
   }
-  const card = (r) => <RequestCard key={r._id} r={r} country={account.country} onChanged={(msg) => { setToast(msg); load(); }} onStale={load} />;
+  const card = (r) => <RequestCard key={r._id} r={r} forShop={helpShops[r.stylistId] ? helpShops[r.stylistId].name : null}
+    country={helpShops[r.stylistId] ? helpShops[r.stylistId].country : account.country} onChanged={(msg) => { setToast(msg); load(); }} onStale={load} />;
 
   return (
     <div className="mt-6">
@@ -115,7 +123,7 @@ export default function RequestsPanel({ account }) {
   );
 }
 
-function RequestCard({ r, country, onChanged, onStale }) {
+function RequestCard({ r, country, forShop, onChanged, onStale }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
 
@@ -135,6 +143,7 @@ function RequestCard({ r, country, onChanged, onStale }) {
 
   return (
     <div className="bg-card border border-line rounded-2xl p-4 mb-3">
+      {forShop && <div className="text-xs font-bold text-violet mb-1">For {forShop}</div>}
       <div className="flex justify-between gap-3">
         <div>
           <div className="font-bold">{r.clientName}</div>
