@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import { apiFetch } from "../lib/api";
 import Nav from "../components/Nav";
@@ -243,6 +244,10 @@ export default function Discover() {
           </>
         )}
       </div>
+      <footer className="max-w-6xl mx-auto px-5 pb-8 text-xs text-muted flex gap-4">
+        <Link href="/terms" className="underline">Terms</Link>
+        <Link href="/privacy" className="underline">Privacy</Link>
+      </footer>
       <ContextPanel selection={resolved} onClose={() => setSelection(null)} onSelect={open} likedIds={liked} onLike={onLike} />
     </div>
   );

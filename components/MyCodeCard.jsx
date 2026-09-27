@@ -6,8 +6,9 @@ import { formatMinor } from "../lib/money";
 
 const STATUS = {
   JOINED: ["Joined, waiting for their first job", "bg-surface-2 text-muted-strong border-line"],
-  EARNED: ["Earned", "bg-ok-bg text-ok-fg border-ok-line"],
-  PAID: ["Paid", "bg-ok-bg text-ok-fg border-ok-line"],
+  CHECKING: ["First job done: being checked", "bg-warn-bg text-warn-fg border-warn-line"],
+  UNDER_REVIEW: ["Being reviewed", "bg-warn-bg text-warn-fg border-warn-line"],
+  VALIDATED: ["Confirmed", "bg-ok-bg text-ok-fg border-ok-line"],
   VOID: ["Not eligible", "bg-bad-bg text-bad-fg border-bad-line"],
 };
 
@@ -44,11 +45,19 @@ export default function MyCodeCard({ actor = null, shareName }) {
     catch (e) { /* they closed the menu: nothing to do */ }
   };
   const reward = formatMinor(data.reward.amountMinor, data.reward.currency);
-  const shown = `${data.code.slice(0, 3)} ${data.code.slice(3)}`;
+  const approx = (local) => (local ? ` (≈ ${formatMinor(local.amountMinor, local.currency)} today)` : "");
+  // Friendly codes read as name + number (AKUA 0042); older 6-character codes as two halves.
+  const m = /^([A-Z]+)(\d{4,})$/.exec(data.code);
+  const shown = m ? `${m[1]} ${m[2]}` : `${data.code.slice(0, 3)} ${data.code.slice(3)}`;
 
   return (
     <div className="space-y-4">
       <div className="bg-card border border-line rounded-2xl p-5 text-center print-area">
+        {data.memberNumber && (
+          <div className={"inline-block text-xs font-bold px-3 py-1 rounded-full mb-2 " + (data.founding ? "bg-warn-bg text-warn-fg border border-warn-line" : "bg-surface-2 text-muted-strong")}>
+            {data.founding ? `⭐ Founding member #${data.memberNumber}` : `Member #${data.memberNumber}`}
+          </div>
+        )}
         <div className="text-xs font-extrabold tracking-wide text-plum uppercase">Your Sheeba code</div>
         <div className="font-mono text-3xl font-bold tracking-[0.2em] text-ink mt-1">{shown}</div>
         {qr && <img src={qr} alt={`QR code for ${link}`} className="w-48 h-48 mx-auto mt-3 rounded-lg bg-white p-2" />}
@@ -67,13 +76,20 @@ export default function MyCodeCard({ actor = null, shareName }) {
       </div>
 
       <div className="bg-card border border-line rounded-2xl p-4 no-print">
-        <div className="font-bold text-ink">Invite people, earn {reward} each</div>
-        <p className="text-sm text-muted-strong mt-1">When someone joins Sheeba with your code and completes their first job, you earn {reward}. Sheeba sends it to you directly.</p>
+        <div className="font-bold text-ink">Invite people: each is worth {reward}{approx(data.rewardLocal)}</div>
+        <p className="text-sm text-muted-strong mt-1">
+          It counts when someone joins with your code and completes a genuine first job. Each one is checked for about a week, then confirmed.
+          Confirmed rewards build up here and become a coupon for a free or discounted service once Sheeba starts taking payments.
+        </p>
         <div className="grid grid-cols-3 gap-2 mt-3 text-center">
           <div className="bg-surface rounded-xl p-2"><div className="text-xl font-bold text-ink">{data.counts.joined}</div><div className="text-xs text-muted">joined</div></div>
-          <div className="bg-surface rounded-xl p-2"><div className="text-xl font-bold text-ink">{formatMinor(data.totals.earnedMinor, data.reward.currency)}</div><div className="text-xs text-muted">earned</div></div>
-          <div className="bg-surface rounded-xl p-2"><div className="text-xl font-bold text-ink">{formatMinor(data.totals.owedMinor, data.reward.currency)}</div><div className="text-xs text-muted">on its way</div></div>
+          <div className="bg-surface rounded-xl p-2"><div className="text-xl font-bold text-ink">{formatMinor(data.totals.validatedMinor, data.reward.currency)}</div><div className="text-xs text-muted">confirmed</div></div>
+          <div className="bg-surface rounded-xl p-2"><div className="text-xl font-bold text-ink">{data.counts.checking + data.counts.underReview}</div><div className="text-xs text-muted">being checked</div></div>
         </div>
+        {data.validatedLocal && data.totals.validatedMinor > 0 && <p className="text-xs text-muted mt-2">Confirmed so far: {formatMinor(data.totals.validatedMinor, "GHS")}{approx(data.validatedLocal)}</p>}
+        {(data.rewardLocal || data.validatedLocal) && (
+          <p className="text-[11px] text-muted mt-2"><a href="https://www.exchangerate-api.com" target="_blank" rel="noopener noreferrer" className="underline">Rates By Exchange Rate API</a></p>
+        )}
         {data.invites.length > 0 && (
           <div className="mt-3 space-y-1">
             {data.invites.map((i, n) => {
@@ -81,7 +97,7 @@ export default function MyCodeCard({ actor = null, shareName }) {
               return (
                 <div key={n} className="flex items-center justify-between gap-2 text-sm py-1.5 border-b border-line last:border-0">
                   <span className="text-ink">{i.name} <span className="text-muted">· joined as a {i.joinedAs === "stylist" ? "professional" : "customer"}</span></span>
-                  <span className={"text-xs px-2 py-0.5 rounded-full border whitespace-nowrap " + cls}>{label}{i.status === "EARNED" || i.status === "PAID" ? ` ${formatMinor(i.amountMinor, i.currency)}` : ""}</span>
+                  <span className={"text-xs px-2 py-0.5 rounded-full border whitespace-nowrap " + cls}>{label}{i.status === "VALIDATED" ? ` ${formatMinor(i.amountMinor, i.currency)}` : ""}</span>
                 </div>
               );
             })}

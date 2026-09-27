@@ -106,8 +106,8 @@ export function AuthProvider({ children }) {
     return data.customer;
   }, [chooseRole]);
 
-  const customerRegister = useCallback(async (phone, password, name, inviteCode, country) => {
-    const data = await apiFetch("/customers/register", { method: "POST", body: JSON.stringify({ phone, password, name, inviteCode: inviteCode || undefined, country }) });
+  const customerRegister = useCallback(async (phone, password, name, inviteCode, country, extra = {}) => {
+    const data = await apiFetch("/customers/register", { method: "POST", body: JSON.stringify({ phone, password, name, inviteCode: inviteCode || undefined, country, ...extra }) });
     clearPendingInvite();
     setCustomerToken(data.token); localStorage.setItem("sheeba:customer-token", data.token);
     setCustomerName(data.customer.name); localStorage.setItem("sheeba:customer-name", data.customer.name);

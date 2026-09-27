@@ -11,6 +11,8 @@ import { pendingInviteInfo } from "../../lib/invite";
 import PhoneInput from "../../components/PhoneInput";
 import CountrySelect from "../../components/CountrySelect";
 import InviteLine from "../../components/InviteLine";
+import AgeFields from "../../components/AgeFields";
+import { getPublicSettings } from "../../lib/settings";
 import { detectCountry, toE164 } from "../../lib/countries";
 import AppointmentCard from "../../components/customer/AppointmentCard";
 import Toast from "../../components/Toast";
@@ -32,6 +34,10 @@ export default function Requests() {
   const [invite, setInvite] = useState(() => (inviteInfo && inviteInfo.code) || "");
   const [phoneCountry, setPhoneCountry] = useState(null);
   const [phoneCountryChosen, setPhoneCountryChosen] = useState(false);
+  // The age check appears only when the admin has switched it on.
+  const [ageCheck, setAgeCheck] = useState(false);
+  const [age, setAge] = useState({});
+  useEffect(() => { getPublicSettings().then((st) => setAgeCheck(!!st.ageCheck)); }, []);
   const [country, setCountry] = useState(null); // worked out in the browser
   useEffect(() => {
     // Start on the inviter's country when there is one (a UK stylist's link starts on 🇬🇧).
@@ -56,9 +62,21 @@ export default function Requests() {
     const p = toE164(phone, phoneCountry);
     if (!p.ok) { setError(p.error); return; }
     const e164 = p.value;
+    // Age answers (only when the admin has the age check switched on).
+    let ageExtra = {};
+    if (ageCheck && mode === "register") {
+      if (false) {
+        ageExtra = { apprenticeAge: age.apprenticeAge, guardianName: age.guardianName, guardianConsent: !!age.guardianConsent };
+        if (age.apprenticeAge === "MINOR") {
+          const g = toE164(age.guardianPhoneRaw, age.guardianCountry || country);
+          if (!g.ok) { setError("Enter your parent or guardian's phone number."); return; }
+          ageExtra.guardianPhone = g.value;
+        }
+      } else ageExtra = { ageConfirmed: !!age.ageConfirmed };
+    }
     try {
       if (mode === "login") await customerLogin(e164, password);
-      else await customerRegister(e164, password, name, invite, country);
+      else await customerRegister(e164, password, name, invite, country, ageExtra);
       clearMode(); clearPhone(); clearName(); // signed in: the draft is no longer needed
       // Came here from a shop's "Log in to request" button? Go straight back.
       const back = sessionStorage.getItem("sheeba:return");
@@ -116,6 +134,8 @@ export default function Requests() {
               {phoneCountry && <PhoneInput country={phoneCountry} onCountryChange={(c) => { setPhoneCountry(c); setPhoneCountryChosen(true); }} value={phone} onChange={setPhone} />}
               <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line" />
               {mode === "register" && <InviteLine code={invite} name={inviteInfo && inviteInfo.code === invite ? inviteInfo.name : null} onChange={setInvite} />}
+              {mode === "register" && ageCheck && <AgeFields apprentice={false} value={age} onChange={setAge} country={country} />}
+              {mode === "register" && <p className="text-xs text-muted">By creating an account you agree to the <Link href="/terms" className="underline">Terms</Link> and <Link href="/privacy" className="underline">Privacy notice</Link>.</p>}
               {error && <p className="text-hibiscus-deep text-sm">{error}</p>}
               <button className="w-full py-3 rounded-full bg-hibiscus text-white font-bold" type="submit">{mode === "login" ? "Log In" : "Create Account"}</button>
             </form>

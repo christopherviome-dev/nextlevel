@@ -5,6 +5,8 @@ import { pendingInviteInfo } from "../../lib/invite";
 import PhoneInput from "../../components/PhoneInput";
 import CountrySelect from "../../components/CountrySelect";
 import InviteLine from "../../components/InviteLine";
+import AgeFields from "../../components/AgeFields";
+import { getPublicSettings } from "../../lib/settings";
 import { detectCountry, toE164 } from "../../lib/countries";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
@@ -25,6 +27,10 @@ export default function Login() {
   const [invite, setInvite] = useState(() => (inviteInfo && inviteInfo.code) || "");
   const [phoneCountry, setPhoneCountry] = useState(null);
   const [phoneCountryChosen, setPhoneCountryChosen] = useState(false);
+  // The age check appears only when the admin has switched it on.
+  const [ageCheck, setAgeCheck] = useState(false);
+  const [age, setAge] = useState({});
+  useEffect(() => { getPublicSettings().then((st) => setAgeCheck(!!st.ageCheck)); }, []);
   // Professionals in training: they name their supervisor by Sheeba code.
   const [isApprentice, setIsApprentice] = useState(false);
   const [supervisorCode, setSupervisorCode] = useState("");
@@ -54,10 +60,22 @@ export default function Login() {
     const p = toE164(phone, phoneCountry);
     if (!p.ok) { setError(p.error); return; }
     const e164 = p.value;
+    // Age answers (only when the admin has the age check switched on).
+    let ageExtra = {};
+    if (ageCheck && mode === "register") {
+      if (isApprentice) {
+        ageExtra = { apprenticeAge: age.apprenticeAge, guardianName: age.guardianName, guardianConsent: !!age.guardianConsent };
+        if (age.apprenticeAge === "MINOR") {
+          const g = toE164(age.guardianPhoneRaw, age.guardianCountry || country);
+          if (!g.ok) { setError("Enter your parent or guardian's phone number."); return; }
+          ageExtra.guardianPhone = g.value;
+        }
+      } else ageExtra = { ageConfirmed: !!age.ageConfirmed };
+    }
     setBusy(true); setError(null);
     try {
       if (mode === "login") await login(e164, password);
-      else await register(e164, password, name, invite, country, isApprentice ? { role: "APPRENTICE", supervisorCode } : {});
+      else await register(e164, password, name, invite, country, { ...(isApprentice ? { role: "APPRENTICE", supervisorCode } : {}), ...ageExtra });
       clearMode(); clearPhone(); clearName(); // signed in: the draft is no longer needed
       router.push("/dashboard");
     } catch (err) {
@@ -97,6 +115,8 @@ export default function Login() {
           </div>
         )}
         {mode === "register" && <InviteLine code={invite} name={inviteInfo && inviteInfo.code === invite ? inviteInfo.name : null} onChange={setInvite} />}
+        {mode === "register" && ageCheck && <AgeFields apprentice={isApprentice} value={age} onChange={setAge} country={country} />}
+        {mode === "register" && <p className="text-xs text-muted">By creating an account you agree to the <Link href="/terms" className="underline">Terms</Link> and <Link href="/privacy" className="underline">Privacy notice</Link>.</p>}
         {error && <p className="text-hibiscus-deep text-sm">{error}</p>}
         <button className="w-full py-3 rounded-full bg-hibiscus text-white font-bold" type="submit" disabled={busy}>
           {busy ? "One sec…" : mode === "login" ? "Log In" : "Create Account"}
