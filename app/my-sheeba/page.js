@@ -2,10 +2,10 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { apiFetch } from "../../lib/api";
-import { useAuth } from "../../context/AuthContext";
 import Nav from "../../components/Nav";
 import CustomerGate from "../../components/customer/CustomerGate";
 import MyCodeCard from "../../components/MyCodeCard";
+import ProfileCard from "../../components/customer/ProfileCard";
 import { EmptyState } from "../../components/States";
 import { whenLabel } from "../../components/customer/AppointmentCard";
 
@@ -22,7 +22,6 @@ export default function MySheebaPage() {
 
 // My Sheeba: what's happening now for this customer, not a directory of features.
 function MySheeba() {
-  const { customerName } = useAuth();
   const [history, setHistory] = useState([]);
   const [prefs, setPrefs] = useState([]);
   const [styles, setStyles] = useState([]);
@@ -48,13 +47,7 @@ function MySheeba() {
     <div>
       <Nav />
       <div className="max-w-2xl mx-auto px-5 pt-6 pb-16 space-y-8">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h1 className="font-display font-extrabold text-xl text-ink">Hi {customerName ? customerName.split(" ")[0] : "there"}</h1>
-            <p className="text-sm text-muted">Your beauty, all in one place.</p>
-          </div>
-          <Link href="/settings" className="px-3 py-1.5 rounded-full border border-line bg-card text-sm font-bold text-plum">⚙ Settings</Link>
-        </div>
+        <ProfileCard />
 
         {next && (
           <Link href="/requests" className="block bg-card border border-ok-line rounded-2xl p-4">

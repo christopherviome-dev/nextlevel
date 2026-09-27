@@ -65,6 +65,13 @@ export default function ShopView() {
                 <p className="mt-4 text-sm text-muted">{shop.salonName || shop.name} isn't taking bookings right now.</p>
               )}
               <div className="flex justify-end gap-2 mt-3"><MessageButton stylistId={shop._id} /><SaveShopButton shopId={shop._id} services={shop.services} /></div>
+              {shop.stats && (shop.stats.loves > 0 || shop.stats.completedJobs > 0) && (
+                <div className="text-sm text-muted-strong mt-2">
+                  {shop.stats.loves > 0 && <span>♥ {shop.stats.loves} {shop.stats.loves === 1 ? "love" : "loves"}</span>}
+                  {shop.stats.loves > 0 && shop.stats.completedJobs > 0 && " · "}
+                  {shop.stats.completedJobs > 0 && <span>{shop.stats.completedJobs} {shop.stats.completedJobs === 1 ? "job" : "jobs"} done on Sheeba</span>}
+                </div>
+              )}
               {(shop.pendingServices || []).length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-3">
                   {shop.pendingServices.map((p) => { const n = typeof p === "string" ? p : p.name; return <span key={n} className="text-xs px-3 py-1 rounded-full bg-surface-2 text-plum font-semibold">{n}</span>; })}
