@@ -124,7 +124,7 @@ function RemindMe({ r, onDone }) {
         {REMIND.map(([days, label]) => (
           <button key={days} disabled={busy} onClick={() => run(async () => {
             await apiFetch("/customers/me/repeat-preferences", { method: "POST", body: JSON.stringify({
-              stylistId: r.stylistId, styleId: r.styleId || null, serviceName: r.serviceNameSnapshot, intervalDays: days, lastCompletedAt: new Date(r.updatedAt).getTime(),
+              stylistId: r.stylistId, styleId: r.styleId || null, serviceName: r.serviceNameSnapshot, intervalDays: days, lastCompletedAt: r.completedAt || new Date(r.updatedAt).getTime(), // from when it was done, not last changed
             }) }, "customer");
             onDone(`We'll remind you in ${label}`);
           })} className="px-3 py-1.5 rounded-full border border-line bg-card text-sm font-bold text-plum disabled:opacity-40">{label}</button>
