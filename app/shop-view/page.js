@@ -8,6 +8,7 @@ import { getClientId } from "../../lib/clientId";
 import { formatMoney } from "../../lib/money";
 import SaveShopButton from "../../components/customer/SaveShopButton";
 import ReportForm from "../../components/ReportForm";
+import MessageButton from "../../components/customer/MessageButton";
 import { useAuth } from "../../context/AuthContext";
 import { useCatalog, serviceName } from "../../lib/catalog";
 
@@ -62,7 +63,7 @@ export default function ShopView() {
               ) : (
                 <p className="mt-4 text-sm text-muted">{shop.salonName || shop.name} isn't taking bookings right now.</p>
               )}
-              <div className="flex justify-end mt-3"><SaveShopButton shopId={shop._id} services={shop.services} /></div>
+              <div className="flex justify-end gap-2 mt-3"><MessageButton stylistId={shop._id} /><SaveShopButton shopId={shop._id} services={shop.services} /></div>
               {(shop.pendingServices || []).length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-3">
                   {shop.pendingServices.map((p) => { const n = typeof p === "string" ? p : p.name; return <span key={n} className="text-xs px-3 py-1 rounded-full bg-surface-2 text-plum font-semibold">{n}</span>; })}
