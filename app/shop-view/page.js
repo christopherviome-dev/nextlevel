@@ -7,10 +7,13 @@ import { workModeLabel } from "../../lib/shop";
 import { getClientId } from "../../lib/clientId";
 import { formatMoney } from "../../lib/money";
 import SaveShopButton from "../../components/customer/SaveShopButton";
+import ReportForm from "../../components/ReportForm";
+import { useAuth } from "../../context/AuthContext";
 import { useCatalog, serviceName } from "../../lib/catalog";
 
 export default function ShopView() {
   const catalog = useCatalog();
+  const { customerToken } = useAuth();
   const [shop, setShop] = useState(null);
   const [error, setError] = useState(null);
 
@@ -83,6 +86,7 @@ export default function ShopView() {
                 </div>
               ))}
               <div id="request" className="scroll-mt-24"><RequestForm shop={shop} /></div>
+              <ReportForm stylistId={shop._id} name={shop.salonName || shop.name} country={shop.country} actor={customerToken ? "customer" : null} />
             </div>
           </div>
         )}

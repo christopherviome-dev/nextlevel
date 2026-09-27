@@ -8,6 +8,7 @@ import PasswordResetQueue from "../../components/PasswordResetQueue";
 import InviteRewardsQueue from "../../components/InviteRewardsQueue";
 import AdminSwitches from "../../components/AdminSwitches";
 import ServiceProposalsQueue from "../../components/ServiceProposalsQueue";
+import ReportsQueue from "../../components/ReportsQueue";
 import Nav from "../../components/Nav";
 import ProLoginForm from "../../components/ProLoginForm";
 
@@ -52,6 +53,7 @@ export default function Admin() {
         <ShopReviewQueue onDecision={loadAudit} />
         <VerificationQueue onDecision={loadAudit} />
         <PasswordResetQueue onDecision={loadAudit} />
+        <ReportsQueue onDecision={loadAudit} />
         <ServiceProposalsQueue onDecision={loadAudit} />
         <InviteRewardsQueue onDecision={loadAudit} />
         <AdminSwitches />
@@ -61,7 +63,7 @@ export default function Admin() {
           <div key={a._id} className="bg-card border border-line rounded-xl p-3 mb-2"><b>{a.action}</b> on {a.targetType} {a.targetId.slice(-6)}{a.reason ? ` — ${a.reason}` : ""}</div>
         ))}
         <p className="text-sm text-muted mt-6">
-          Real, live audit data. Reports and account restriction tools are coming next.
+          Real, live audit data.
         </p>
       </div>
     </div>

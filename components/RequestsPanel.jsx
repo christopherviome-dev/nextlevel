@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { apiFetch } from "../lib/api";
 import Toast from "./Toast";
+import ReportForm from "./ReportForm";
 import { countryInfo } from "../lib/countries";
 
 const MEET = { provider: "At my place", client: "At the customer's place", midway: "Meet halfway" };
@@ -178,6 +179,8 @@ function RequestCard({ r, country, onChanged, onStale }) {
             className="px-5 py-2 rounded-full border border-line font-bold disabled:opacity-40">Cancel</button>
         </div>
       )}
+      {/* Professionals can report a customer they had a booking with (the server checks). */}
+      {r.clientId && <ReportForm targetType="customer" requestId={r._id} name={r.clientName} country={country} label="Report this customer" />}
     </div>
   );
 }
