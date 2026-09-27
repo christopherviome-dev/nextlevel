@@ -79,14 +79,16 @@ export default function Requests() {
     try {
       if (mode === "login") await customerLogin(e164, password);
       else await customerRegister(e164, password, name, invite, country, ageExtra);
-      if (mode === "register") { clearMode(); clearPhone(); clearName(); router.push("/welcome"); return; } // two quick questions to shape their feed
       clearMode(); clearPhone(); clearName(); // signed in: the draft is no longer needed
-      // Came here from a shop's "Log in to request" button? Go straight back.
+      // Came here from a shop? Go straight back to it: booking always comes first.
       const back = sessionStorage.getItem("sheeba:return");
       if (back && back.startsWith("/shop/")) {
         sessionStorage.removeItem("sheeba:return");
         window.location.href = back;
+        return;
       }
+      // New and just browsing: two quick questions to shape their feed.
+      if (mode === "register") router.push("/welcome");
     } catch (err) { setError(err.message); }
   };
 
