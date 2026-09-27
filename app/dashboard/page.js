@@ -11,6 +11,8 @@ import ShopChecklist from "../../components/ShopChecklist";
 import ShopProfileEditor from "../../components/ShopProfileEditor";
 import ServicesEditor from "../../components/ServicesEditor";
 import MyCodeCard from "../../components/MyCodeCard";
+import ApprenticesPanel from "../../components/ApprenticesPanel";
+import Link from "next/link";
 
 const TABS = [
   ["requests", "Requests"],
@@ -21,7 +23,7 @@ const TABS = [
 ];
 
 export default function Dashboard() {
-  const { authToken, myAccount, refreshMyAccount, hydrated } = useAuth();
+  const { authToken, myAccount, refreshMyAccount, hydrated, hasBothRoles, switchRole } = useAuth();
   const [welcome, setWelcome] = useState(false);
   const [tab, setTab] = useState(null); // null = not chosen yet, use the sensible default
 
@@ -60,6 +62,18 @@ export default function Dashboard() {
           <a href={`/shop/${myAccount._id}`} className="px-4 py-2 rounded-full border border-line bg-card text-sm font-bold text-plum whitespace-nowrap">View my shop page</a>
         </div>
 
+        {myAccount.role === "APPRENTICE" && (
+          <div className={"rounded-2xl p-4 mb-4 border " + (myAccount.supervisorStatus === "APPROVED" ? "bg-ok-bg border-ok-line text-ok-fg" : myAccount.supervisorStatus === "DECLINED" ? "bg-bad-bg border-bad-line text-bad-fg" : "bg-warn-bg border-warn-line text-warn-fg")}>
+            <div className="font-bold">
+              {myAccount.supervisorStatus === "APPROVED" ? "You're a confirmed apprentice" : myAccount.supervisorStatus === "DECLINED" ? "Your supervisor declined your request" : "Waiting for your supervisor to confirm you"}
+            </div>
+            <p className="text-sm mt-1">
+              {myAccount.supervisorStatus === "APPROVED" ? "You can help with your supervisor's shop requests. Your own shop stays private while you train."
+                : myAccount.supervisorStatus === "DECLINED" ? "Talk to them, or keep building your own shop here as an independent professional."
+                : "They've been told. Once they confirm, you can help with their shop's requests."}
+            </p>
+          </div>
+        )}
         {myAccount.mustChangePassword && (
           <div className="bg-warn-bg border border-warn-line rounded-2xl p-4 mb-4">
             <div className="font-bold mb-1">You're using a temporary password</div>
@@ -92,9 +106,15 @@ export default function Dashboard() {
         {active === "services" && <ServicesEditor account={myAccount} onSaved={refreshMyAccount} />}
         {active === "share" && <MyCodeCard shareName={myAccount.salonName || myAccount.name} />}
         {active === "account" && (
+          <div className="space-y-4">
+          {myAccount.role !== "APPRENTICE" && <div className="bg-card border border-line rounded-2xl p-4"><ApprenticesPanel /></div>}
+          {hasBothRoles && (
+            <Link href="/my-sheeba" onClick={() => switchRole("customer")} className="block bg-card border border-line rounded-2xl p-4 font-bold text-plum">Switch to my customer account →</Link>
+          )}
           <div className="bg-card border border-line rounded-2xl p-4">
             <div className="font-bold mb-3">Change password</div>
             <ChangePasswordForm endpoint="/auth/change-password" onDone={refreshMyAccount} />
+          </div>
           </div>
         )}
       </div>

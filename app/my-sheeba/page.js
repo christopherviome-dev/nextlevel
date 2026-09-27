@@ -9,6 +9,8 @@ import MyCodeCard from "../../components/MyCodeCard";
 import ChangePasswordForm from "../../components/ChangePasswordForm";
 import { EmptyState } from "../../components/States";
 import { whenLabel } from "../../components/customer/AppointmentCard";
+import { useCatalog, styleIndex } from "../../lib/catalog";
+import { forgetInterests, hasLearned } from "../../lib/interests";
 
 const DUE = {
   NOT_DUE: (d) => [`In ${d} days`, "bg-surface-2 text-muted-strong border-line"],
@@ -23,16 +25,20 @@ export default function MySheebaPage() {
 
 // My Sheeba: what's happening now for this customer, not a directory of features.
 function MySheeba() {
-  const { customerName, customerLogout } = useAuth();
+  const { customerName, customerLogout, hasBothRoles, switchRole } = useAuth();
   const [history, setHistory] = useState([]);
   const [prefs, setPrefs] = useState([]);
   const [styles, setStyles] = useState([]);
   const [now] = useState(() => Date.now()); // read the time once, not on every redraw
+  const [me, setMe] = useState(null);
+  const [learnedNow, setLearnedNow] = useState(() => (typeof window === "undefined" ? false : hasLearned()));
+  const styleNames = styleIndex(useCatalog()); // catalog styles, for showing favourite names
 
   const load = useCallback(() => {
     apiFetch("/customers/me/history", {}, "customer").then(setHistory).catch(() => {});
     apiFetch("/customers/me/repeat-preferences", {}, "customer").then(setPrefs).catch(() => {});
     apiFetch("/customers/me/style-records", {}, "customer").then(setStyles).catch(() => {});
+    apiFetch("/customers/me", {}, "customer").then(setMe).catch(() => {});
   }, []);
   useEffect(() => { load(); }, [load]);
 
@@ -54,7 +60,10 @@ function MySheeba() {
             <h1 className="font-display font-extrabold text-xl text-ink">Hi {customerName ? customerName.split(" ")[0] : "there"}</h1>
             <p className="text-sm text-muted">Your beauty, all in one place.</p>
           </div>
-          <button onClick={customerLogout} className="px-3 py-1.5 rounded-full border border-line bg-card text-sm font-bold text-plum">Log out</button>
+          <div className="flex gap-2">
+            {hasBothRoles && <Link href="/dashboard" onClick={() => switchRole("pro")} className="px-3 py-1.5 rounded-full border border-line bg-card text-sm font-bold text-plum">My shop</Link>}
+            <button onClick={customerLogout} className="px-3 py-1.5 rounded-full border border-line bg-card text-sm font-bold text-plum">Log out</button>
+          </div>
         </div>
 
         {next && (
@@ -108,6 +117,21 @@ function MySheeba() {
                 ))}
               </div>
             )}
+        </section>
+
+        <section>
+          <h2 className="text-xs font-extrabold tracking-wide text-plum uppercase mb-2">Your feed</h2>
+          <div className="bg-card border border-line rounded-2xl p-4 text-sm space-y-2">
+            <div className="text-muted-strong">
+              Showing first: <b className="text-ink">{me && me.feedFor ? { MEN: "Men's grooming", WOMEN: "Women's styles", BOTH: "Both" }[me.feedFor] : "Everything"}</b>
+              {me && me.favourites && me.favourites.length > 0 && <> · Favourites: <b className="text-ink">{me.favourites.map((k) => (styleNames[k] ? styleNames[k].name : k)).join(", ")}</b></>}
+            </div>
+            <Link href="/welcome" className="inline-block font-bold text-hibiscus-deep underline">Change</Link>
+            <p className="text-xs text-muted">Sheeba also learns from what you look at, love, save and book, to put what you like first. That's kept only on this phone and never sent anywhere.</p>
+            {learnedNow
+              ? <button onClick={() => { forgetInterests(); setLearnedNow(false); }} className="text-xs font-bold text-plum underline">Clear what Sheeba has learned on this phone</button>
+              : <p className="text-xs text-muted">Nothing learned on this phone yet.</p>}
+          </div>
         </section>
 
         <section>

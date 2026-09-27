@@ -6,6 +6,8 @@ import VerificationQueue from "../../components/VerificationQueue";
 import ShopReviewQueue from "../../components/ShopReviewQueue";
 import PasswordResetQueue from "../../components/PasswordResetQueue";
 import InviteRewardsQueue from "../../components/InviteRewardsQueue";
+import AdminSwitches from "../../components/AdminSwitches";
+import ServiceProposalsQueue from "../../components/ServiceProposalsQueue";
 import Nav from "../../components/Nav";
 import ProLoginForm from "../../components/ProLoginForm";
 
@@ -50,7 +52,9 @@ export default function Admin() {
         <ShopReviewQueue onDecision={loadAudit} />
         <VerificationQueue onDecision={loadAudit} />
         <PasswordResetQueue onDecision={loadAudit} />
+        <ServiceProposalsQueue onDecision={loadAudit} />
         <InviteRewardsQueue onDecision={loadAudit} />
+        <AdminSwitches />
         <div className="text-xs font-extrabold tracking-wide text-plum uppercase mb-2">Recent Admin Actions</div>
         {audit.length === 0 && <div className="text-muted">No admin actions recorded yet.</div>}
         {audit.map((a) => (

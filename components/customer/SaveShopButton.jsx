@@ -3,10 +3,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { apiFetch } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
+import { learn } from "../../lib/interests";
 
 // "Save shop" on a shop page. Saving to an account needs a customer login
 // (the server checks this too), so logged-out visitors get a way to log in.
-export default function SaveShopButton({ shopId }) {
+export default function SaveShopButton({ shopId, services }) {
   const { customerToken } = useAuth();
   const [me, setMe] = useState(null);
   const [saved, setSaved] = useState(null);
@@ -29,6 +30,7 @@ export default function SaveShopButton({ shopId }) {
     try {
       const r = await apiFetch(`/stylists/${shopId}/follow?lean=1`, { method: "POST", body: JSON.stringify({ clientId: me._id }) }, "customer");
       setSaved(r.following);
+      if (r.following) learn("save", { services });
     } catch (e) { /* leave as it was */ } finally { setBusy(false); }
   };
   return (

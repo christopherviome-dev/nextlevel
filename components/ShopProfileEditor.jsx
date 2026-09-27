@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { apiFetch } from "../lib/api";
 import { fitImage } from "../lib/image";
-import { CATEGORIES, WORK_MODES } from "../lib/shop";
+import { WORK_MODES } from "../lib/shop";
+import { useCatalog } from "../lib/catalog";
 import { countryInfo } from "../lib/countries";
 import { currencySymbol } from "../lib/money";
 
@@ -24,10 +25,16 @@ export default function ShopProfileEditor({ account, onSaved }) {
     name: account.name || "",
     category: account.category || "",
     area: account.area || "",
+    city: account.city || "",
     bio: account.bio || "",
     availability: account.availability || "AVAILABLE",
     workModes: account.workModes || [],
+    services: account.services && account.services.length ? account.services : [],
   });
+  const catalog = useCatalog();
+  const [proposal, setProposal] = useState("");
+  const [proposing, setProposing] = useState(false);
+  const [proposalMsg, setProposalMsg] = useState(null);
   // Photos: undefined = unchanged (not re-sent), null = remove, string = new photo
   const [profilePhoto, setProfilePhoto] = useState(undefined);
   const [coverPhoto, setCoverPhoto] = useState(undefined);
@@ -39,6 +46,17 @@ export default function ShopProfileEditor({ account, onSaved }) {
 
   const set = (k, v) => { setForm((f) => ({ ...f, [k]: v })); setSaved(false); };
   const toggleMode = (m) => set("workModes", form.workModes.includes(m) ? form.workModes.filter((x) => x !== m) : [...form.workModes, m]);
+  const toggleService = (k) => set("services", form.services.includes(k) ? form.services.filter((x) => x !== k) : [...form.services, k]);
+  // A service that isn't listed: shows on your shop at once, and goes to Sheeba to approve.
+  const propose = async () => {
+    setProposing(true); setProposalMsg(null); setError(null);
+    try {
+      const r = await apiFetch("/stylists/me/service-proposals", { method: "POST", body: JSON.stringify({ name: proposal }) });
+      setProposalMsg(r.added ? `"${r.name}" is already on Sheeba, so it's been added to your services.` : `"${r.name}" is on your shop now, and Sheeba will review it for everyone.`);
+      setProposal("");
+      await onSaved();
+    } catch (err) { setError(err.message); } finally { setProposing(false); }
+  };
 
   const choose = (setter, spec) => async (e) => {
     const file = e.target.files && e.target.files[0];
@@ -114,12 +132,10 @@ export default function ShopProfileEditor({ account, onSaved }) {
           <input value={form.name} onChange={(e) => set("name", e.target.value)} maxLength={60} className="w-full px-4 py-3 rounded-xl border border-line" />
         </div>
         <div>
-          <label className="block text-sm font-bold mb-1">Category</label>
-          <select value={form.category} onChange={(e) => set("category", e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line bg-card">
-            <option value="">Choose…</option>
-            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-            {form.category && !CATEGORIES.includes(form.category) && <option value={form.category}>{form.category}</option>}
-          </select>
+          <label className="block text-sm font-bold mb-1">City</label>
+          <input value={form.city} onChange={(e) => set("city", e.target.value)} maxLength={40} placeholder="e.g. Accra, Kumasi, London"
+            className="w-full px-4 py-3 rounded-xl border border-line" />
+          <p className="text-xs text-muted mt-1">Used to compare prices between cities. Your area (below) is your neighbourhood.</p>
         </div>
         <div>
           <label className="block text-sm font-bold mb-1">Area</label>
@@ -133,6 +149,27 @@ export default function ShopProfileEditor({ account, onSaved }) {
           placeholder="What you're great at, how long you've been doing it, what customers can expect."
           className="w-full px-4 py-3 rounded-xl border border-line" />
         <div className="text-xs text-muted text-right">{form.bio.length}/{BIO_MAX}</div>
+      </div>
+
+      <div>
+        <div className="text-sm font-bold mb-1">What I offer</div>
+        <div className="flex flex-wrap gap-2">
+          {catalog.map((c) => (
+            <button type="button" key={c.key} onClick={() => toggleService(c.key)} aria-pressed={form.services.includes(c.key)}
+              className={"px-3 py-2 rounded-full border text-sm font-semibold " + (form.services.includes(c.key) ? "bg-violet text-white border-violet" : "bg-card border-line text-plum")}>
+              {form.services.includes(c.key) ? "✓ " : ""}{c.name}
+            </button>
+          ))}
+          {(account.pendingServices || []).map((p) => (
+            <span key={p.proposalId} className="px-3 py-2 rounded-full border border-warn-line bg-warn-bg text-warn-fg text-sm font-semibold">{p.name} · waiting for approval</span>
+          ))}
+        </div>
+        <div className="flex gap-2 mt-2">
+          <input value={proposal} onChange={(e) => setProposal(e.target.value)} maxLength={40} placeholder="My service isn't listed: type it"
+            className="flex-1 min-w-0 px-4 py-2 rounded-xl border border-line text-sm" />
+          <button type="button" onClick={propose} disabled={proposing || proposal.trim().length < 3} className="px-4 py-2 rounded-full border border-line bg-card text-sm font-bold text-plum disabled:opacity-40">Add</button>
+        </div>
+        {proposalMsg && <p className="text-xs text-ok-fg mt-1">{proposalMsg}</p>}
       </div>
 
       <div>

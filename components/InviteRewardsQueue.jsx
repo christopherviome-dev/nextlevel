@@ -5,45 +5,61 @@ import { formatMinor } from "../lib/money";
 
 // Admin: invite rewards earned and waiting to be paid by hand, grouped by the
 // person to pay, with each qualifying job shown so it can be checked first.
+const VIEWS = [["UNDER_REVIEW", "Under review"], ["CHECKING", "Checking"], ["VALIDATED", "Confirmed"], ["VOID", "Not eligible"]];
+// Warning signs, in plain words (see the backend's lib/invites.js).
+export const FLAG_TEXT = {
+  REFERRER_INVOLVED: "The person who invited them was also on this job.",
+  QUICK_FIRST_JOB: "The first job was completed within 24 hours of the account being created.",
+  SAME_PROFESSIONAL: "Several of this person's invites completed their first job with the same professional.",
+};
+
 export default function InviteRewardsQueue({ onDecision }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
+  const [view, setView] = useState("UNDER_REVIEW");
   const load = useCallback(() => {
-    apiFetch("/admin/invite-rewards").then(setData).catch((e) => setError(e.message));
-  }, []);
+    apiFetch(`/admin/invite-rewards?status=${view}`).then(setData).catch((e) => setError(e.message));
+  }, [view]);
   useEffect(() => { load(); }, [load]);
   const done = () => { load(); if (onDecision) onDecision(); };
 
   return (
     <div className="mb-8">
       <div className="text-xs font-extrabold tracking-wide text-plum uppercase mb-2">
-        Invite Rewards to Pay {data && `(${data.summary.earned})`}
+        Invite Rewards: future coupons
       </div>
       {error && <div className="text-bad-fg">{error}</div>}
       {!data && !error && <div className="text-muted">Loading…</div>}
+      <p className="text-xs text-muted mb-2">No cash is paid while Sheeba takes no payments; confirmed rewards become coupons once Sheeba is monetised. Rewards are checked for 7 days and confirmed automatically unless there's a warning sign; those wait here for you.</p>
+      <div className="flex gap-2 overflow-x-auto no-scrollbar mb-3">
+        {VIEWS.map(([k, label]) => (
+          <button key={k} onClick={() => { setData(null); setView(k); }} aria-pressed={view === k}
+            className={"px-3 py-1.5 rounded-full text-xs font-bold border whitespace-nowrap " + (view === k ? "bg-violet text-white border-violet" : "bg-card text-plum border-line")}>
+            {label}{data && data.summary ? ` (${{ UNDER_REVIEW: data.summary.underReview, CHECKING: data.summary.checking, VALIDATED: data.summary.validated, VOID: data.summary.voided }[k]})` : ""}
+          </button>
+        ))}
+      </div>
       {data && (
         <div className="text-xs text-muted mb-3">
-          {data.summary.joined} waiting for a first job · {data.summary.earned} to pay · {data.summary.paid} paid · {data.summary.voided} not eligible
+          {data.summary.joined} joined and waiting for their first job
         </div>
       )}
-      {data && data.groups.length === 0 && <div className="text-muted">No rewards waiting to be paid.</div>}
+      {data && data.groups.length === 0 && <div className="text-muted">Nothing here right now.</div>}
       {data && data.groups.map((g) => <PayGroup key={g.referrerType + g.referrerId} group={g} onDone={done} />)}
     </div>
   );
 }
 
 function PayGroup({ group, onDone }) {
-  const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [voiding, setVoiding] = useState(null);
   const [reason, setReason] = useState("");
   const total = formatMinor(group.totalMinor, group.currency);
 
-  const pay = async () => {
-    if (!window.confirm(`Mark ${total} as paid to ${group.name}? Only do this after you've sent the money.`)) return;
+  const confirmOne = async (id) => {
     setBusy(true); setError(null);
-    try { await apiFetch("/admin/invite-rewards/pay", { method: "POST", body: JSON.stringify({ rewardIds: group.rewards.map((r) => r._id), note }) }); onDone(); }
+    try { await apiFetch(`/admin/invite-rewards/${id}/validate`, { method: "POST" }); onDone(); }
     catch (e) { setError(e.message); } finally { setBusy(false); }
   };
   const voidOne = async (id) => {
@@ -76,11 +92,9 @@ function PayGroup({ group, onDone }) {
             {r.job
               ? <div className="text-muted mt-0.5">First job: {r.job.service}{r.job.professional ? ` with ${r.job.professional}` : ""}{r.job.completedAt ? ` · completed ${new Date(r.job.completedAt).toLocaleDateString()}` : ""}</div>
               : <div className="text-muted mt-0.5">Job details unavailable</div>}
-            {r.flag === "REFERRER_INVOLVED" && (
-              <div className="mt-2 text-warn-fg bg-warn-bg border border-warn-line rounded-lg px-2 py-1">
-                Check this one: {group.name} was also on this job. It's normal when someone joins from a shop's own QR code, but make sure the job was real before paying.
-              </div>
-            )}
+            {(r.flags || []).map((f) => (
+              <div key={f} className="mt-2 text-warn-fg bg-warn-bg border border-warn-line rounded-lg px-2 py-1">⚠ {FLAG_TEXT[f] || f}</div>
+            ))}
             {voiding === r._id ? (
               <div className="mt-2 flex gap-2">
                 <input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Why isn't this eligible?" className="flex-1 min-w-0 px-3 py-1.5 rounded-lg border border-line bg-card" />
@@ -88,18 +102,17 @@ function PayGroup({ group, onDone }) {
                 <button onClick={() => { setVoiding(null); setReason(""); }} className="px-3 py-1.5 rounded-full border border-line text-xs">Cancel</button>
               </div>
             ) : (
-              <button onClick={() => setVoiding(r._id)} className="mt-1 text-xs text-bad-fg underline">Not eligible?</button>
+              <span className="flex gap-3 mt-1">
+                {["UNDER_REVIEW", "CHECKING", "EARNED"].includes(r.status) && <button onClick={() => confirmOne(r._id)} disabled={busy} className="text-xs text-ok-fg font-bold underline">Confirm</button>}
+                {r.status !== "VOID" && <button onClick={() => setVoiding(r._id)} className="text-xs text-bad-fg underline">Not eligible?</button>}
+                {r.status === "VOID" && r.voidReason && <span className="text-xs text-muted">Reason: {r.voidReason}</span>}
+              </span>
             )}
           </div>
         ))}
       </div>
 
       {error && <div className="text-bad-fg text-sm mt-2">{error}</div>}
-      <div className="flex gap-2 mt-3 flex-wrap">
-        <input value={note} onChange={(e) => setNote(e.target.value)} maxLength={200} placeholder="Payment reference, e.g. MoMo ID"
-          className="flex-1 min-w-[12rem] px-3 py-2 rounded-full border border-line bg-card text-sm" />
-        <button onClick={pay} disabled={busy} className="px-5 py-2 rounded-full bg-emerald-600 text-white font-bold text-sm disabled:opacity-40">Mark {total} as paid</button>
-      </div>
     </div>
   );
 }

@@ -1,7 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "../context/AuthContext";
+import PhoneInput from "./PhoneInput";
+import { detectCountry, toE164 } from "../lib/countries";
 
 // One login form for professional accounts, used by My Shop and Admin.
 // (Admin isn't a separate kind of account: it's a professional account
@@ -9,13 +11,21 @@ import { useAuth } from "../context/AuthContext";
 export default function ProLoginForm({ title = "Log In", note }) {
   const { login } = useAuth();
   const [phone, setPhone] = useState("");
+  const [phoneCountry, setPhoneCountry] = useState(null);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the device's location settings only exist in the browser
+    setPhoneCountry(detectCountry());
+  }, []);
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
 
   const submit = async (e) => {
-    e.preventDefault(); setBusy(true); setError(null);
-    try { await login(phone, password); } catch (err) { setError(err.message); } finally { setBusy(false); }
+    e.preventDefault();
+    const p = toE164(phone, phoneCountry);
+    if (!p.ok) { setError(p.error); return; }
+    setBusy(true); setError(null);
+    try { await login(p.value, password); } catch (err) { setError(err.message); } finally { setBusy(false); }
   };
 
   return (
@@ -24,8 +34,7 @@ export default function ProLoginForm({ title = "Log In", note }) {
       {note && <p className="text-sm text-muted-strong mb-3">{note}</p>}
       <form onSubmit={submit} className="space-y-3">
         {/* autoComplete lets phones offer saved logins */}
-        <input type="tel" autoComplete="username" placeholder="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl border border-line" />
+        {phoneCountry && <PhoneInput country={phoneCountry} onCountryChange={setPhoneCountry} value={phone} onChange={setPhone} autoComplete="username" />}
         <input type="password" autoComplete="current-password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)}
           className="w-full px-4 py-3 rounded-xl border border-line" />
         {error && <p className="text-hibiscus-deep text-sm">{error}</p>}

@@ -1,4 +1,5 @@
 "use client";
+import { learn } from "../lib/interests";
 import { useState, useEffect } from "react";
 import { apiFetch } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
@@ -83,6 +84,8 @@ export default function RequestForm({ shop }) {
           note: note.trim() || undefined,
         }),
       }, "customer");
+      // Booking is the strongest sign of what someone likes (learned only on this phone).
+      { const chosen = (shop.styles || []).find((x) => x.id === styleId); if (chosen) learn("book", { styleKey: chosen.styleKey, serviceKey: chosen.serviceKey }); }
       setSent(true);
     } catch (e) {
       setError(e.message);
