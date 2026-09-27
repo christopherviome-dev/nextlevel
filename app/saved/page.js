@@ -7,7 +7,7 @@ import ProCard from "../../components/discover/ProCard";
 import { EmptyState, LoadingState } from "../../components/States";
 
 export default function SavedPage() {
-  return <CustomerGate title="Saved shops"><Saved /></CustomerGate>;
+  return <CustomerGate title="Following"><Saved /></CustomerGate>;
 }
 
 function Saved() {
@@ -29,10 +29,10 @@ function Saved() {
     <div>
       <Nav />
       <div className="max-w-5xl mx-auto px-5 pt-6 pb-16">
-        <h1 className="font-display font-extrabold text-xl text-ink mb-4">Saved shops</h1>
-        {!shops && <LoadingState label="Loading saved shops" />}
+        <h1 className="font-display font-extrabold text-xl text-ink mb-4">Following</h1>
+        {!shops && <LoadingState label="Loading" />}
         {shops && shops.length === 0 && (
-          <EmptyState title="No saved shops yet" hint='Tap "Save shop" on any professional you like, and they will be here for next time.' actionLabel="Browse Discover" actionHref="/" />
+          <EmptyState title="You're not following anyone yet" hint={'Tap the "+" on any post, or "Follow" on a shop, and they\'ll be here.'} actionLabel="Browse Discover" actionHref="/" />
         )}
         {shops && shops.length > 0 && (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -40,7 +40,7 @@ function Saved() {
               <div key={s._id} className="relative">
                 {/* Plain navigation: shop pages load through the Netlify redirect rule. */}
                 <ProCard shop={{ ...s, _distanceKm: null }} wide onOpen={() => { window.location.href = `/shop/${s._id}`; }} />
-                <button onClick={() => unsave(s)} className="absolute top-2 right-2 px-3 py-1 rounded-full bg-black/55 text-white text-xs font-bold">Remove</button>
+                <button onClick={() => unsave(s)} className="absolute top-2 right-2 px-3 py-1 rounded-full bg-black/55 text-white text-xs font-bold">Unfollow</button>
               </div>
             ))}
           </div>

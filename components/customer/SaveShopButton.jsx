@@ -22,7 +22,7 @@ export default function SaveShopButton({ shopId, services }) {
     return () => { cancelled = true; };
   }, [customerToken, shopId]);
 
-  if (!customerToken) return <Link href="/requests" className="px-4 py-2 rounded-full border border-line bg-card text-sm font-bold text-plum">♡ Save shop</Link>;
+  if (!customerToken) return <Link href="/requests" className="px-4 py-2 rounded-full border border-line bg-card text-sm font-bold text-plum">+ Follow</Link>;
   if (saved === null || !me) return null;
 
   const toggle = async () => {
@@ -36,7 +36,7 @@ export default function SaveShopButton({ shopId, services }) {
   return (
     <button onClick={toggle} disabled={busy} aria-pressed={saved}
       className={"px-4 py-2 rounded-full border text-sm font-bold " + (saved ? "bg-violet text-white border-violet" : "bg-card text-plum border-line")}>
-      {saved ? "✓ Saved" : "♡ Save shop"}
+      {saved ? "✓ Following" : "+ Follow"}
     </button>
   );
 }

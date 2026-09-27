@@ -46,7 +46,7 @@ export default function ProfileCard() {
         <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-line">
           {tile(stats.completedServices, "services done")}
           {tile(stats.savedStyles, "styles saved")}
-          {tile(stats.savedShops, "shops saved")}
+          <Link href="/saved" className="block">{tile(stats.savedShops, "following")}</Link>
         </div>
       )}
       {error && <p className="text-sm text-bad-fg mt-2">{error}</p>}
