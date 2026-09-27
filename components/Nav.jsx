@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
-import ThemeToggle from "./ThemeToggle";
+import LocationToggle from "./LocationToggle";
 
 // The app shell's navigation. One component, used on every signed-in-style
 // page, so moving around works the same everywhere:
@@ -11,7 +11,7 @@ import ThemeToggle from "./ThemeToggle";
 // Kept short on purpose: not every feature becomes a tab.
 
 const Icon = {
-  discover: <path d="M11 4a7 7 0 1 0 4.4 12.4l4.1 4.1 1.4-1.4-4.1-4.1A7 7 0 0 0 11 4Zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z" />,
+  discover: <path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm4.2 3.8-2.4 6-6 2.4 2.4-6 6-2.4ZM12 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z" />,
   requests: <path d="M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm0 2v14h10V5H7Zm2 3h6v2H9V8Zm0 4h6v2H9v-2Z" />,
   shop: <path d="M4 4h16l1 5a3 3 0 0 1-2 2.8V20H5v-8.2A3 3 0 0 1 3 9l1-5Zm1.6 2-.6 3a1 1 0 0 0 2 .2L7.4 6H5.6Zm3.8 0L9 9.2a1 1 0 0 0 2 .1V6H9.4Zm3.6 0v3.3a1 1 0 0 0 2-.1L14.6 6H13Zm3.6 0 .4 3.2a1 1 0 0 0 2-.2l-.6-3h-1.8ZM7 12v6h10v-6a3 3 0 0 1-2-.8 3 3 0 0 1-3 .8 3 3 0 0 1-3-.8 3 3 0 0 1-2 .8Z" />,
   me: <path d="M12 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm0 10c4.4 0 8 2.2 8 5v3H4v-3c0-2.8 3.6-5 8-5Zm0 2c-3.5 0-6 1.6-6 3v1h12v-1c0-1.4-2.5-3-6-3Z" />,
@@ -44,9 +44,13 @@ function tabsFor({ isAdmin, activeRole }) {
 
 export default function Nav() {
   const pathname = usePathname();
-  const { myAccount, isAdmin, logout, customerLogout, customerName, activeRole, hasBothRoles, switchRole } = useAuth();
+  const { isAdmin, activeRole } = useAuth();
   const tabs = tabsFor({ isAdmin, activeRole });
-  const who = activeRole === "pro" ? (myAccount && myAccount.name) : activeRole === "customer" ? customerName : null;
+  // Tapping Discover while already on it goes back to the start of the feed
+  // (closing anything open), like tapping Home on Instagram.
+  const onTab = (e, href) => {
+    if (href === "/" && pathname === "/") { e.preventDefault(); window.dispatchEvent(new Event("sheeba:discover-home")); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  };
   const active = (href) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   return (
@@ -59,7 +63,7 @@ export default function Nav() {
         {/* Larger screens: tabs in the top bar */}
         <div className="hidden sm:flex gap-2 flex-wrap justify-center">
           {tabs.map((t) => (
-            <Link key={t.href} href={t.href} aria-current={active(t.href) ? "page" : undefined}
+            <Link key={t.href} href={t.href} onClick={(e) => onTab(e, t.href)} aria-current={active(t.href) ? "page" : undefined}
               className={"px-4 py-2 rounded-full text-sm font-bold border transition-colors " +
                 (active(t.href) ? "bg-hibiscus text-white border-hibiscus" : "bg-card text-plum border-line hover:border-hibiscus")}>
               {t.label}
@@ -67,19 +71,16 @@ export default function Nav() {
           ))}
         </div>
 
+        {/* Kept tidy: the location pin and Settings. Everything else lives in Settings. */}
         <div className="flex items-center gap-2 shrink-0">
-          {who && <span className="hidden lg:inline text-xs text-muted">Signed in as <b className="text-plum">{who}</b></span>}
-          {/* Only for people who have BOTH a shop and a customer login on this phone. */}
-          {hasBothRoles && (
-            <Link href={activeRole === "pro" ? "/my-sheeba" : "/dashboard"} onClick={() => switchRole(activeRole === "pro" ? "customer" : "pro")}
-              className="hidden sm:inline px-3 py-2 rounded-full text-sm font-bold border border-line bg-card text-plum whitespace-nowrap">
-              {activeRole === "pro" ? "Switch to customer" : "Switch to my shop"}
-            </Link>
-          )}
-          <ThemeToggle />
-          {activeRole && (
-            <button onClick={activeRole === "pro" ? logout : customerLogout} className="px-3 py-2 rounded-full text-sm font-bold border border-line bg-card text-plum">Log out</button>
-          )}
+          <LocationToggle />
+          <Link href="/settings" aria-label="Settings" title="Settings" aria-current={pathname.startsWith("/settings") ? "page" : undefined}
+            className={"w-10 h-10 rounded-full border flex items-center justify-center " + (pathname.startsWith("/settings") ? "bg-violet text-white border-violet" : "bg-card text-plum border-line")}>
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" />
+            </svg>
+          </Link>
         </div>
       </nav>
 
@@ -87,7 +88,7 @@ export default function Nav() {
       <nav aria-label="Main" className="sm:hidden fixed bottom-0 inset-x-0 z-30 bg-card border-t border-line pb-[env(safe-area-inset-bottom)]">
         <div className="grid" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
           {tabs.map((t) => (
-            <Link key={t.href} href={t.href} aria-current={active(t.href) ? "page" : undefined}
+            <Link key={t.href} href={t.href} onClick={(e) => onTab(e, t.href)} aria-current={active(t.href) ? "page" : undefined}
               className={"flex flex-col items-center gap-0.5 py-2 text-[11px] font-bold " + (active(t.href) ? "text-hibiscus-deep" : "text-muted")}>
               <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden>{t.icon}</svg>
               {t.short || t.label}

@@ -1,353 +1,249 @@
 "use client";
-import Link from "next/link";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { apiFetch } from "../lib/api";
 import Nav from "../components/Nav";
+import SiteFooter from "../components/SiteFooter";
 import { LoadingState, EmptyState, ErrorState } from "../components/States";
-import { useCatalog, styleIndex, photosFor, INSPIRATION_STYLES } from "../lib/catalog";
-import InspirationTile from "../components/discover/InspirationTile";
-import ComparePanel from "../components/discover/ComparePanel";
-import CountrySelect from "../components/CountrySelect";
+import { useCatalog, styleIndex, INSPIRATION_STYLES } from "../lib/catalog";
 import { summarise } from "../lib/prices";
-import { personalize, scoreWork, scoreShop } from "../lib/personalize";
+import { personalize, scoreWork } from "../lib/personalize";
 import { interests, learn } from "../lib/interests";
-import VoiceSearchButton, { parseVoice } from "../components/discover/VoiceSearchButton";
 import { useAuth } from "../context/AuthContext";
 import { distanceKm } from "../lib/geo";
 import { getClientId, likedSet, saveLiked, likeKey } from "../lib/clientId";
-import { COUNTRIES, countryInfo, detectCountry, saveCountry } from "../lib/countries";
+import { countryInfo } from "../lib/countries";
 import { formatMoney } from "../lib/money";
-import LiveStrip from "../components/discover/LiveStrip";
-import Row from "../components/discover/Row";
-import WorkTile from "../components/discover/WorkTile";
-import ProCard from "../components/discover/ProCard";
+import { useCountryPref, useLocationPref, setUseLocation } from "../lib/prefs";
+import { useBackClose, closeLayer } from "../lib/useBackClose";
+import VoiceSearchButton, { parseVoice } from "../components/discover/VoiceSearchButton";
+import ServiceRoller from "../components/discover/ServiceRoller";
+import FeedPost from "../components/discover/FeedPost";
+import InspirationPost from "../components/discover/InspirationPost";
+import InspirationSheet from "../components/discover/InspirationSheet";
+import FiltersSheet from "../components/discover/FiltersSheet";
 import ContextPanel from "../components/discover/ContextPanel";
 
+const PAGE = 12;          // posts shown at first, and added each time you reach the end
+const INSPIRE_EVERY = 5;  // an inspiration post after every 5 work posts
+const STOP = new Set(["near", "in", "at", "for", "a", "an", "the", "and", "with", "to", "of", "me"]);
 
 // Spread work across professionals so one busy shop can't fill the feed.
 function interleave(shops) {
   const queues = shops.map((s) => s.work.filter((w) => w.thumb).map((w) => ({ ...w, shop: s })));
   const out = [];
-  for (let added = true; added;) {
-    added = false;
-    for (const q of queues) if (q.length) { out.push(q.shift()); added = true; }
-  }
+  for (let added = true; added;) { added = false; for (const q of queues) if (q.length) { out.push(q.shift()); added = true; } }
   return out;
 }
-const byNearest = (a, b) => (a._distanceKm ?? Infinity) - (b._distanceKm ?? Infinity);
 
+// Discover: one vertical feed, like Instagram. Services roll across the top,
+// work posts fill the feed with inspiration woven in, and details open over
+// the feed (Back or tapping Discover again returns you to it).
 export default function Discover() {
+  const country = useCountryPref();
+  const useLoc = useLocationPref();
+  const { customerToken } = useAuth();
+  const catalog = useCatalog();
+  const styles = useMemo(() => styleIndex(catalog), [catalog]);
+
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [reloadKey, setReloadKey] = useState(0);
-  const [query, setQuery] = useState("");
-  const [service, setService] = useState("all"); // a service key, or "all"
-  const [style, setStyle] = useState(null);       // a named style within it
-  const [budget, setBudget] = useState("any");
   const [myLocation, setMyLocation] = useState(null);
-  const [locating, setLocating] = useState(false);
   const [locError, setLocError] = useState(null);
-  const [selection, setSelection] = useState(null); // ids only; resolved against fresh data below
-  const [focusTab, setFocusTab] = useState("work");
-  const [placeOpen, setPlaceOpen] = useState(false); // the small location / compare panel
-  const [voiceMax, setVoiceMax] = useState(null);     // "under 200" said out loud
-  // Personal ordering: onboarding choices (customers) + what this phone has learned.
-  // Read once per visit, so the feed never reshuffles while someone is browsing.
-  const { customerToken } = useAuth();
+  const [query, setQuery] = useState("");
+  const [service, setService] = useState("all");
+  const [style, setStyle] = useState(null);
+  const [budget, setBudget] = useState("any");
+  const [voiceMax, setVoiceMax] = useState(null);
+  const [layer, setLayer] = useState(null); // what's open over the feed
+  const [shown, setShown] = useState(PAGE);
   const [prefs, setPrefs] = useState(null);
-  const [learned] = useState(() => (typeof window === "undefined" ? null : interests()));
+  const [learned] = useState(() => (typeof window === "undefined" ? null : interests())); // read once per visit: the feed never reshuffles mid-browse
+  const [liked, setLiked] = useState(() => (typeof window === "undefined" ? new Set() : likedSet()));
+  const sentinel = useRef(null);
+
+  // The shops for the chosen country (Settings), lean and light on data.
+  useEffect(() => {
+    if (!country) return;
+    let live = true;
+    apiFetch(`/stylists/discover?country=${country}`)
+      .then((list) => { if (live) { setShops(list); setError(null); } })
+      .catch((e) => { if (live) setError(e.message); })
+      .finally(() => { if (live) setLoading(false); });
+    return () => { live = false; };
+  }, [country, reloadKey]);
+
+  // The location pin in the top bar (or Settings) turns "near me" on or off.
+  useEffect(() => {
+    if (!useLoc) { setMyLocation(null); return; } // eslint-disable-line react-hooks/set-state-in-effect -- follows the pin
+    if (!navigator.geolocation) { setLocError("This device can't share its location."); return; }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => { setMyLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setLocError(null); },
+      () => { setLocError("Couldn't get your location. Check that location access is allowed for this site."); setUseLocation(false); },
+      { enableHighAccuracy: true, timeout: 15000 }
+    );
+  }, [useLoc]);
+
   useEffect(() => {
     if (!customerToken) return;
     apiFetch("/customers/me", {}, "customer").then((me) => setPrefs({ feedFor: me.feedFor || null, favourites: me.favourites || [] })).catch(() => {});
   }, [customerToken]);
-  // Which country's shops to show. Worked out in the browser (device time zone,
-  // language, or an earlier choice), so it starts unknown.
-  const [country, setCountry] = useState(null);
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- the device's location settings only exist in the browser
-    setCountry(detectCountry());
+
+  // Tapping Discover again (bottom bar) returns to the start of the feed.
+  const goHome = useCallback(() => {
+    setLayer(null); setQuery(""); setService("all"); setStyle(null); setBudget("any"); setVoiceMax(null); setShown(PAGE);
   }, []);
-  // Tiles only appear after the feed loads in the browser, so reading saved likes here is safe.
-  const [liked, setLiked] = useState(() => (typeof window === "undefined" ? new Set() : likedSet()));
-
   useEffect(() => {
-    if (!country) return;
-    let cancelled = false;
-    apiFetch(`/stylists/discover?country=${country}`)
-      .then((list) => { if (!cancelled) setShops(list); })
-      .catch((e) => { if (!cancelled) setError(e.message); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [reloadKey, country]);
+    window.addEventListener("sheeba:discover-home", goHome);
+    return () => window.removeEventListener("sheeba:discover-home", goHome);
+  }, [goHome]);
+  useBackClose(layer, () => setLayer(null));
+  const close = () => closeLayer(() => setLayer(null));
+  const open = (l) => setLayer(l);
 
-  const retry = () => { setError(null); setLoading(true); setReloadKey((k) => k + 1); };
-  const clearFilters = () => { setQuery(""); setService("all"); setStyle(null); setBudget("any"); setVoiceMax(null); };
-  const switchCountry = (c) => {
-    if (c === country) return;
-    saveCountry(c); setCountry(c); setBudget("any"); setSelection(null); setMyLocation(null);
-    setShops([]); setError(null); setLoading(true);
-  };
   const info = countryInfo(country);
-
-  const toggleNearMe = () => {
-    if (myLocation) { setMyLocation(null); return; }
-    if (!navigator.geolocation) { setLocError("This device can't share its location."); return; }
-    setLocating(true); setLocError(null);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => { setMyLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setLocating(false); },
-      () => { setLocError("Couldn't get your location. Check that location access is allowed for this site."); setLocating(false); },
-      { enableHighAccuracy: true, timeout: 15000 }
-    );
-  };
-
   const withDistance = useMemo(() => shops.map((s) => ({
-    ...s,
-    _distanceKm: myLocation && s.location ? distanceKm(myLocation.lat, myLocation.lng, s.location.lat, s.location.lng) : null,
+    ...s, _distanceKm: myLocation && s.location ? distanceKm(myLocation.lat, myLocation.lng, s.location.lat, s.location.lng) : null,
   })), [shops, myLocation]);
+  const where = myLocation ? "near you" : `in ${info.name}`;
 
-  const allWork = useMemo(() => interleave(withDistance), [withDistance]);
-  // Real local price ranges, from what professionals here actually charge
-  // (one figure per shop, only with 3+ shops): near you if location is on,
-  // otherwise across the country. Follows the chosen service and style.
+  // Local price ranges (one figure per shop, 3+ shops), following the chosen service/style.
   const bandShops = useMemo(() => (myLocation ? withDistance.filter((s) => s._distanceKm != null && s._distanceKm <= 25) : withDistance), [withDistance, myLocation]);
   const local = useMemo(() => summarise(bandShops, { service: service === "all" ? undefined : service, style: style || undefined }), [bandShops, service, style]);
-  const where = myLocation ? "near you" : `in ${info.name}`;
-  const BUDGETS = local.enough
+  const budgets = local.enough
     ? [["any", "Any price", Infinity], ["low", `Up to ${formatMoney(local.low, info.currency)}`, local.low], ["typical", `Up to ${formatMoney(local.high, info.currency)}`, local.high]]
     : [["any", "Any price", Infinity]];
-  if (voiceMax) BUDGETS.push(["voice", `Up to ${formatMoney(voiceMax, info.currency)}`, voiceMax]);
-  const maxPrice = (BUDGETS.find((b) => b[0] === budget) || BUDGETS[0])[2];
-  const q = query.trim().toLowerCase();
-  const catalog = useCatalog();
-  const styles = useMemo(() => styleIndex(catalog), [catalog]);
+  if (voiceMax) budgets.push(["voice", `Up to ${formatMoney(voiceMax, info.currency)}`, voiceMax]);
+  const maxPrice = (budgets.find((b) => b[0] === budget) || budgets[0])[2];
+
+  // Word-by-word search across style, service, shop and area.
+  const words = useMemo(() => query.trim().toLowerCase().split(/\s+/).filter((w) => w && !STOP.has(w)), [query]);
   const styleWords = useCallback((w) => (w.styleKey && styles[w.styleKey] ? [styles[w.styleKey].name, ...(styles[w.styleKey].aliases || [])] : []), [styles]);
-  // Word-by-word search: every meaningful word must appear somewhere (style,
-  // service, shop, area). Filler like "near", "in", "a" is ignored, so natural
-  // phrases work: "knotless braids near kasoa".
-  const STOP = useMemo(() => new Set(["near", "in", "at", "for", "a", "an", "the", "and", "with", "to", "of", "me"]), []);
-  const words = useMemo(() => q.split(/\s+/).filter((w) => w && !STOP.has(w)), [q, STOP]);
-  const matches = useCallback((text) => words.every((w) => text.includes(w)), [words]);
   const ctx = useMemo(() => ({ prefs, learned, styles }), [prefs, learned, styles]);
-  const focus = !!q || service !== "all" || !!style || budget !== "any";
+
+  const work = useMemo(() => {
+    const list = interleave(withDistance).filter((w) =>
+      (service === "all" || w.serviceKey === service || (!w.serviceKey && (w.shop.services || []).includes(service))) &&
+      (!style || w.styleKey === style) &&
+      (budget === "any" || (typeof w.price === "number" && w.price <= maxPrice)) &&
+      (!words.length || words.every((word) => [w.name, w.serviceKey, ...styleWords(w), w.shop.salonName, w.shop.name, w.shop.area, w.shop.city].filter(Boolean).join(" ").toLowerCase().includes(word))));
+    return myLocation ? [...list].sort((a, b) => (a.shop._distanceKm ?? Infinity) - (b.shop._distanceKm ?? Infinity)) : personalize(list, (x) => scoreWork(x, ctx));
+  }, [withDistance, service, style, budget, maxPrice, words, styleWords, myLocation, ctx]);
+
+  // Inspiration woven through the feed, matching the chosen service.
+  const inspiration = useMemo(() => INSPIRATION_STYLES.filter((k) => styles[k] && (service === "all" || styles[k].serviceKey === service) && (!style || k === style)), [styles, service, style]);
+  const feed = useMemo(() => {
+    const out = [];
+    let ins = 0;
+    work.forEach((w, i) => {
+      out.push({ kind: "work", key: likeKey(w), item: w });
+      if ((i + 1) % INSPIRE_EVERY === 0 && inspiration.length) out.push({ kind: "inspire", key: `i-${i}`, styleKey: inspiration[ins++ % inspiration.length] });
+    });
+    if (!work.length) inspiration.forEach((k) => out.push({ kind: "inspire", key: `i-${k}`, styleKey: k })); // nothing yet: inspiration still shows
+    return out;
+  }, [work, inspiration]);
+
+  // Reaching the end of the feed shows the next batch.
   useEffect(() => {
-    if (words.length === 0) return;
+    const el = sentinel.current;
+    if (!el) return;
+    const io = new IntersectionObserver((e) => { if (e[0].isIntersecting) setShown((n) => n + PAGE); }, { rootMargin: "600px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [feed.length]);
+
+  // Searches teach the feed too (after a pause, so half-typed words don't count).
+  useEffect(() => {
+    if (!words.length) return;
     const t = setTimeout(() => {
       Object.entries(styles).filter(([, st]) => words.every((w) => [st.name, ...(st.aliases || [])].join(" ").toLowerCase().includes(w)))
         .slice(0, 2).forEach(([k, st]) => learn("search", { styleKey: k, serviceKey: st.serviceKey }));
     }, 1500);
     return () => clearTimeout(t);
   }, [words, styles]);
-  const onVoice = (said) => {
-    const v = parseVoice(said);
-    setQuery(v.text);
-    if (v.max) { setVoiceMax(v.max); setBudget("voice"); }
-    if (v.nearMe && !myLocation) toggleNearMe();
-  };
 
-  const filteredShops = useMemo(() => {
-    const list = withDistance.filter((s) =>
-      (service === "all" || (s.services || []).includes(service)) &&
-      (!style || s.work.some((w) => w.styleKey === style)) &&
-      (!words.length || matches([s.salonName, s.name, s.area, s.city, s.bio, ...(s.services || []), ...s.work.flatMap((w) => [w.name, ...styleWords(w)])].filter(Boolean).join(" ").toLowerCase())) &&
-      (budget === "any" || s.work.some((w) => typeof w.price === "number" && w.price <= maxPrice)));
-    return myLocation ? [...list].sort(byNearest) : personalize(list, (x) => scoreShop(x, ctx));
-  }, [withDistance, service, style, words, matches, budget, maxPrice, myLocation, styleWords, ctx]);
-
-  const filteredWork = useMemo(() => {
-    const list = allWork.filter((w) =>
-      (service === "all" || w.serviceKey === service || (!w.serviceKey && (w.shop.services || []).includes(service))) &&
-      (!style || w.styleKey === style) &&
-      (budget === "any" || (typeof w.price === "number" && w.price <= maxPrice)) &&
-      (!words.length || matches([w.name, w.serviceKey, ...styleWords(w), w.shop.salonName, w.shop.name, w.shop.area, w.shop.city].filter(Boolean).join(" ").toLowerCase())));
-    return myLocation ? [...list].sort((a, b) => byNearest(a.shop, b.shop)) : personalize(list, (w) => scoreWork(w, ctx));
-  }, [allWork, service, style, words, matches, budget, maxPrice, myLocation, styleWords, ctx]);
-
-  // Ambient rows, all from real data. Each only shows with enough real content.
-  const live = useMemo(() => personalize([...allWork].sort((a, b) => (b.likeCount - a.likeCount) || ((b.addedAt || 0) - (a.addedAt || 0))), (w) => scoreWork(w, ctx)).slice(0, 12), [allWork, ctx]);
-  const newLooks = useMemo(() => allWork.filter((w) => w.addedAt).sort((a, b) => b.addedAt - a.addedAt).slice(0, 12), [allWork]);
-  const loved = useMemo(() => allWork.filter((w) => w.likeCount > 0).sort((a, b) => b.likeCount - a.likeCount).slice(0, 12), [allWork]);
-  const nearYou = useMemo(() => (myLocation ? withDistance.filter((s) => s._distanceKm != null).sort(byNearest).slice(0, 10) : []), [withDistance, myLocation]);
-  const popular = useMemo(() => withDistance.filter((s) => s.popularThisWeek), [withDistance]);
-
-  // Selection is stored as IDs so the panel always shows fresh numbers (e.g. after a like).
-  const open = (sel) => {
-    if (sel.type === "work") learn("view", { styleKey: sel.item.styleKey, serviceKey: sel.item.serviceKey });
-    else learn("view", { services: sel.shop.services });
-    openSel(sel);
-  };
-  const openSel = (sel) => setSelection(sel.type === "work"
-    ? { type: "work", shopId: sel.item.shop._id, workId: sel.item.id }
-    : { type: "pro", shopId: sel.shop._id });
-  const resolved = useMemo(() => {
-    if (!selection) return null;
-    const shop = withDistance.find((s) => s._id === selection.shopId);
-    if (!shop) return null;
-    if (selection.type === "pro") return { type: "pro", shop };
-    const w = shop.work.find((x) => x.id === selection.workId);
-    return w ? { type: "work", item: { ...w, shop } } : { type: "pro", shop };
-  }, [selection, withDistance]);
-
-  const bumpLike = (item, delta, exact) => setShops((prev) => prev.map((s) => s._id !== item.shop._id ? s : {
+  const bump = (item, delta, exact) => setShops((prev) => prev.map((s) => s._id !== item.shop._id ? s : {
     ...s, work: s.work.map((w) => w.id !== item.id ? w : { ...w, likeCount: exact ?? Math.max(0, w.likeCount + delta) }),
   }));
   const onLike = async (item) => {
     const clientId = getClientId();
     if (!clientId) return;
-    const key = likeKey(item);
-    const wasLiked = liked.has(key);
-    const next = new Set(liked);
-    if (wasLiked) next.delete(key); else next.add(key);
-    setLiked(next); saveLiked(next);
-    if (!wasLiked) learn("heart", { styleKey: item.styleKey, serviceKey: item.serviceKey });
-    bumpLike(item, wasLiked ? -1 : 1);
+    const key = likeKey(item), was = liked.has(key);
+    const next = new Set(liked); if (was) next.delete(key); else next.add(key);
+    setLiked(next); saveLiked(next); bump(item, was ? -1 : 1);
+    if (!was) learn("heart", { styleKey: item.styleKey, serviceKey: item.serviceKey });
     try {
       const r = await apiFetch(`/stylists/${item.shop._id}/styles/${item.id}/like?lean=1`, { method: "POST", body: JSON.stringify({ clientId }) });
-      const fixed = new Set(next);
-      if (r.liked) fixed.add(key); else fixed.delete(key);
-      setLiked(fixed); saveLiked(fixed);
-      bumpLike(item, 0, r.likeCount);
-    } catch (e) {
-      setLiked(liked); saveLiked(liked);
-      bumpLike(item, wasLiked ? 1 : -1);
-    }
+      const fixed = new Set(next); if (r.liked) fixed.add(key); else fixed.delete(key);
+      setLiked(fixed); saveLiked(fixed); bump(item, 0, r.likeCount);
+    } catch (e) { setLiked(liked); saveLiked(liked); bump(item, was ? 1 : -1); }
   };
-
-  const tiles = (list, fixed) => list.map((item) => (
-    <WorkTile key={likeKey(item)} item={item} fixed={fixed} onOpen={open} liked={liked.has(likeKey(item))} onLike={onLike} />
-  ));
-  const chip = (active, onClick, label) => (
-    <button key={label} type="button" onClick={onClick} aria-pressed={active}
-      className={"px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap border " + (active ? "bg-violet text-white border-violet" : "bg-card text-plum border-line")}>{label}</button>
-  );
+  const openWork = (item) => { learn("view", { styleKey: item.styleKey, serviceKey: item.serviceKey }); open({ type: "work", item }); };
+  const openPro = (shop) => { learn("view", { services: shop.services }); open({ type: "pro", shop }); };
+  const onVoice = (said) => {
+    const v = parseVoice(said);
+    setQuery(v.text);
+    if (v.max) { setVoiceMax(v.max); setBudget("voice"); }
+    if (v.nearMe && !useLoc) setUseLocation(true);
+  };
+  const filtersOn = budget !== "any" || !!style;
+  const services = catalog.map((c) => ({ key: c.key, name: c.name }));
+  const chosen = catalog.find((c) => c.key === service);
 
   return (
     <div>
       <Nav />
-      <div className="max-w-6xl mx-auto px-5 pt-5 pb-16">
-        <div className="bg-card border border-line rounded-3xl p-4 mb-6">
+      <div className="max-w-xl mx-auto sm:px-4 pt-3 pb-4">
+        <div className="px-4 sm:px-0 space-y-3 mb-3">
           <div className="flex gap-2">
             <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search styles, services, professionals or areas"
-              placeholder="Try 'knotless braids' or 'Kasoa'" className="flex-1 min-w-0 px-4 py-3 rounded-full border border-line bg-surface" />
+              placeholder="Search styles, professionals, areas" className="flex-1 min-w-0 px-4 py-3 rounded-full border border-line bg-card shadow-sm" />
             <VoiceSearchButton onResult={onVoice} lang={country === "GB" ? "en-GB" : "en-GH"} />
-            {/* A small on/off location toggle, like the one on a phone. */}
-            <button type="button" onClick={toggleNearMe} disabled={locating} aria-pressed={!!myLocation}
-              aria-label={myLocation ? "Stop using my location" : "Use my location to show what's near me"}
-              title={myLocation ? "Location on" : "Location off"}
-              className={"w-12 h-12 shrink-0 rounded-full border flex items-center justify-center transition-colors " +
-                (myLocation ? "bg-hibiscus text-white border-hibiscus" : "bg-card text-plum border-line") + (locating ? " motion-safe:animate-pulse" : "")}>
-              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden fill={myLocation ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinejoin="round">
-                <path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z" />
-                <circle cx="12" cy="9.5" r="2.5" fill={myLocation ? "var(--color-hibiscus)" : "none"} />
-              </svg>
+            <button type="button" onClick={() => open({ type: "filters" })} aria-label="Filters and prices" title="Filters and prices"
+              className={"relative w-12 h-12 shrink-0 rounded-full border flex items-center justify-center " + (filtersOn ? "bg-violet text-white border-violet" : "bg-card text-plum border-line")}>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0" /><circle cx="16" cy="6" r="2" /><circle cx="10" cy="12" r="2" /><circle cx="18" cy="18" r="2" /></svg>
             </button>
           </div>
-          {locError && <p className="text-sm text-bad-fg mt-2">{locError}</p>}
-          {country && (
-            <div className="mt-3">
-              <button type="button" onClick={() => setPlaceOpen(!placeOpen)} aria-expanded={placeOpen}
-                className="px-3 py-1 rounded-full border border-line bg-card text-sm font-bold text-plum" aria-label={`Showing ${info.name}. Change location or compare prices`}>
-                <span aria-hidden>{info.flag}</span> {country === "GB" ? "UK" : country} {myLocation ? "· near you" : ""} <span aria-hidden>▾</span>
-              </button>
-              {placeOpen && (
-                <div className="mt-2 bg-surface border border-line rounded-2xl p-3 space-y-3">
-                  <div>
-                    <div className="text-xs font-bold text-muted uppercase mb-1">Show shops in</div>
-                    <CountrySelect value={country} onChange={(c) => { switchCountry(c); }} />
-                  </div>
-                  <ComparePanel service={service === "all" ? null : service} style={style}
-                    label={style && styles[style] ? styles[style].name : service !== "all" ? (catalog.find((c) => c.key === service) || {}).name : null}
-                    currency={info.currency} />
-                </div>
-              )}
-            </div>
-          )}
-          <div className="flex gap-2 overflow-x-auto no-scrollbar mt-3">
-            {[["all", "All"], ...catalog.map((c) => [c.key, c.name])].map(([k, label]) => chip(service === k, () => { setService(k); setStyle(null); }, label))}
-          </div>
-          {/* A service's own styles, once one is chosen (Barbering: Fade, Waves, Beard trim…) */}
-          {service !== "all" && ((catalog.find((c) => c.key === service) || {}).styles || []).length > 0 && (
-            <div className="flex gap-2 overflow-x-auto no-scrollbar mt-2">
-              {catalog.find((c) => c.key === service).styles.map((st) => (
+          {services.length > 0 && <ServiceRoller services={services} selected={service} onSelect={(k) => { setService(k); setStyle(null); setShown(PAGE); }} />}
+          {chosen && (chosen.styles || []).length > 0 && (
+            <div className="flex gap-2 overflow-x-auto no-scrollbar">
+              {chosen.styles.map((st) => (
                 <button key={st.key} type="button" onClick={() => setStyle(style === st.key ? null : st.key)} aria-pressed={style === st.key}
                   className={"px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border " + (style === st.key ? "bg-hibiscus text-white border-hibiscus" : "bg-surface text-plum border-line")}>{st.name}</button>
               ))}
             </div>
           )}
-          <div className="flex gap-2 overflow-x-auto no-scrollbar mt-2">{BUDGETS.map(([k, label]) => chip(budget === k, () => setBudget(k), label))}</div>
-          <p className="text-xs text-muted mt-1">
-            {local.enough
-              ? `Typical ${where}: ${formatMoney(local.low, info.currency)}–${formatMoney(local.high, info.currency)} (from ${local.shops} professionals)`
-              : `Not enough prices ${where} yet to suggest a budget.`}
-          </p>
+          {locError && <p className="text-xs text-bad-fg">{locError}</p>}
         </div>
 
         {loading && <LoadingState label="Loading Discover" />}
-        {error && <ErrorState message={`We couldn't load Discover right now. (${error})`} onRetry={retry} />}
-        {!loading && !error && shops.length === 0 && (
-          <EmptyState title="No shops on Sheeba yet" hint="New professionals are joining. Check back soon." />
+        {error && <ErrorState message={`We couldn't load Discover right now. (${error})`} onRetry={() => { setError(null); setLoading(true); setReloadKey((k) => k + 1); }} />}
+        {!loading && !error && feed.length === 0 && (
+          <div className="px-4"><EmptyState title={shops.length ? "Nothing matches" : `No shops in ${info.name} yet`} hint={shops.length ? "Try another service or budget, or clear your search." : "New professionals are joining. You can change your country in Settings."} actionLabel={shops.length ? "Show everything" : undefined} onAction={shops.length ? goHome : undefined} /></div>
         )}
-
-        {!loading && !error && shops.length > 0 && focus && (
-          <section aria-label="Search results">
-            {style && photosFor(style).length > 0 && styles[style] && (
-              <div className="flex gap-3 items-center bg-card border border-line rounded-2xl p-3 mb-4">
-                <img src={photosFor(style)[0].src} alt="" className="w-20 h-20 rounded-xl object-cover shrink-0" />
-                <div className="min-w-0">
-                  <div className="text-xs font-bold text-muted uppercase">Inspiration</div>
-                  <div className="font-bold text-ink">{styles[style].name}</div>
-                  <div className="text-sm text-muted">Professionals on Sheeba who do this style are below.</div>
-                  <a href={photosFor(style)[0].page} target="_blank" rel="noopener noreferrer" className="text-[11px] text-muted underline">Photo: {photosFor(style)[0].photographer} on {photosFor(style)[0].site}</a>
-                </div>
-              </div>
-            )}
-            <div className="flex items-center justify-between gap-3 mb-3">
-              <div role="tablist" aria-label="Result type" className="flex gap-2">
-                {chip(focusTab === "work", () => setFocusTab("work"), `Looks (${filteredWork.length})`)}
-                {chip(focusTab === "pros", () => setFocusTab("pros"), `Professionals (${filteredShops.length})`)}
-              </div>
-              <button type="button" onClick={clearFilters} className="text-sm font-bold text-hibiscus-deep underline whitespace-nowrap">Clear</button>
-            </div>
-            {focusTab === "work" && (filteredWork.length
-              ? <div className="columns-2 sm:columns-3 lg:columns-4 gap-3">{tiles(filteredWork, false)}</div>
-              : <EmptyState title="No looks match" hint="Try another service or budget, or search for a professional instead." actionLabel="Clear search and filters" onAction={clearFilters} />)}
-            {focusTab === "pros" && (filteredShops.length
-              ? <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">{filteredShops.map((s) => <ProCard key={s._id} shop={s} onOpen={open} wide />)}</div>
-              : <EmptyState title="No professionals match" hint="Try another service or budget." actionLabel="Clear search and filters" onAction={clearFilters} />)}
-          </section>
-        )}
-
-        {!loading && !error && shops.length > 0 && !focus && (
-          <>
-            <LiveStrip items={live} onOpen={open} likedIds={liked} onLike={onLike} />
-            {INSPIRATION_STYLES.some((k) => styles[k]) && <Row title="Inspiration" subtitle="Tap a style to find professionals who do it">
-              {INSPIRATION_STYLES.filter((k) => styles[k]).map((k) => (
-                <InspirationTile key={k} style={styles[k]} photo={photosFor(k)[0]} onOpen={() => { setService(styles[k].serviceKey); setStyle(k); setFocusTab("pros"); }} />
-              ))}
-            </Row>}
-            {nearYou.length > 0 && (
-              <Row title="Near you" subtitle="Closest first">{nearYou.map((s) => <ProCard key={s._id} shop={s} onOpen={open} />)}</Row>
-            )}
-            {newLooks.length >= 3 && <Row title="New looks" subtitle="Just added by professionals">{tiles(newLooks, true)}</Row>}
-            {loved.length >= 3 && <Row title="Loved on Sheeba" subtitle="What people are hearting">{tiles(loved, true)}</Row>}
-            {popular.length >= 2 && (
-              <Row title="Popular this week" subtitle="Shops people are visiting">{popular.map((s) => <ProCard key={s._id} shop={s} onOpen={open} />)}</Row>
-            )}
-            <Row title="Professionals to discover">{personalize(withDistance, (x) => scoreShop(x, ctx)).map((s) => <ProCard key={s._id} shop={s} onOpen={open} />)}</Row>
-            <section aria-label="Explore">
-              <h2 className="font-display font-extrabold text-lg text-ink mb-3">Explore</h2>
-              {allWork.length
-                ? <div className="columns-2 sm:columns-3 lg:columns-4 gap-3">{tiles(personalize(allWork, (w) => scoreWork(w, ctx)), false)}</div>
-                : <EmptyState title="No work photos yet" hint="As professionals add photos of their work, they'll appear here." />}
-            </section>
-          </>
-        )}
+        {!loading && !error && feed.slice(0, shown).map((f) => f.kind === "work"
+          ? <FeedPost key={f.key} item={f.item} liked={liked.has(f.key)} onLike={onLike} onOpenWork={openWork} onOpenPro={openPro} styleName={f.item.styleKey && styles[f.item.styleKey] ? styles[f.item.styleKey].name : null} />
+          : <InspirationPost key={f.key} styleKey={f.styleKey} style={styles[f.styleKey]} onOpen={() => open({ type: "inspiration", styleKey: f.styleKey })} />)}
+        {shown < feed.length && <div ref={sentinel} className="h-10" aria-hidden />}
+        {!loading && feed.length > 0 && shown >= feed.length && <p className="text-center text-xs text-muted py-6">You're all caught up ✨</p>}
       </div>
-      <footer className="max-w-6xl mx-auto px-5 pb-8 text-xs text-muted flex gap-4">
-        <Link href="/terms" className="underline">Terms</Link>
-        <Link href="/privacy" className="underline">Privacy</Link>
-      </footer>
-      <ContextPanel selection={resolved} onClose={() => setSelection(null)} onSelect={open} likedIds={liked} onLike={onLike} />
+      <SiteFooter />
+
+      {layer && (layer.type === "work" || layer.type === "pro") && (
+        <ContextPanel selection={layer.type === "work" ? { type: "work", item: layer.item } : { type: "pro", shop: layer.shop }}
+          onClose={close} onSelect={(sel) => setLayer(sel.type === "work" ? { type: "work", item: sel.item } : { type: "pro", shop: sel.shop })} likedIds={liked} onLike={onLike} />
+      )}
+      {layer && layer.type === "inspiration" && styles[layer.styleKey] && (
+        <InspirationSheet styleKey={layer.styleKey} style={styles[layer.styleKey]} shops={withDistance} currency={info.currency} where={where} onClose={close}
+          onShowInFeed={() => { const k = layer.styleKey; close(); setService(styles[k].serviceKey); setStyle(k); setShown(PAGE); window.scrollTo({ top: 0 }); }} />
+      )}
+      {layer && layer.type === "filters" && (
+        <FiltersSheet local={local} budgets={budgets} budget={budget} setBudget={setBudget} currency={info.currency} where={where}
+          service={service === "all" ? null : service} style={style}
+          label={style && styles[style] ? styles[style].name : chosen ? chosen.name : null}
+          onClose={close} onClear={() => { setBudget("any"); setStyle(null); setVoiceMax(null); close(); }} />
+      )}
     </div>
   );
 }
