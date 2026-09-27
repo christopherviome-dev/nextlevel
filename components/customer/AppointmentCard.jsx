@@ -4,6 +4,7 @@ import { apiFetch } from "../../lib/api";
 import { formatMoney } from "../../lib/money";
 import { fitImage } from "../../lib/image";
 import ReportForm from "../ReportForm";
+import MessageButton from "./MessageButton";
 
 const STATUS = {
   pending: ["Waiting for confirmation", "bg-warn-bg text-warn-fg border-warn-line"],
@@ -42,6 +43,7 @@ export default function AppointmentCard({ r, onChanged }) {
       {r.checkedInAt && <div className="text-sm font-bold text-ok-fg mt-1">✓ Checked in {new Date(r.checkedInAt).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}</div>}
       {r.priceSnapshot != null && <div className="text-sm text-muted-strong mt-1">{formatMoney(r.priceSnapshot, r.currencySnapshot || "GHS")}</div>}
 
+      <div className="mt-2"><MessageButton stylistId={r.stylistId} requestId={r._id} small /></div>
       <ReportForm stylistId={r.stylistId} requestId={r._id} name={shopName} actor="customer" />
       {r.status === "completed" && (
         <>

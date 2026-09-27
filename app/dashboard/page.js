@@ -12,10 +12,16 @@ import ShopProfileEditor from "../../components/ShopProfileEditor";
 import ServicesEditor from "../../components/ServicesEditor";
 import MyCodeCard from "../../components/MyCodeCard";
 import ApprenticesPanel from "../../components/ApprenticesPanel";
+import MessagesPanel from "../../components/MessagesPanel";
+import CustomersPanel from "../../components/pro/CustomersPanel";
+import EarningsPanel from "../../components/pro/EarningsPanel";
 import Link from "next/link";
 
 const TABS = [
   ["requests", "Requests"],
+  ["messages", "Messages"],
+  ["customers", "Customers"],
+  ["earnings", "Earnings"],
   ["shop", "Shop page"],
   ["services", "Services"],
   ["share", "Share & earn"],
@@ -95,6 +101,9 @@ export default function Dashboard() {
         </div>
 
         {active === "requests" && <RequestsPanel account={myAccount} />}
+        {active === "messages" && <MessagesPanel side="stylist" />}
+        {active === "customers" && <CustomersPanel />}
+        {active === "earnings" && <EarningsPanel />}
         {active === "shop" && (
           <div className="space-y-4">
             <div className="bg-card border border-line rounded-2xl p-4">

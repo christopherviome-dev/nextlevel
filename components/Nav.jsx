@@ -16,6 +16,7 @@ const Icon = {
   shop: <path d="M4 4h16l1 5a3 3 0 0 1-2 2.8V20H5v-8.2A3 3 0 0 1 3 9l1-5Zm1.6 2-.6 3a1 1 0 0 0 2 .2L7.4 6H5.6Zm3.8 0L9 9.2a1 1 0 0 0 2 .1V6H9.4Zm3.6 0v3.3a1 1 0 0 0 2-.1L14.6 6H13Zm3.6 0 .4 3.2a1 1 0 0 0 2-.2l-.6-3h-1.8ZM7 12v6h10v-6a3 3 0 0 1-2-.8 3 3 0 0 1-3 .8 3 3 0 0 1-3-.8 3 3 0 0 1-2 .8Z" />,
   me: <path d="M12 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm0 10c4.4 0 8 2.2 8 5v3H4v-3c0-2.8 3.6-5 8-5Zm0 2c-3.5 0-6 1.6-6 3v1h12v-1c0-1.4-2.5-3-6-3Z" />,
   saved: <path d="M12 21 10.6 19.7C5.4 15 2 12 2 8.3 2 5.3 4.4 3 7.4 3c1.7 0 3.4.8 4.6 2.1C13.2 3.8 14.9 3 16.6 3 19.6 3 22 5.3 22 8.3c0 3.7-3.4 6.7-8.6 11.4L12 21Zm0-2.7c4.7-4.3 8-7.1 8-10 0-1.9-1.5-3.3-3.4-3.3-1.4 0-2.8.9-3.3 2.2h-2.6C10.2 5.9 8.8 5 7.4 5 5.5 5 4 6.4 4 8.3c0 2.9 3.3 5.7 8 10Z" />,
+  messages: <path d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H8l-4 4V6a2 2 0 0 1 2-2Zm0 2v11.2L7.2 16H20V6H4Zm3 3h10v2H7V9Zm0 3h7v2H7v-2Z" />,
   admin: <path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5l-8-3Zm0 2.2 6 2.2V11c0 4-2.6 7.8-6 8.9-3.4-1.1-6-4.9-6-8.9V6.4l6-2.2Zm-1 11.3-3-3 1.4-1.4 1.6 1.6 4.6-4.6L17 9.5l-6 6Z" />,
 };
 
@@ -30,6 +31,7 @@ function tabsFor({ isAdmin, activeRole }) {
       { href: "/requests", label: "Appointments", short: "Bookings", icon: Icon.requests },
       { href: "/my-sheeba", label: "My Sheeba", icon: Icon.me },
       { href: "/saved", label: "Saved", icon: Icon.saved },
+      { href: "/messages", label: "Messages", icon: Icon.messages },
     );
   } else if (activeRole === "pro") {
     tabs.push({ href: "/dashboard", label: "My Shop", icon: Icon.shop });
