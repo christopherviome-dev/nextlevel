@@ -32,7 +32,9 @@ export default function ShopView() {
     // Count this visit (anonymously; the server counts one per browser per 30 minutes).
     // It's what makes "Popular this week" on Discover real. Failure is harmless.
     const clientId = getClientId();
-    if (clientId) apiFetch(`/stylists/${id}/visit`, { method: "POST", body: JSON.stringify({ clientId }) }).catch(() => {});
+    // The visit carries a marketing-link code (?ref=) when there is one, so the professional's link gets credit.
+    const ref = new URLSearchParams(window.location.search).get("ref") || undefined;
+    if (clientId) apiFetch(`/stylists/${id}/visit`, { method: "POST", body: JSON.stringify({ clientId, ref }) }).catch(() => {});
   }, []);
 
   return (

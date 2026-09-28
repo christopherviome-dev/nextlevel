@@ -85,7 +85,7 @@ function CustomerDetail({ id, onBack }) {
         <p className="text-xs text-muted mb-2">Only you can see these, never the customer.</p>
         {data.notes.map((n) => (
           <div key={n._id} className="bg-surface rounded-xl p-3 mb-2 text-sm flex justify-between gap-2">
-            <span className="whitespace-pre-line text-ink">{n.note}</span>
+            <span className="whitespace-pre-line text-ink">{n.note}{n.authorName && <span className="block text-xs text-muted mt-1">by {n.authorName}</span>}</span>
             <button onClick={() => remove(n._id)} className="text-xs text-bad-fg underline shrink-0">Delete</button>
           </div>
         ))}

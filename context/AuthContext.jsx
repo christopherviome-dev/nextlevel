@@ -1,4 +1,5 @@
 "use client";
+import { currentSource } from "../lib/source";
 import { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { apiFetch } from "../lib/api";
 import { clearPendingInvite } from "../lib/invite";
@@ -81,7 +82,7 @@ export function AuthProvider({ children }) {
 
   const register = useCallback(async (phone, password, name, inviteCode, country, extra = {}) => {
     // extra: { role: "APPRENTICE", supervisorCode } for professionals in training
-    const data = await apiFetch("/auth/register", { method: "POST", body: JSON.stringify({ phone, password, name, inviteCode: inviteCode || undefined, country, ...extra }) });
+    const data = await apiFetch("/auth/register", { method: "POST", body: JSON.stringify({ phone, password, name, inviteCode: inviteCode || undefined, country, ...extra, source: currentSource() }) });
     clearPendingInvite(); // an invite only ever counts once, at signup
     setAuthToken(data.token); localStorage.setItem("sheeba:token", data.token);
     setMyStylistId(data.stylist._id); localStorage.setItem("sheeba:my-stylist-id", data.stylist._id);
@@ -107,7 +108,7 @@ export function AuthProvider({ children }) {
   }, [chooseRole]);
 
   const customerRegister = useCallback(async (phone, password, name, inviteCode, country, extra = {}) => {
-    const data = await apiFetch("/customers/register", { method: "POST", body: JSON.stringify({ phone, password, name, inviteCode: inviteCode || undefined, country, ...extra }) });
+    const data = await apiFetch("/customers/register", { method: "POST", body: JSON.stringify({ phone, password, name, inviteCode: inviteCode || undefined, country, ...extra, source: currentSource() }) });
     clearPendingInvite();
     setCustomerToken(data.token); localStorage.setItem("sheeba:customer-token", data.token);
     setCustomerName(data.customer.name); localStorage.setItem("sheeba:customer-name", data.customer.name);
@@ -122,7 +123,7 @@ export function AuthProvider({ children }) {
     chooseRole(localStorage.getItem("sheeba:token") ? "pro" : null);
   }, [chooseRole]);
 
-  const isAdmin = !!(myAccount && myAccount.isAdmin);
+  const isAdmin = !!(myAccount && (myAccount.isAdmin || myAccount.adminRole)); // any admin role (the server checks each action)
   const activeRole = role === "pro" && authToken ? "pro" : role === "customer" && customerToken ? "customer"
     : authToken ? "pro" : customerToken ? "customer" : null;
   const hasBothRoles = !!(authToken && customerToken);

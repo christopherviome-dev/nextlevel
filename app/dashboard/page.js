@@ -12,7 +12,7 @@ import ShopChecklist from "../../components/ShopChecklist";
 import ShopProfileEditor from "../../components/ShopProfileEditor";
 import ServicesEditor from "../../components/ServicesEditor";
 import MyCodeCard from "../../components/MyCodeCard";
-import ApprenticesPanel from "../../components/ApprenticesPanel";
+import TeamPanel from "../../components/pro/TeamPanel";
 import MessagesPanel from "../../components/MessagesPanel";
 import CustomersPanel from "../../components/pro/CustomersPanel";
 import EarningsPanel from "../../components/pro/EarningsPanel";
@@ -20,10 +20,11 @@ import MyTraining from "../../components/training/MyTraining";
 import ProShell from "../../components/pro/ProShell";
 import ProHome from "../../components/pro/ProHome";
 import ProProfile from "../../components/pro/ProProfile";
+import MarketingLinks from "../../components/pro/MarketingLinks";
 
 const TITLES = {
   home: "Home", profile: "Profile", training: "My Training", requests: "Requests", messages: "Messages", customers: "Customers",
-  earnings: "Earnings", shop: "Shop page", services: "Services", share: "Share & earn", apprentices: "Apprentices",
+  earnings: "Earnings", shop: "Shop page", services: "Services", share: "Share & earn", team: "Team", apprentices: "Team",
 };
 const NO_COUNTS = { pendingRequests: 0, unreadMessages: 0, workToReview: 0, apprenticeRequests: 0 };
 
@@ -107,8 +108,13 @@ export default function Dashboard() {
           </div>
         )}
         {active === "services" && <ServicesEditor account={myAccount} onSaved={refreshMyAccount} />}
-        {active === "share" && <MyCodeCard shareName={myAccount.salonName || myAccount.name} />}
-        {active === "apprentices" && <div className="bg-card border border-line rounded-2xl p-4"><ApprenticesPanel /></div>}
+        {active === "share" && (
+          <div className="space-y-4">
+            <MyCodeCard shareName={myAccount.salonName || myAccount.name} />
+            {myAccount.status === "APPROVED" && <MarketingLinks account={myAccount} />}
+          </div>
+        )}
+        {(active === "team" || active === "apprentices") && <TeamPanel account={myAccount} />}
       </ProShell>
     </div>
   );

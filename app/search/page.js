@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import Nav from "../../components/Nav";
 import { LoadingState, ErrorState } from "../../components/States";
 import { INSPIRATION_STYLES, photosFor } from "../../lib/catalog";
@@ -12,6 +12,7 @@ import { learn } from "../../lib/interests";
 import { useDiscoverData } from "../../lib/useDiscoverData";
 import { useBackClose, closeLayer } from "../../lib/useBackClose";
 import { setUseLocation } from "../../lib/prefs";
+import { track } from "../../lib/track";
 import VoiceSearchButton, { parseVoice } from "../../components/discover/VoiceSearchButton";
 import InspirationSheet from "../../components/discover/InspirationSheet";
 import FiltersSheet from "../../components/discover/FiltersSheet";
@@ -68,7 +69,17 @@ export default function SearchPage() {
     if (v.max) { setVoiceMax(v.max); setBudget("voice"); }
     if (v.nearMe) setUseLocation(true);
   };
-  const openStyle = (k) => { learn("search", { styleKey: k, serviceKey: styles[k] && styles[k].serviceKey }); setLayer({ type: "inspiration", styleKey: k }); };
+  const openStyle = (k) => { learn("search", { styleKey: k, serviceKey: styles[k] && styles[k].serviceKey }); track("inspiration", k); setLayer({ type: "inspiration", styleKey: k }); };
+  // What people search for teaches their own feed, and (anonymously) the admin's demand trends.
+  // Waits for a pause in typing, so half-typed words don't count.
+  useEffect(() => {
+    if (!words.length) return;
+    const t = setTimeout(() => {
+      Object.entries(styles).filter(([, st]) => words.every((w) => [st.name, ...(st.aliases || [])].join(" ").toLowerCase().includes(w)))
+        .slice(0, 2).forEach(([k, st]) => { learn("search", { styleKey: k, serviceKey: st.serviceKey }); track("search", k); });
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [words, styles]);
   const chip = (on, onClick, label, key) => (
     <button key={key || label} type="button" onClick={onClick} aria-pressed={on}
       className={"px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap border " + (on ? "bg-violet text-white border-violet" : "bg-card text-plum border-line")}>{label}</button>

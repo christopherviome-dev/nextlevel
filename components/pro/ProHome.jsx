@@ -67,7 +67,7 @@ export default function ProHome({ account, counts, go }) {
       {(counts.unreadMessages > 0 || counts.workToReview > 0 || counts.apprenticeRequests > 0) && (
         <div className="grid sm:grid-cols-2 gap-3">
           {counts.unreadMessages > 0 && <button onClick={() => go("messages")} className="bg-card border border-line rounded-2xl p-4 text-left"><div className="text-2xl font-bold text-ink">{counts.unreadMessages}</div><div className="text-sm text-muted">unread conversation{counts.unreadMessages === 1 ? "" : "s"}</div></button>}
-          {(counts.workToReview > 0 || counts.apprenticeRequests > 0) && <button onClick={() => go("apprentices")} className="bg-card border border-line rounded-2xl p-4 text-left"><div className="text-2xl font-bold text-ink">{counts.workToReview + counts.apprenticeRequests}</div><div className="text-sm text-muted">from your apprentices to review</div></button>}
+          {(counts.workToReview > 0 || counts.apprenticeRequests > 0) && <button onClick={() => go("team")} className="bg-card border border-line rounded-2xl p-4 text-left"><div className="text-2xl font-bold text-ink">{counts.workToReview + counts.apprenticeRequests}</div><div className="text-sm text-muted">from your apprentices to review</div></button>}
         </div>
       )}
 

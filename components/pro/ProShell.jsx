@@ -43,7 +43,7 @@ function menuFor(account, counts) {
     ["shop", "Shop page", I.shop, 0],
     ["services", "Services", I.services, 0],
     ["share", "Share & earn", I.share, 0],
-    ...(!apprentice ? [["apprentices", "Apprentices", I.training, counts.apprenticeRequests + counts.workToReview]] : []),
+    ...(!apprentice ? [["team", "Team", I.customers, counts.apprenticeRequests + counts.workToReview]] : []),
   ];
 }
 

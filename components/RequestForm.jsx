@@ -9,6 +9,7 @@ import { useDraft } from "../lib/useDraft";
 import { toE164 } from "../lib/countries";
 import { pendingInvite } from "../lib/invite";
 import { getPublicSettings } from "../lib/settings";
+import { currentSource } from "../lib/source";
 import PhoneInput from "./PhoneInput";
 
 // datetime-local wants "YYYY-MM-DDTHH:MM" in the user's local time.
@@ -49,6 +50,11 @@ export default function RequestForm({ shop }) {
     if (customerToken) apiFetch("/customers/me", {}, "customer").then(setMe).catch(() => setMe(null));
   }, [customerToken]);
   useEffect(() => { getPublicSettings().then((s) => setAgeCheck(!!s.ageCheck)); }, []);
+  // "Book this look" from Discover: the tapped look's service arrives already chosen.
+  useEffect(() => {
+    const look = new URLSearchParams(window.location.search).get("look");
+    if (look && (shop.styles || []).some((x) => x.id === look && x.active !== false)) setStyleId(look); // eslint-disable-line react-hooks/set-state-in-effect -- the page address only exists in the browser
+  }, [shop._id]); // eslint-disable-line react-hooks/exhaustive-deps -- once per shop
 
   if (!hydrated) return null;
 
@@ -107,6 +113,7 @@ export default function RequestForm({ shop }) {
           date: at.toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }),
           meet,
           note: note.trim() || undefined,
+          source: currentSource(), // where this booking came from
         }),
       }, "customer");
       // Booking is the strongest sign of what someone likes (learned only on this phone).

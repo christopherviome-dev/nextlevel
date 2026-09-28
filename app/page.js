@@ -14,11 +14,14 @@ import { useLikes } from "../lib/useLikes";
 import { useDiscoverData } from "../lib/useDiscoverData";
 import { useFollowing } from "../lib/useFollowing";
 import { useBackClose, closeLayer } from "../lib/useBackClose";
+import { track } from "../lib/track";
 import ServiceRoller from "../components/discover/ServiceRoller";
 import FeedPost from "../components/discover/FeedPost";
 import InspirationPost from "../components/discover/InspirationPost";
 import InspirationSheet from "../components/discover/InspirationSheet";
 import ContextPanel from "../components/discover/ContextPanel";
+import ReelSheet from "../components/reel/ReelSheet";
+import { formatMoney } from "../lib/money";
 
 const PAGE = 12;          // posts shown at first, and added each time you reach the end
 const INSPIRE_EVERY = 5;  // an inspiration post after every 5 work posts
@@ -47,6 +50,7 @@ export default function Discover() {
   const [learned] = useState(() => (typeof window === "undefined" ? null : interests())); // read once per visit: no reshuffling mid-browse
   const { liked, onLike } = useLikes(d.setShops);
   const sentinel = useRef(null);
+  const [now] = useState(() => Date.now()); // for "New" badges
 
   useEffect(() => {
     if (!customerToken) return;
@@ -123,8 +127,9 @@ export default function Discover() {
         {!d.loading && !d.error && feed.slice(0, shown).map((f) => f.kind === "work"
           ? <FeedPost key={f.key} item={f.item} liked={liked.has(f.key)} onLike={onLike} onOpenWork={openWork} onOpenPro={openPro}
               following={following.has(String(f.item.shop._id))} onFollow={toggleFollow} onMessage={onMessage}
-              styleName={f.item.styleKey && styles[f.item.styleKey] ? styles[f.item.styleKey].name : null} />
-          : <InspirationPost key={f.key} styleKey={f.styleKey} style={styles[f.styleKey]} onOpen={() => setLayer({ type: "inspiration", styleKey: f.styleKey })} />)}
+              onOpenReel={(item) => setLayer({ type: "reel", item })}
+              styleName={f.item.styleKey && styles[f.item.styleKey] ? styles[f.item.styleKey].name : null} now={now} />
+          : <InspirationPost key={f.key} styleKey={f.styleKey} style={styles[f.styleKey]} onOpen={() => { track("inspiration", f.styleKey); setLayer({ type: "inspiration", styleKey: f.styleKey }); }} />)}
         {shown < feed.length && <div ref={sentinel} className="h-10" aria-hidden />}
         {!d.loading && feed.length > 0 && shown >= feed.length && <p className="text-center text-xs text-muted py-6">You're all caught up ✨</p>}
       </div>
@@ -133,6 +138,13 @@ export default function Discover() {
       {layer && (layer.type === "work" || layer.type === "pro") && (
         <ContextPanel selection={layer.type === "work" ? { type: "work", item: layer.item } : { type: "pro", shop: layer.shop }}
           onClose={close} onSelect={(sel) => setLayer(sel.type === "work" ? { type: "work", item: sel.item } : { type: "pro", shop: sel.shop })} likedIds={liked} onLike={onLike} />
+      )}
+      {layer && layer.type === "reel" && (
+        <ReelSheet title={layer.item.styleKey && styles[layer.item.styleKey] ? styles[layer.item.styleKey].name : layer.item.name}
+          byline={layer.item.shop.salonName || layer.item.shop.name} place={layer.item.shop.area || layer.item.shop.city}
+          price={typeof layer.item.price === "number" ? formatMoney(layer.item.price, layer.item.shop.currency) : null}
+          link={`${window.location.origin}/shop/${layer.item.shop._id}?look=${encodeURIComponent(layer.item.id)}#request`}
+          load={() => apiFetch(`/reels/service/${layer.item.shop._id}/${layer.item.id}`)} onClose={close} />
       )}
       {layer && layer.type === "inspiration" && styles[layer.styleKey] && (
         <InspirationSheet styleKey={layer.styleKey} style={styles[layer.styleKey]} shops={withDistance} currency={info.currency} where={where} onClose={close}

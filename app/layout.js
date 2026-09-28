@@ -1,3 +1,4 @@
+import SourceCapture from "../components/SourceCapture";
 import "./globals.css";
 import { AuthProvider } from "../context/AuthContext";
 
@@ -18,6 +19,7 @@ export default function RootLayout({ children }) {
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body className="min-h-screen bg-surface text-ink font-body">
+        <SourceCapture />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

@@ -6,6 +6,8 @@ import Nav from "../../components/Nav";
 import CustomerGate from "../../components/customer/CustomerGate";
 import MyCodeCard from "../../components/MyCodeCard";
 import ProfileCard from "../../components/customer/ProfileCard";
+import ShareLookButton from "../../components/ShareLookButton";
+import ReelSheet from "../../components/reel/ReelSheet";
 import { EmptyState } from "../../components/States";
 import { whenLabel } from "../../components/customer/AppointmentCard";
 
@@ -38,7 +40,9 @@ function MySheeba() {
   const next = history.filter((r) => ["pending", "accepted"].includes(r.status) && r.preferredAt && r.preferredAt > now)
     .sort((a, b) => a.preferredAt - b.preferredAt)[0];
   const due = [...prefs].sort((a, b) => a.daysUntilDue - b.daysUntilDue);
-  const saved = styles.filter((s) => s.finishedPhoto || s.notes);
+  const saved = styles.filter((s) => s.finishedPhoto || s.proPhoto || s.notes); // includes finished looks added by the professional
+  const origin = typeof window === "undefined" ? "" : window.location.origin;
+  const [reel, setReel] = useState(null); // the look whose angles are playing
 
   const setReminders = async (p, on) => { await apiFetch(`/customers/me/repeat-preferences/${p._id}`, { method: "PUT", body: JSON.stringify({ remindersEnabled: on }) }, "customer"); load(); };
   const remove = async (p) => { if (!window.confirm("Remove this reminder?")) return; await apiFetch(`/customers/me/repeat-preferences/${p._id}`, { method: "DELETE" }, "customer"); load(); };
@@ -84,23 +88,39 @@ function MySheeba() {
         </section>
 
         <section>
-          <h2 className="text-xs font-extrabold tracking-wide text-plum uppercase mb-2">Your styles</h2>
+          <h2 className="text-xs font-extrabold tracking-wide text-plum uppercase mb-2">Your looks</h2>
           {saved.length === 0
-            ? <EmptyState title="No saved styles yet" hint='After a service, tap "Save this style" in Appointments to keep a photo and notes for next time.' />
+            ? <EmptyState title="No looks yet" hint="After a service, your professional can add a photo of your finished look, or you can save your own from Appointments." />
             : (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {saved.map((s) => (
-                  <div key={s._id} className="bg-card border border-line rounded-2xl overflow-hidden">
-                    {s.finishedPhoto ? <img src={s.finishedPhoto} alt={s.serviceNameSnapshot || "Saved style"} className="w-full aspect-square object-cover" /> : <div className="w-full aspect-square bg-surface-2" />}
-                    <div className="p-2">
-                      <div className="text-sm font-bold text-ink truncate">{s.serviceNameSnapshot || "Style"}</div>
-                      {s.notes && <div className="text-xs text-muted line-clamp-2">{s.notes}</div>}
+                {saved.map((s) => {
+                  const photo = s.finishedPhoto || s.proPhoto;
+                  const title = s.serviceName || s.serviceNameSnapshot || "My look";
+                  const link = `${origin}/shop/${s.stylistId}${s.styleId ? `?look=${encodeURIComponent(s.styleId)}` : ""}#request`;
+                  return (
+                    <div key={s._id} className="bg-card border border-line rounded-2xl overflow-hidden flex flex-col">
+                      {photo ? <img src={s.proThumb && !s.finishedPhoto ? s.proThumb : photo} alt={title} className="w-full aspect-square object-cover" /> : <div className="w-full aspect-square bg-surface-2" />}
+                      <div className="p-2 flex-1 flex flex-col">
+                        <div className="text-sm font-bold text-ink truncate">{title}</div>
+                        {s.shopName && <div className="text-xs text-muted truncate">by {s.shopName}</div>}
+                        {s.notes && <div className="text-xs text-muted line-clamp-2">{s.notes}</div>}
+                        <div className="flex flex-wrap gap-2 mt-auto pt-2">
+                          {s.reelCount >= 3 && <button type="button" onClick={() => setReel({ s, title, link })} className="px-3 py-1.5 rounded-full bg-black text-white text-xs font-bold">▶ Play angles</button>}
+                          <ShareLookButton photo={photo} title={title} byline={s.shopName} place={s.shopPlace} link={link} label="Share my look" />
+                          {/* A plain link on purpose: shop pages load through the Netlify redirect rule. */}
+                          <a href={link} className="px-3 py-1.5 rounded-full border border-line text-xs font-bold text-plum">Get this again</a>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
         </section>
+        {reel && (
+          <ReelSheet title={reel.title} byline={reel.s.shopName} place={reel.s.shopPlace} link={reel.link} bookLabel="Get this again"
+            load={() => apiFetch(`/reels/look/${reel.s.requestId}`, {}, "customer")} onClose={() => setReel(null)} />
+        )}
 
 
         <section>

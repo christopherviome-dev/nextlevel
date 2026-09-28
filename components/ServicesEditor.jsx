@@ -6,6 +6,9 @@ import { formatMoney, currencySymbol } from "../lib/money";
 import { EmptyState } from "./States";
 import { useCatalog } from "../lib/catalog";
 import PriceHint from "./PriceHint";
+import ShareLookButton from "./ShareLookButton";
+import Sheet from "./discover/Sheet";
+import ReelMaker from "./reel/ReelMaker";
 
 const MAX_SERVICES = 40; // matches the server's limit
 const WORK_PHOTO = { maxDim: 1000, maxChars: 290 * 1024 }; // server cap is 300 KB
@@ -13,6 +16,7 @@ const WORK_PHOTO = { maxDim: 1000, maxChars: 290 * 1024 }; // server cap is 300 
 const WORK_THUMB = { maxDim: 360, maxChars: 55 * 1024 }; // server cap is 60 KB
 
 export default function ServicesEditor({ account, onSaved }) {
+  const [reelFor, setReelFor] = useState(null); // the service whose Look Reel is being made
   const services = account.styles || [];
   const catalog = useCatalog();
   // The shop's own services first in the picker, then everything else on Sheeba.
@@ -74,8 +78,17 @@ export default function ServicesEditor({ account, onSaved }) {
               <div className="font-bold truncate">{s.name}{s.active === false && <span className="ml-2 text-xs font-semibold text-warn-fg">Hidden</span>}</div>
               <div className="text-sm text-muted">{formatMoney(s.price, account.currency)}{s.duration ? ` · ${s.duration}` : ""}</div>
                 <PriceHint account={account} serviceKey={s.serviceKey} styleKey={s.styleKey} />
+              {/* Free marketing: a Status-ready card for this service, linking to booking it. */}
+              {s.photo && s.active !== false && account.status === "APPROVED" && (
+                <div className="mt-2">
+                  <ShareLookButton photo={s.photo} title={s.name} byline={account.salonName || account.name} place={account.area || account.city}
+                    price={typeof s.price === "number" ? formatMoney(s.price, account.currency) : null} kicker="Book your next look"
+                    link={`${typeof window === "undefined" ? "" : window.location.origin}/shop/${account._id}?look=${encodeURIComponent(s.id)}#request`} />
+                </div>
+              )}
             </div>
             <div className="flex flex-col sm:flex-row gap-1 shrink-0">
+              <button onClick={() => setReelFor(s)} className="px-3 py-1.5 rounded-full border border-hibiscus text-hibiscus-deep text-xs font-bold">▶ {s.reelCount ? `Angles (${s.reelCount})` : "Angles"}</button>
               <button onClick={() => setEditing(s.id)} disabled={busyId === s.id} className="px-3 py-1.5 rounded-full border border-line text-xs font-bold">Edit</button>
               <button onClick={() => toggle(s)} disabled={busyId === s.id} className="px-3 py-1.5 rounded-full border border-line text-xs font-bold">{s.active === false ? "Show" : "Hide"}</button>
               <button onClick={() => remove(s)} disabled={busyId === s.id} className="px-3 py-1.5 rounded-full border border-bad-line text-bad-fg text-xs font-bold">Delete</button>
@@ -83,6 +96,13 @@ export default function ServicesEditor({ account, onSaved }) {
           </div>
         ))}
       </div>
+      {reelFor && (
+        <Sheet title={`Angles: ${reelFor.name}`} onClose={() => setReelFor(null)}>
+          <ReelMaker hasReel={!!reelFor.reelCount} onCancel={() => setReelFor(null)}
+            onSave={async (frames) => { await apiFetch(`/reels/service/${reelFor.id}`, { method: "POST", body: JSON.stringify({ frames }) }); setReelFor(null); await onSaved(); }}
+            onRemove={async () => { await apiFetch(`/reels/service/${reelFor.id}`, { method: "DELETE" }); setReelFor(null); await onSaved(); }} />
+        </Sheet>
+      )}
     </div>
   );
 }

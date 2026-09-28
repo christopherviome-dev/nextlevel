@@ -3,6 +3,11 @@ import { useState, useEffect, useCallback } from "react";
 import { apiFetch } from "../lib/api";
 import Toast from "./Toast";
 import ReportForm from "./ReportForm";
+import ChairCard from "./pro/ChairCard";
+import ShareLookButton from "./ShareLookButton";
+import Sheet from "./discover/Sheet";
+import ReelMaker from "./reel/ReelMaker";
+import { fitImage } from "../lib/image";
 import { countryInfo } from "../lib/countries";
 
 const MEET = { provider: "At my place", client: "At the customer's place", midway: "Meet halfway" };
@@ -73,7 +78,7 @@ export default function RequestsPanel({ account }) {
     const g = groups.find((x) => x[0] === label);
     if (g) g[1].push(r); else groups.push([label, [r]]);
   }
-  const card = (r) => <RequestCard key={r._id} r={r} forShop={helpShops[r.stylistId] ? helpShops[r.stylistId].name : null}
+  const card = (r) => <RequestCard key={r._id} r={r} forShop={helpShops[r.stylistId] ? helpShops[r.stylistId].name : null} shopName={helpShops[r.stylistId] ? helpShops[r.stylistId].name : account.salonName || account.name} shopPlace={account.area || account.city}
     country={helpShops[r.stylistId] ? helpShops[r.stylistId].country : account.country} onChanged={(msg) => { setToast(msg); load(); }} onStale={load} />;
 
   return (
@@ -123,8 +128,29 @@ export default function RequestsPanel({ account }) {
   );
 }
 
-function RequestCard({ r, country, forShop, onChanged, onStale }) {
+function RequestCard({ r, country, forShop, shopName, shopPlace, onChanged, onStale }) {
   const [busy, setBusy] = useState(false);
+  const [card, setCard] = useState(false);
+  // The customer card: always for the owner; for helpers, on the day of the visit (the server checks too).
+  const [now] = useState(() => Date.now()); // read once, not on every redraw
+  const nearNow = r.preferredAt && Math.abs(r.preferredAt - now) < 24 * 3600 * 1000;
+  const canCard = r.clientId && ["accepted", "completed"].includes(r.status) && (!forShop || nearNow);
+  // Fresh Look: after the service, a photo of the finished look for the customer's gallery (14 days).
+  const doneAt = r.completedAt || (r.updatedAt ? new Date(r.updatedAt).getTime() : 0);
+  const lookWindow = r.status === "completed" && r.clientId && now - doneAt < 14 * 24 * 3600 * 1000;
+  const [look, setLook] = useState(null);
+  const [reel, setReel] = useState(false);
+  const [lookMsg, setLookMsg] = useState(null);
+  const addLook = async (e) => {
+    const f = e.target.files && e.target.files[0]; e.target.value = "";
+    if (!f) return;
+    setLookMsg("Adding…");
+    try {
+      const [photo, thumb] = await Promise.all([fitImage(f, { maxDim: 1000, maxChars: 290 * 1024 }), fitImage(f, { maxDim: 360, maxChars: 55 * 1024 })]);
+      await apiFetch(`/requests/${r._id}/look`, { method: "POST", body: JSON.stringify({ photo, thumb }) });
+      setLook(photo); setLookMsg(`✓ Added to ${String(r.clientName || "their").split(" ")[0]}'s styles`);
+    } catch (err) { setLookMsg(err.message); }
+  };
   const [error, setError] = useState(null);
 
   const move = async (status, confirmText, doneText) => {
@@ -144,6 +170,12 @@ function RequestCard({ r, country, forShop, onChanged, onStale }) {
   return (
     <div className="bg-card border border-line rounded-2xl p-4 mb-3">
       {forShop && <div className="text-xs font-bold text-violet mb-1">For {forShop}</div>}
+      {card && <ChairCard requestId={r._id} onClose={() => setCard(false)} />}
+      {reel && (
+        <Sheet title="Angles of the finished look" onClose={() => setReel(false)}>
+          <ReelMaker onCancel={() => setReel(false)} onSave={async (frames) => { await apiFetch(`/reels/look/${r._id}`, { method: "POST", body: JSON.stringify({ frames }) }); setReel(false); setLookMsg(`✓ Angles added to ${String(r.clientName || "their").split(" ")[0]}'s look`); }} />
+        </Sheet>
+      )}
       <div className="flex justify-between gap-3">
         <div>
           <div className="font-bold">{r.clientName}</div>
@@ -186,6 +218,24 @@ function RequestCard({ r, country, forShop, onChanged, onStale }) {
             className="px-5 py-2 rounded-full bg-emerald-700 text-white font-bold disabled:opacity-40">Mark completed</button>
           <button disabled={busy} onClick={() => move("declined", `Cancel ${r.clientName}'s appointment? They'll be notified.`, "Appointment cancelled.")}
             className="px-5 py-2 rounded-full border border-line font-bold disabled:opacity-40">Cancel</button>
+        </div>
+      )}
+      {lookWindow && (
+        <div className="flex flex-wrap items-center gap-3 mt-3 text-xs">
+          <label className="px-3 py-1.5 rounded-full border border-hibiscus text-hibiscus-deep font-bold cursor-pointer">
+            <input type="file" accept="image/*" capture="environment" onChange={addLook} className="sr-only" />📸 {look ? "Retake the finished look" : "Add the finished look"}
+          </label>
+          <button type="button" onClick={() => setReel(true)} className="px-3 py-1.5 rounded-full border border-hibiscus text-hibiscus-deep font-bold">▶ Add angles</button>
+          {lookMsg && <span className="text-muted">{lookMsg}</span>}
+          {look && <ShareLookButton photo={look} title={r.serviceNameSnapshot || "Fresh look"} byline={shopName} place={shopPlace}
+            link={`${window.location.origin}/shop/${r.stylistId}${r.styleId ? `?look=${encodeURIComponent(r.styleId)}` : ""}#request`} />}
+        </div>
+      )}
+      {(canCard || r.servedByName || r.phoneHidden) && (
+        <div className="flex flex-wrap items-center gap-3 mt-3 text-xs">
+          {canCard && <button onClick={() => setCard(true)} className="px-3 py-1.5 rounded-full border border-violet text-violet font-bold">Customer card</button>}
+          {r.status === "completed" && r.servedByName && <span className="text-muted">Served by {r.servedByName}</span>}
+          {r.phoneHidden && <span className="text-muted">Phone hidden by the shop owner</span>}
         </div>
       )}
       {/* Professionals can report a customer they had a booking with (the server checks). */}
