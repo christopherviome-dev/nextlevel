@@ -1,4 +1,5 @@
 "use client";
+import IdCheckedBadge from "../IdCheckedBadge";
 import Sheet from "./Sheet";
 import { photosFor } from "../../lib/catalog";
 import { summarise } from "../../lib/prices";
@@ -45,7 +46,7 @@ export default function InspirationSheet({ styleKey, style, shops, currency, whe
               ? <img src={shop.profilePhoto} alt="" className="w-10 h-10 rounded-full object-cover border border-line" />
               : <span className="w-10 h-10 rounded-full bg-violet text-white font-bold flex items-center justify-center">{(shop.salonName || shop.name).slice(0, 1).toUpperCase()}</span>}
             <span className="flex-1 min-w-0">
-              <span className="block text-sm font-bold text-ink truncate">{shop.salonName || shop.name} {shop.verified && <span className="text-hibiscus-deep text-xs">✓</span>}</span>
+              <span className="block text-sm font-bold text-ink truncate">{shop.salonName || shop.name} {shop.verified && <IdCheckedBadge />}</span>
               <span className="block text-xs text-muted truncate">{[shop.area, formatDistance(shop._distanceKm, shop.country)].filter(Boolean).join(" · ")}</span>
             </span>
             <span className="text-sm font-bold text-ink whitespace-nowrap">from {formatMoney(from, shop.currency)}</span>

@@ -13,12 +13,25 @@ export default function CustomersPanel() {
   const [list, setList] = useState(null);
   const [due, setDue] = useState([]);
   const [openId, setOpenId] = useState(null);
+  const [now] = useState(() => Date.now()); // read the clock once, not while drawing
   const [error, setError] = useState(null);
   useEffect(() => {
     apiFetch("/stylists/me/customers").then(setList).catch((e) => setError(e.message));
     apiFetch("/stylists/me/customers-due-soon").then(setDue).catch(() => {});
   }, []);
   if (openId) return <CustomerDetail id={openId} onBack={() => setOpenId(null)} />;
+  // Return patterns from real visits (at least two completed visits needed to predict).
+  const DAY = 86400000;
+  const every = (d) => (d < 14 ? `every ${d} day${d === 1 ? "" : "s"}` : d < 90 ? `every ${Math.round(d / 7)} weeks` : `every ${Math.round(d / 30)} months`);
+  const dueText = (c) => {
+    const days = Math.round((c.nextDueAt - now) / DAY);
+    return c.returnStatus === "OVERDUE" ? `${-days} days overdue` : days <= 0 ? "due today" : `due in ${days} day${days === 1 ? "" : "s"}`;
+  };
+  const reminded = new Set(due.map((d) => d.customerId));
+  const expected = (list || []).filter((c) => (c.returnStatus === "DUE_SOON" || c.returnStatus === "OVERDUE") && !reminded.has(c.customerId))
+    .sort((a, b) => a.nextDueAt - b.nextDueAt);
+  const served = (list || []).filter((c) => c.totalCompleted >= 1);
+  const returnRate = served.length >= 3 ? Math.round((served.filter((c) => c.totalCompleted >= 2).length / served.length) * 100) : null;
   return (
     <div className="space-y-4">
       {due.length > 0 && (
@@ -31,6 +44,22 @@ export default function CustomersPanel() {
           ))}
         </div>
       )}
+      {expected.length > 0 && (
+        <div>
+          <div className="text-xs font-extrabold tracking-wide text-plum uppercase mb-2">Expected back (from their visits)</div>
+          {expected.map((c) => (
+            <button key={c.customerId} onClick={() => setOpenId(c.customerId)} className={"w-full text-left rounded-xl p-3 mb-2 text-sm border " + (c.returnStatus === "OVERDUE" ? "bg-bad-bg border-bad-line" : "bg-warn-bg border-warn-line")}>
+              <b className="text-ink">{c.name}</b> <span className="text-muted-strong">· usually {every(c.usualEveryDays)} · {dueText(c)}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      {returnRate !== null && (
+        <div className="bg-card border border-line rounded-2xl p-4 flex items-center gap-4">
+          <div className="text-3xl font-extrabold text-ink">{returnRate}%</div>
+          <div className="text-sm text-muted-strong">of your customers have come back for another visit</div>
+        </div>
+      )}
       <div>
         <div className="text-xs font-extrabold tracking-wide text-plum uppercase mb-2">Your customers</div>
         {error && <p className="text-sm text-bad-fg">{error}</p>}
@@ -41,7 +70,7 @@ export default function CustomersPanel() {
               <span className="font-bold text-ink">{c.name}</span>
               {c.isRepeat && <span className="text-xs px-2 py-0.5 rounded-full bg-ok-bg text-ok-fg border border-ok-line">Repeat customer</span>}
             </div>
-            <div className="text-xs text-muted">{c.totalCompleted} completed{c.lastActivityAt ? ` · last ${when(c.lastActivityAt)}` : ""}</div>
+            <div className="text-xs text-muted">{c.totalCompleted} completed{c.lastActivityAt ? ` · last ${when(c.lastActivityAt)}` : ""}{c.usualEveryDays ? ` · usually ${every(c.usualEveryDays)}` : ""}</div>
           </button>
         ))}
       </div>

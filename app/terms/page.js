@@ -28,7 +28,7 @@ export default function Terms() {
       <ul>
         <li>Keep your shop accurate: your services, prices, availability and location.</li>
         <li>Only upload photos of work you did yourself.</li>
-        <li>Identity verification is required for the Verified badge. Submit only your own, genuine documents.</li>
+        <li>An identity check is required for the "ID checked" badge. Submit only your own, genuine documents.</li>
         <li>Apprentices join through their supervisor, who confirms them. Supervisors are responsible for the access they give.</li>
       </ul>
 

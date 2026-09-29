@@ -109,7 +109,7 @@ export function Demand({ o }) {
       <div className="grid lg:grid-cols-3 gap-4">
         <Card title={`Most searched (${o.days} days)`}><RankList items={d.topSearched} empty="No searches yet." /></Card>
         <Card title={`Most opened (${o.days} days)`}><RankList items={d.topOpened} empty="No styles opened yet." /></Card>
-        <Card title="Most loved"><RankList items={d.topLoved} empty="No likes yet." /></Card>
+        <Card title="Most liked"><RankList items={d.topLoved} empty="No likes yet." /></Card>
       </div>
       <div className="grid lg:grid-cols-2 gap-4">
         <Card title="Live shops offering each service"><RankList items={d.offeredByService} /></Card>

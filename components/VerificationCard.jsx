@@ -57,7 +57,7 @@ export default function VerificationCard({ account, onUpdated }) {
       <div className="bg-card border border-ok-line rounded-2xl p-4 mt-4">
         <div className="font-bold text-ok-fg">✓ Identity verified</div>
         <div className="text-sm text-muted-strong mt-1">{account.legalFullName} · {submittedNumber}</div>
-        <div className="text-xs text-muted mt-2">Customers see a Verified badge on your shop. Your legal name and document number stay private.</div>
+        <div className="text-xs text-muted mt-2">Customers see an "ID checked" badge on your shop. Your legal name and document number stay private.</div>
       </div>
     );
   }
@@ -82,7 +82,7 @@ export default function VerificationCard({ account, onUpdated }) {
       )}
       {status === "NOT_SUBMITTED" && (
         <p className="text-sm text-muted-strong mb-3">
-          Customers are trusting a stranger when they book. A Verified badge shows them you're who you say you are.
+          Customers are trusting a stranger when they book. An "ID checked" badge shows them you're who you say you are.
           Only Sheeba's review team sees your ID details.
         </p>
       )}

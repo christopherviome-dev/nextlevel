@@ -1,3 +1,4 @@
+import AnnouncementBanner from "../components/AnnouncementBanner";
 import SourceCapture from "../components/SourceCapture";
 import "./globals.css";
 import { AuthProvider } from "../context/AuthContext";
@@ -20,6 +21,7 @@ export default function RootLayout({ children }) {
       </head>
       <body className="min-h-screen bg-surface text-ink font-body">
         <SourceCapture />
+        <AnnouncementBanner />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

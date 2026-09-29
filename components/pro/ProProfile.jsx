@@ -1,4 +1,5 @@
 "use client";
+import IdCheckedBadge from "../IdCheckedBadge";
 import { useEffect, useState } from "react";
 import { apiFetch } from "../../lib/api";
 import { fitImage } from "../../lib/image";
@@ -33,7 +34,7 @@ export default function ProProfile({ account, onSaved, go }) {
         <div className="font-display font-extrabold text-xl text-ink mt-2">{account.salonName || account.name}</div>
         {account.salonName && <div className="text-sm text-muted">{account.name}</div>}
         <div className="flex flex-wrap justify-center gap-2 mt-2">
-          {account.verified && <span className="text-xs font-bold px-2 py-1 rounded-full bg-ok-bg text-ok-fg border border-ok-line">✓ Verified</span>}
+          {account.verified && <IdCheckedBadge label />}
           {stats && stats.founding && <span className="text-xs font-bold px-2 py-1 rounded-full bg-warn-bg text-warn-fg border border-warn-line">⭐ Founding member #{stats.memberNumber}</span>}
           {stats && !stats.founding && stats.memberNumber && <span className="text-xs font-bold px-2 py-1 rounded-full bg-surface-2 text-muted-strong">Member #{stats.memberNumber}</span>}
           {account.role === "APPRENTICE" && <span className="text-xs font-bold px-2 py-1 rounded-full bg-surface-2 text-plum">Apprentice</span>}
@@ -42,7 +43,7 @@ export default function ProProfile({ account, onSaved, go }) {
       </div>
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {tile(stats.loves, stats.loves === 1 ? "love" : "loves")}
+          {tile(stats.loves, stats.loves === 1 ? "like" : "likes")}
           {tile(stats.completedJobs, "jobs completed")}
           {tile(stats.customersServed, "customers served")}
           {tile(stats.worksPosted, "work photos posted")}

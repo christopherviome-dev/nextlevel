@@ -74,7 +74,7 @@ function ShopCard({ shop, dimmed, onHover, onOpen }) {
           ? <img src={cover} alt="" className="w-full h-full object-cover" />
           : <div className="w-full h-full flex items-center justify-center font-display text-3xl text-faint">{name.slice(0, 2).toUpperCase()}</div>}
         <span className="absolute top-2 right-2 text-xs font-bold px-2 py-1 rounded-full bg-black/60 text-white">{done}/{checks.length}</span>
-        {shop.verified && <span className="absolute top-2 left-2 text-xs font-bold px-2 py-1 rounded-full bg-emerald-700 text-white">✓ ID</span>}
+        {shop.verified && <span className="absolute top-2 left-2 text-xs font-bold px-2 py-1 rounded-full bg-emerald-700 text-white">ID checked</span>}
       </div>
       <div className="p-3">
         <div className="font-bold text-ink truncate">{name}</div>

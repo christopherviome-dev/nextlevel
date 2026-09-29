@@ -1,4 +1,6 @@
 "use client";
+import { ringStyle } from "../../lib/founding";
+import IdCheckedBadge from "../../components/IdCheckedBadge";
 import { useState, useEffect } from "react";
 import { apiFetch } from "../../lib/api";
 import RequestForm from "../../components/RequestForm";
@@ -54,10 +56,10 @@ export default function ShopView() {
             {shop.coverPhoto && <img src={shop.coverPhoto} alt="" className="w-full max-h-52 object-cover" />}
             <div className="p-5">
               <div className="flex items-center gap-3">
-                {shop.profilePhoto && <img src={shop.profilePhoto} alt="" className="w-16 h-16 rounded-full object-cover border border-line shrink-0" />}
+                {shop.profilePhoto && <img src={shop.profilePhoto} alt="" style={ringStyle(shop)} className="w-16 h-16 rounded-full object-cover border border-line shrink-0" />}
                 <div className="min-w-0">
                   <b className="text-lg">{shop.salonName || shop.name}</b>{" "}
-                  {shop.verified && <span className="text-xs font-bold text-hibiscus-deep">✓ Verified</span>}
+                  {shop.verified && <IdCheckedBadge label />}
                   <div className="text-sm text-muted-strong mt-0.5">{[(shop.services && shop.services.length ? shop.services.map((k) => serviceName(catalog, k)).join(", ") : shop.category), [shop.area, shop.city].filter(Boolean).join(", ")].filter(Boolean).join(" · ")}</div>
                 </div>
               </div>
@@ -69,7 +71,7 @@ export default function ShopView() {
               <div className="flex justify-end gap-2 mt-3"><MessageButton stylistId={shop._id} /><SaveShopButton shopId={shop._id} services={shop.services} /></div>
               {shop.stats && (shop.stats.loves > 0 || shop.stats.completedJobs > 0) && (
                 <div className="text-sm text-muted-strong mt-2">
-                  {shop.stats.loves > 0 && <span>♥ {shop.stats.loves} {shop.stats.loves === 1 ? "love" : "loves"}</span>}
+                  {shop.stats.loves > 0 && <span>♥ {shop.stats.loves} {shop.stats.loves === 1 ? "like" : "likes"}</span>}
                   {shop.stats.loves > 0 && shop.stats.completedJobs > 0 && " · "}
                   {shop.stats.completedJobs > 0 && <span>{shop.stats.completedJobs} {shop.stats.completedJobs === 1 ? "job" : "jobs"} done on Sheeba</span>}
                 </div>

@@ -1,4 +1,6 @@
 "use client";
+import { ringStyle } from "../../lib/founding";
+import IdCheckedBadge from "../IdCheckedBadge";
 import { formatMoney } from "../../lib/money";
 import { formatDistance } from "../../lib/geo";
 
@@ -58,10 +60,10 @@ export default function FeedPost({ item, liked, onLike, onOpenWork, onOpenPro, f
         <div className="flex items-center gap-2 mt-3">
           <button type="button" onClick={() => onOpenPro(shop)} className="flex items-center gap-2 min-w-0" aria-label={`About ${name}`}>
             {shop.profilePhoto
-              ? <img src={shop.profilePhoto} alt="" className="w-8 h-8 rounded-full object-cover border border-line" />
-              : <span className="w-8 h-8 rounded-full bg-violet text-white text-sm font-bold flex items-center justify-center">{name.slice(0, 1).toUpperCase()}</span>}
+              ? <img src={shop.profilePhoto} alt="" style={ringStyle(shop)} className="w-8 h-8 rounded-full object-cover border border-line" />
+              : <span style={ringStyle(shop)} className="w-8 h-8 rounded-full bg-violet text-white text-sm font-bold flex items-center justify-center">{name.slice(0, 1).toUpperCase()}</span>}
             <span className="text-sm font-bold text-ink truncate">{name}</span>
-            {shop.verified && <span className="text-hibiscus-deep text-xs" title="ID verified">✓</span>}
+            {shop.verified && <IdCheckedBadge />}
           </button>
           <span className={"flex items-center gap-1 text-xs shrink-0 " + (available ? "text-ok-fg" : "text-muted")}>
             <span className={"w-2 h-2 rounded-full " + (available ? "bg-emerald-500" : "bg-line")} />{available ? "Available" : "Away"}

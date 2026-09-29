@@ -1,4 +1,5 @@
 "use client";
+import { ringStyle } from "../../lib/founding";
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { apiFetch } from "../../lib/api";
@@ -32,8 +33,8 @@ export default function ProfileCard() {
         <label className="relative cursor-pointer shrink-0" aria-label={me.profilePhoto ? "Change your photo" : "Add your photo"}>
           <input type="file" accept="image/*" onChange={choose} className="sr-only" disabled={busy} />
           {me.profilePhoto
-            ? <img src={me.profilePhoto} alt="" className="w-20 h-20 rounded-full object-cover border border-line" />
-            : <span className="w-20 h-20 rounded-full bg-violet text-white text-2xl font-bold flex items-center justify-center">{(me.name || "?").slice(0, 1).toUpperCase()}</span>}
+            ? <img src={me.profilePhoto} alt="" style={ringStyle(me)} className="w-20 h-20 rounded-full object-cover border border-line" />
+            : <span style={ringStyle(me)} className="w-20 h-20 rounded-full bg-violet text-white text-2xl font-bold flex items-center justify-center">{(me.name || "?").slice(0, 1).toUpperCase()}</span>}
           <span className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-hibiscus text-white text-sm flex items-center justify-center border-2 border-card">{busy ? "…" : "+"}</span>
         </label>
         <div className="min-w-0 flex-1">

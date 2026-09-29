@@ -120,7 +120,7 @@ export default function SettingsPage() {
 
         <Section title="Your feed">
           {activeRole === "customer" && <Row label="What to show first" hint="Men's or women's styles, and your favourites"><Link href="/welcome" className="text-sm font-bold text-hibiscus-deep">Change ›</Link></Row>}
-          <Row label="What Sheeba has learned" hint="From what you look at, love, save and book. Kept only on this phone.">
+          <Row label="What Sheeba has learned" hint="From what you look at, like, save and book. Kept only on this phone.">
             {learned ? <button onClick={() => { forgetInterests(); setLearned(false); }} className="text-sm font-bold text-plum underline">Clear</button> : <span className="text-xs text-muted">Nothing yet</span>}
           </Row>
         </Section>

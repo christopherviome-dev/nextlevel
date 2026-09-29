@@ -1,4 +1,6 @@
 "use client";
+import { ringStyle } from "../../lib/founding";
+import IdCheckedBadge from "../IdCheckedBadge";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
@@ -24,8 +26,8 @@ const Icon = ({ d }) => (
 export function Avatar({ account, size = 40 }) {
   const name = account.salonName || account.name || "?";
   return account.profilePhoto
-    ? <img src={account.profilePhoto} alt="" style={{ width: size, height: size }} className="rounded-full object-cover border border-line" />
-    : <span style={{ width: size, height: size }} className="rounded-full bg-violet text-white font-bold flex items-center justify-center">{name.slice(0, 1).toUpperCase()}</span>;
+    ? <img src={account.profilePhoto} alt="" style={{ width: size, height: size, ...ringStyle(account) }} className="rounded-full object-cover border border-line" />
+    : <span style={{ width: size, height: size, ...ringStyle(account) }} className="rounded-full bg-violet text-white font-bold flex items-center justify-center">{name.slice(0, 1).toUpperCase()}</span>;
 }
 
 // The menu: what a professional reaches for, each with a badge when it needs attention.
@@ -54,7 +56,7 @@ function Menu({ account, counts, section, go }) {
       <button onClick={() => go("profile")} className="flex items-center gap-3 p-4 text-left">
         <Avatar account={account} size={48} />
         <span className="min-w-0">
-          <span className="block font-bold text-ink truncate">{name} {account.verified && <span className="text-hibiscus-deep text-xs">✓</span>}</span>
+          <span className="block font-bold text-ink truncate">{name} {account.verified && <IdCheckedBadge />}</span>
           <span className="block text-xs text-muted truncate">{account.memberNumber && account.memberNumber <= 1000 ? `⭐ Founding member #${account.memberNumber}` : "View your profile"}</span>
         </span>
       </button>

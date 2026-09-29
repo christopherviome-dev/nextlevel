@@ -25,7 +25,7 @@ export default function WorkTile({ item, onOpen, liked, onLike, fixed = false, h
 export function HeartButton({ liked, count, onClick, tabIndex = 0, large = false }) {
   return (
     <button type="button" tabIndex={tabIndex} onClick={onClick} aria-pressed={liked}
-      aria-label={liked ? "Remove from loved" : "Love this"}
+      aria-label={liked ? "Unlike" : "Like"}
       className={"absolute top-2 right-2 flex items-center gap-1 rounded-full font-bold bg-black/55 text-white " + (large ? "px-3 py-2 text-sm" : "px-2 py-1 text-xs")}>
       <span aria-hidden className={liked ? "text-hibiscus" : ""}>{liked ? "♥" : "♡"}</span>
       {count > 0 && <span>{count}</span>}

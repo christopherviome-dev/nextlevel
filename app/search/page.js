@@ -1,4 +1,5 @@
 "use client";
+import IdCheckedBadge from "../../components/IdCheckedBadge";
 import { useState, useMemo, useCallback, useEffect } from "react";
 import Nav from "../../components/Nav";
 import { LoadingState, ErrorState } from "../../components/States";
@@ -144,7 +145,7 @@ export default function SearchPage() {
                       {s.profilePhoto ? <img src={s.profilePhoto} alt="" className="w-12 h-12 rounded-full object-cover border border-line" />
                         : <span className="w-12 h-12 rounded-full bg-violet text-white font-bold flex items-center justify-center">{(s.salonName || s.name).slice(0, 1).toUpperCase()}</span>}
                       <span className="flex-1 min-w-0">
-                        <span className="block font-bold text-ink truncate">{s.salonName || s.name} {s.verified && <span className="text-hibiscus-deep text-xs">✓</span>}</span>
+                        <span className="block font-bold text-ink truncate">{s.salonName || s.name} {s.verified && <IdCheckedBadge />}</span>
                         <span className="block text-xs text-muted truncate">📍 {[s.area || s.city, formatDistance(s._distanceKm, s.country)].filter(Boolean).join(" · ")}{s.followerCount ? ` · ${s.followerCount} followers` : ""}</span>
                       </span>
                       {priced.length > 0 && <span className="text-sm font-bold text-ink whitespace-nowrap">from {formatMoney(Math.min(...priced.map((w) => w.price)), s.currency)}</span>}

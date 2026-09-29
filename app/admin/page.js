@@ -18,6 +18,7 @@ import AdminTeam from "../../components/admin/AdminTeam";
 import FieldWork from "../../components/admin/FieldWork";
 import FieldCoverage from "../../components/admin/FieldCoverage";
 import AdminSources from "../../components/admin/AdminSources";
+import AuditLog from "../../components/admin/AuditLog";
 import { roleOf, can } from "../../lib/adminRoles";
 
 const TITLES = {
@@ -105,17 +106,7 @@ export default function AdminPage() {
         {section === "team" && <AdminTeam country={myAccount && myAccount.country} />}
         {section === "trips" && <FieldWork />}
         {section === "coverage" && <FieldCoverage canSeeShops={can(role, "analytics")} />}
-        {section === "audit" && (
-          <div>
-            {audit.length === 0 && <div className="text-muted">No admin actions recorded yet.</div>}
-            {audit.map((a) => (
-              <div key={a._id} className="bg-card border border-line rounded-xl p-3 mb-2 text-sm">
-                {a.adminName && <b className="text-plum">{a.adminName}: </b>}<b>{a.action}</b> on {a.targetType} {String(a.targetId || "").slice(-6)}{a.reason ? ` — ${a.reason}` : ""}
-                {a.createdAt && <span className="text-xs text-muted"> · {new Date(a.createdAt).toLocaleString()}</span>}
-              </div>
-            ))}
-          </div>
-        )}
+        {section === "audit" && <AuditLog audit={audit} />}
       </AdminShell>
     </div>
   );

@@ -1,4 +1,5 @@
 "use client";
+import IdCheckedBadge from "../IdCheckedBadge";
 import { useEffect, useRef } from "react";
 import { HeartButton } from "./WorkTile";
 import { AVAILABILITY_LABEL } from "./ProCard";
@@ -69,7 +70,7 @@ export default function ContextPanel({ selection, onClose, onSelect, likedIds, o
                 ? <img src={shop.profilePhoto} alt="" className="w-12 h-12 rounded-full object-cover border border-line" />
                 : <div className="w-12 h-12 rounded-full bg-violet text-white font-bold flex items-center justify-center">{name.slice(0, 1).toUpperCase()}</div>}
               <div className="min-w-0">
-                <div className="font-bold text-ink truncate">{name} {shop.verified && <span className="text-xs text-hibiscus-deep">✓ Verified</span>}</div>
+                <div className="font-bold text-ink truncate">{name} {shop.verified && <IdCheckedBadge />}</div>
                 <div className="text-sm text-muted truncate">{[(shop.services && shop.services.length ? serviceName(catalog, shop.services[0]) : shop.category), shop.area, formatDistance(shop._distanceKm, shop.country)].filter(Boolean).join(" · ")}</div>
               </div>
             </div>
