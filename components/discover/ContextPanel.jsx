@@ -1,4 +1,5 @@
 "use client";
+import { titleOf } from "../../lib/titles";
 import IdCheckedBadge from "../IdCheckedBadge";
 import { useEffect, useRef } from "react";
 import { HeartButton } from "./WorkTile";
@@ -71,6 +72,7 @@ export default function ContextPanel({ selection, onClose, onSelect, likedIds, o
                 : <div className="w-12 h-12 rounded-full bg-violet text-white font-bold flex items-center justify-center">{name.slice(0, 1).toUpperCase()}</div>}
               <div className="min-w-0">
                 <div className="font-bold text-ink truncate">{name} {shop.verified && <IdCheckedBadge />}</div>
+                {titleOf(shop.services) && <div className="text-xs text-muted truncate">{titleOf(shop.services)}</div>}
                 <div className="text-sm text-muted truncate">{[(shop.services && shop.services.length ? serviceName(catalog, shop.services[0]) : shop.category), shop.area, formatDistance(shop._distanceKm, shop.country)].filter(Boolean).join(" · ")}</div>
               </div>
             </div>

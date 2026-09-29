@@ -1,4 +1,5 @@
 "use client";
+import { titleOf } from "../../lib/titles";
 import { ringStyle } from "../../lib/founding";
 import IdCheckedBadge from "../../components/IdCheckedBadge";
 import { useState, useEffect } from "react";
@@ -13,7 +14,7 @@ import ReportForm from "../../components/ReportForm";
 import MessageButton from "../../components/customer/MessageButton";
 import ApprenticeWorkGallery from "../../components/ApprenticeWorkGallery";
 import { useAuth } from "../../context/AuthContext";
-import { useCatalog, serviceName } from "../../lib/catalog";
+import { useCatalog } from "../../lib/catalog";
 
 export default function ShopView() {
   const catalog = useCatalog();
@@ -40,13 +41,13 @@ export default function ShopView() {
   }, []);
 
   return (
-    <div>
+    <div className="pb-24 sm:pb-0">
       <div className="flex items-center justify-between px-5 py-4 bg-card border-b border-line">
         <div className="font-display font-extrabold text-lg text-hibiscus-deep">SHEE<span className="text-violet">BA</span></div>
         {/* Deliberately a plain link, not next/link: this page is served through a Netlify rewrite,
             and Next.js navigation from here breaks (the bug fixed in commit ad6f851). */}
         {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-        <div className="flex items-center gap-2"><ThemeToggle /><a href="/" className="px-4 py-2 rounded-full border border-line text-sm font-bold">Explore more shops →</a></div>
+        <div className="flex items-center gap-2"><ThemeToggle /><a href="/" className="hidden sm:inline-block px-4 py-2 rounded-full bg-violet text-white text-sm font-bold">✨ Explore Sheeba</a></div>
       </div>
       <div className="max-w-xl lg:max-w-5xl mx-auto px-5 pt-6">
         {error && <div className="text-muted py-6">This shop isn't currently available.</div>}
@@ -60,7 +61,7 @@ export default function ShopView() {
                 <div className="min-w-0">
                   <b className="text-lg">{shop.salonName || shop.name}</b>{" "}
                   {shop.verified && <IdCheckedBadge label />}
-                  <div className="text-sm text-muted-strong mt-0.5">{[(shop.services && shop.services.length ? shop.services.map((k) => serviceName(catalog, k)).join(", ") : shop.category), [shop.area, shop.city].filter(Boolean).join(", ")].filter(Boolean).join(" · ")}</div>
+                  <div className="text-sm text-muted-strong mt-0.5">{[(shop.services && shop.services.length ? titleOf(shop.services, catalog) : shop.category), [shop.area, shop.city].filter(Boolean).join(", ")].filter(Boolean).join(" · ")}</div>
                 </div>
               </div>
               {shop.availability !== "UNAVAILABLE" && shop.availability !== "AWAY" ? (
@@ -110,6 +111,15 @@ export default function ShopView() {
           </div>
         )}
       </div>
+      {/* Someone who arrives from a shared link has no menu here, so on phones two big
+          buttons stay within thumb reach: book, or explore more looks (stupidly simple). */}
+      {shop && (
+        <div className="sm:hidden fixed bottom-0 inset-x-0 z-30 bg-card border-t border-line px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] flex gap-3">
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+          <a href="/" className="flex-1 text-center px-4 py-3 rounded-full border-2 border-violet text-violet font-bold">✨ Explore looks</a>
+          <a href="#request" className="flex-1 text-center px-4 py-3 rounded-full bg-hibiscus text-white font-bold">Book</a>
+        </div>
+      )}
     </div>
   );
 }

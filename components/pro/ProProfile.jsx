@@ -1,4 +1,5 @@
 "use client";
+import { titleOf } from "../../lib/titles";
 import IdCheckedBadge from "../IdCheckedBadge";
 import { useEffect, useState } from "react";
 import { apiFetch } from "../../lib/api";
@@ -39,6 +40,7 @@ export default function ProProfile({ account, onSaved, go }) {
           {stats && !stats.founding && stats.memberNumber && <span className="text-xs font-bold px-2 py-1 rounded-full bg-surface-2 text-muted-strong">Member #{stats.memberNumber}</span>}
           {account.role === "APPRENTICE" && <span className="text-xs font-bold px-2 py-1 rounded-full bg-surface-2 text-plum">In training</span>}
         </div>
+          {titleOf(account.services) && <p className="text-sm text-muted-strong mt-2">Customers see you as: <b className="text-ink">{titleOf(account.services)}</b> <span className="text-muted">(from your services)</span></p>}
         {error && <p className="text-sm text-bad-fg mt-2">{error}</p>}
       </div>
       {stats && (

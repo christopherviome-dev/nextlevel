@@ -1,4 +1,5 @@
 "use client";
+import { titleOf } from "../../lib/titles";
 import { ringStyle } from "../../lib/founding";
 import IdCheckedBadge from "../IdCheckedBadge";
 import { formatMoney } from "../../lib/money";
@@ -62,7 +63,7 @@ export default function FeedPost({ item, liked, onLike, onOpenWork, onOpenPro, f
             {shop.profilePhoto
               ? <img src={shop.profilePhoto} alt="" style={ringStyle(shop)} className="w-8 h-8 rounded-full object-cover border border-line" />
               : <span style={ringStyle(shop)} className="w-8 h-8 rounded-full bg-violet text-white text-sm font-bold flex items-center justify-center">{name.slice(0, 1).toUpperCase()}</span>}
-            <span className="text-sm font-bold text-ink truncate">{name}</span>
+            <span className="min-w-0 text-left"><span className="block text-sm font-bold text-ink truncate">{name}</span>{titleOf(shop.services) && <span className="block text-xs text-muted truncate">{titleOf(shop.services)}</span>}</span>
             {shop.verified && <IdCheckedBadge />}
           </button>
           <span className={"flex items-center gap-1 text-xs shrink-0 " + (available ? "text-ok-fg" : "text-muted")}>

@@ -98,7 +98,7 @@ export default function ShopProfileEditor({ account, onSaved }) {
   return (
     <div className="space-y-4">
       <div className="text-sm bg-surface rounded-xl px-3 py-2 text-muted-strong">
-        <span aria-hidden>{country.flag}</span> {country.name} · prices in {currencySymbol(account.currency || country.currency)}
+        {country.name} · prices in {currencySymbol(account.currency || country.currency)}
         <span className="text-muted"> · to change your country, contact Sheeba</span>
       </div>
       <div>

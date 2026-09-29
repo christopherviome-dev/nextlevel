@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import IdCheckedBadge from "../IdCheckedBadge";
+import { titleOf } from "../../lib/titles";
 import { ringStyle } from "../../lib/founding";
 import { formatMoney } from "../../lib/money";
 
@@ -28,7 +29,7 @@ export default function AssistAnswer({ ask, onClose }) {
                 : <span style={ringStyle(r)} className="w-12 h-12 rounded-xl bg-violet text-white font-bold flex items-center justify-center shrink-0">{r.name.slice(0, 1)}</span>}
               <span className="min-w-0 flex-1">
                 <span className="block font-bold text-ink truncate">{r.name} {r.idChecked && <IdCheckedBadge />}</span>
-                <span className="block text-xs text-muted truncate">{[r.place, r.km !== null ? `${r.km} km` : null].filter(Boolean).join(" · ")}</span>
+                <span className="block text-xs text-muted truncate">{[titleOf(r.services), r.place, r.km !== null ? `${r.km} km` : null].filter(Boolean).join(" · ")}</span>
               </span>
               {r.offer && (
                 <span className="text-right shrink-0">

@@ -34,6 +34,22 @@ export default function MyTraining({ onGoToShare }) {
           <p className="text-sm mt-1">You're now an independent professional. Set up your own shop under "Shop page" and "Services"; Sheeba will review it before it goes public. Your training record stays here.</p>
         </div>
       )}
+      {!graduated && (() => {
+        // One clear thing to do now, before everything else (stupidly simple).
+        const sup = supervisor ? supervisor.name : "your supervisor";
+        const practising = plan.skills.find((x) => x.status === "PRACTISING");
+        const next = plan.skills.length === 0 ? { text: `${sup} hasn't added your skills yet. Ask them to set up your training (My Shop → Team → your name).` }
+          : plan.weekFocus ? { text: `This week: ${plan.weekFocus}. Practise it, then post a photo of your work for ${sup} to review.`, post: true }
+          : practising ? { text: `Keep practising ${practising.name}, then post a photo of your work for ${sup} to review.`, post: true }
+          : { text: "Pick a skill below and tap \"I'm practising\" to start." };
+        return (
+          <div className="bg-violet text-white rounded-2xl p-4">
+            <div className="text-xs font-extrabold tracking-wide uppercase text-white/80">Do this next</div>
+            <div className="mt-1 font-bold">{next.text}</div>
+            {next.post && <a href="#post-work" className="inline-block mt-3 px-4 py-2 rounded-full bg-white text-violet text-sm font-bold">📸 Post a photo</a>}
+          </div>
+        );
+      })()}
       <div className="bg-card border border-line rounded-2xl p-4">
         <div className="text-xs text-muted">Training with</div>
         <div className="font-bold text-ink">{supervisor ? supervisor.name : "your supervisor"}</div>

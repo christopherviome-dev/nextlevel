@@ -1,4 +1,5 @@
 "use client";
+import { titleOf } from "../../lib/titles";
 import IdCheckedBadge from "../IdCheckedBadge";
 import { workModeLabel } from "../../lib/shop";
 import { formatDistance } from "../../lib/geo";
@@ -33,6 +34,7 @@ export default function ProCard({ shop, onOpen, wide = false }) {
       </div>
       <div className="p-3 pt-8">
         <div className="font-bold text-ink truncate">{name} {shop.verified && <IdCheckedBadge />}</div>
+        {titleOf(shop.services) && <div className="text-xs text-muted truncate">{titleOf(shop.services)}</div>}
         <div className="text-xs text-muted truncate">{[(shop.services && shop.services.length ? serviceName(catalog, shop.services[0]) : shop.category), shop.area, formatDistance(shop._distanceKm, shop.country)].filter(Boolean).join(" · ")}</div>
         <div className="flex flex-wrap gap-1 mt-2">
           <span className={"text-[11px] px-2 py-0.5 rounded-full border " + availCls}>{availText}</span>

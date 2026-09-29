@@ -1,12 +1,7 @@
 "use client";
-import { ALL_COUNTRIES } from "../lib/countries";
+import CountryPicker from "./CountryPicker";
 
-// Every country, alphabetical, with its flag. (Typing a letter jumps to it.)
+// Country choice (names only, search, likely countries first). See CountryPicker.
 export default function CountrySelect({ value, onChange }) {
-  return (
-    <select value={value || ""} onChange={(e) => onChange(e.target.value)} aria-label="Country"
-      className="w-full px-4 py-3 rounded-xl border border-line bg-card">
-      {ALL_COUNTRIES.map((c) => <option key={c.code} value={c.code}>{c.flag} {c.name}</option>)}
-    </select>
-  );
+  return <CountryPicker value={value} onChange={onChange} />;
 }

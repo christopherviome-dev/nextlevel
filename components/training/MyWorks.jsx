@@ -33,7 +33,7 @@ export default function MyWorks({ skills = [], canPost = true }) {
   const remove = async (w) => { if (!window.confirm("Delete this photo?")) return; await apiFetch(`/training/me/works/${w._id}`, { method: "DELETE" }); load(); };
 
   return (
-    <div>
+    <div id="post-work" style={{ scrollMarginTop: "6rem" }}>
       <div className="text-xs font-extrabold tracking-wide text-plum uppercase mb-2">My work</div>
       {canPost && (
         <div className="bg-card border border-line rounded-2xl p-3 space-y-2 mb-3">

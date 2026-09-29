@@ -115,7 +115,7 @@ function Submission({ item, onDone }) {
             ))}
           </div>
           <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2}
-            placeholder="Reason the stylist will see" className="w-full px-3 py-2 rounded-lg bg-surface border border-line text-ink" />
+            placeholder="Reason the professional will see" className="w-full px-3 py-2 rounded-lg bg-surface border border-line text-ink" />
           <div className="flex gap-2">
             <button onClick={reject} disabled={busy || reason.trim().length < 5}
               className="px-5 py-2 rounded-full bg-red-600 text-white font-bold disabled:opacity-40">Send rejection</button>
