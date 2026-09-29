@@ -16,6 +16,7 @@ import { useFollowing } from "../lib/useFollowing";
 import { useBackClose, closeLayer } from "../lib/useBackClose";
 import { track } from "../lib/track";
 import ServiceRoller from "../components/discover/ServiceRoller";
+import ServicesSheet from "../components/discover/ServicesSheet";
 import FeedPost from "../components/discover/FeedPost";
 import InspirationPost from "../components/discover/InspirationPost";
 import InspirationSheet from "../components/discover/InspirationSheet";
@@ -98,6 +99,10 @@ export default function Discover() {
     catch (e) { /* e.g. too many new conversations today: stay put */ }
   };
   const openWork = (item) => { learn("view", { styleKey: item.styleKey, serviceKey: item.serviceKey }); setLayer({ type: "work", item }); };
+  // Newest professionals first (last 60 days), as "Shop name · Area" for the moving strip.
+  const newPros = d.shops.filter((x) => x.joinedAt && x.joinedAt > (now || 0) - 60 * 86400000)
+    .sort((a, b) => b.joinedAt - a.joinedAt).slice(0, 12)
+    .map((x) => ({ key: String(x._id), name: [x.salonName || x.name, x.area || x.city].filter(Boolean).join(" · ") }));
   const openPro = (shop) => { learn("view", { services: shop.services }); setLayer({ type: "pro", shop }); };
   const services = catalog.map((c) => ({ key: c.key, name: c.name }));
   const chosen = catalog.find((c) => c.key === service);
@@ -105,9 +110,19 @@ export default function Discover() {
   return (
     <div>
       <Nav />
-      <div className="max-w-xl mx-auto sm:px-4 pt-3 pb-4">
+      <div className="max-w-xl md:max-w-4xl xl:max-w-6xl mx-auto sm:px-4 pt-3 pb-4">
         <div className="px-4 sm:px-0 space-y-3 mb-3">
-          {services.length > 0 && <ServiceRoller services={services} selected={service} onSelect={(k) => { setService(k); setStyle(null); setShown(PAGE); }} />}
+          {/* Stupidly simple: one button opens every service; the moving strip shows who just joined. */}
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => setLayer({ type: "services" })} className="shrink-0 px-4 py-2 rounded-full bg-violet text-white text-sm font-bold">☰ All services</button>
+            {chosen && <button type="button" onClick={() => { setService("all"); setStyle(null); setShown(PAGE); }} aria-label={`Showing ${chosen.name}. Tap to show everything`} className="shrink-0 px-4 py-2 rounded-full border border-violet text-violet text-sm font-bold">{chosen.name} ✕</button>}
+          </div>
+          {newPros.length > 0 && (
+            <div>
+              <div className="text-xs font-bold text-muted mb-1">New on Sheeba</div>
+              <ServiceRoller services={newPros} selected={null} onSelect={(id) => { const shop = d.shops.find((x) => String(x._id) === id); if (shop) openPro(shop); }} />
+            </div>
+          )}
           {chosen && (chosen.styles || []).length > 0 && (
             <div className="flex gap-2 overflow-x-auto no-scrollbar">
               {chosen.styles.map((st) => (
@@ -124,12 +139,15 @@ export default function Discover() {
         {!d.loading && !d.error && feed.length === 0 && (
           <div className="px-4"><EmptyState title={d.shops.length ? "Nothing here yet" : `No shops in ${info.name} yet`} hint={d.shops.length ? "Try another service." : "New professionals are joining. You can change your country in Settings."} actionLabel={d.shops.length ? "Show everything" : undefined} onAction={d.shops.length ? goHome : undefined} /></div>
         )}
+        {/* Phones: one column. Tablets and laptops: a grid of 2, wide screens 3. */}
+        <div className="md:grid md:grid-cols-2 xl:grid-cols-3 md:gap-5 md:items-start">
         {!d.loading && !d.error && feed.slice(0, shown).map((f) => f.kind === "work"
           ? <FeedPost key={f.key} item={f.item} liked={liked.has(f.key)} onLike={onLike} onOpenWork={openWork} onOpenPro={openPro}
               following={following.has(String(f.item.shop._id))} onFollow={toggleFollow} onMessage={onMessage}
               onOpenReel={(item) => setLayer({ type: "reel", item })}
               styleName={f.item.styleKey && styles[f.item.styleKey] ? styles[f.item.styleKey].name : null} now={now} />
           : <InspirationPost key={f.key} styleKey={f.styleKey} style={styles[f.styleKey]} onOpen={() => { track("inspiration", f.styleKey); setLayer({ type: "inspiration", styleKey: f.styleKey }); }} />)}
+        </div>
         {shown < feed.length && <div ref={sentinel} className="h-10" aria-hidden />}
         {!d.loading && feed.length > 0 && shown >= feed.length && <p className="text-center text-xs text-muted py-6">You're all caught up ✨</p>}
       </div>
@@ -145,6 +163,10 @@ export default function Discover() {
           price={typeof layer.item.price === "number" ? formatMoney(layer.item.price, layer.item.shop.currency) : null}
           link={`${window.location.origin}/shop/${layer.item.shop._id}?look=${encodeURIComponent(layer.item.id)}#request`}
           load={() => apiFetch(`/reels/service/${layer.item.shop._id}/${layer.item.id}`)} onClose={close} />
+      )}
+      {layer && layer.type === "services" && (
+        <ServicesSheet services={catalog} shops={d.shops} selected={service} onClose={close}
+          onPick={(k) => { setService(k); setStyle(null); setShown(PAGE); close(); }} />
       )}
       {layer && layer.type === "inspiration" && styles[layer.styleKey] && (
         <InspirationSheet styleKey={layer.styleKey} style={styles[layer.styleKey]} shops={withDistance} currency={info.currency} where={where} onClose={close}

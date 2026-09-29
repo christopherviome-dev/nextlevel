@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
+import NotificationBell from "./NotificationBell";
 import LocationToggle from "./LocationToggle";
 
 // The app shell's navigation. One component, used on every signed-in-style
@@ -72,6 +73,7 @@ export default function Nav() {
         {/* Kept tidy: the location pin and Settings. Everything else lives in Settings. */}
         <div className="flex items-center gap-2 shrink-0">
           <LocationToggle />
+          <NotificationBell />
           <Link href="/settings" aria-label="Settings" title="Settings" aria-current={pathname.startsWith("/settings") ? "page" : undefined}
             className={"w-10 h-10 rounded-full border flex items-center justify-center " + (pathname.startsWith("/settings") ? "bg-violet text-white border-violet" : "bg-card text-plum border-line")}>
             <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

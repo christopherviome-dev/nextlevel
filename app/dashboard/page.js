@@ -33,7 +33,8 @@ const NO_COUNTS = { pendingRequests: 0, unreadMessages: 0, workToReview: 0, appr
 export default function Dashboard() {
   const { authToken, myAccount, refreshMyAccount, hydrated } = useAuth();
   const [welcome, setWelcome] = useState(false);
-  const [section, setSection] = useState(null); // null = not chosen yet: use the sensible default
+  // null = not chosen yet: use the sensible default. A link can choose one (?tab=messages), e.g. from a notification.
+  const [section, setSection] = useState(() => (typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("tab") : null));
   const [counts, setCounts] = useState(NO_COUNTS);
 
   // The one-time "you're logged in" message, right after logging in or registering.
@@ -59,7 +60,7 @@ export default function Dashboard() {
   if (!myAccount) return <div><Nav /><div className="max-w-xl mx-auto px-5 pt-10 text-muted">Loading your shop…</div></div>;
 
   // Apprentices in training start on their training; everyone else on Home.
-  const active = section || (myAccount.supervisorStatus === "APPROVED" ? "training" : "home");
+  const active = section && TITLES[section] ? section : (myAccount.supervisorStatus === "APPROVED" ? "training" : "home"); // unknown sections fall back safely
   const title = active === "training" && myAccount.supervisorStatus === "GRADUATED" ? "Training record" : TITLES[active];
 
   return (

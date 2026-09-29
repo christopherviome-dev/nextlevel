@@ -48,12 +48,12 @@ export default function ShopView() {
         {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
         <div className="flex items-center gap-2"><ThemeToggle /><a href="/" className="px-4 py-2 rounded-full border border-line text-sm font-bold">Explore more shops →</a></div>
       </div>
-      <div className="max-w-xl mx-auto px-5 pt-6">
+      <div className="max-w-xl lg:max-w-5xl mx-auto px-5 pt-6">
         {error && <div className="text-muted py-6">This shop isn't currently available.</div>}
         {!error && !shop && <div className="text-muted py-6">Loading…</div>}
         {shop && (
           <div className="bg-card border border-line rounded-2xl overflow-hidden">
-            {shop.coverPhoto && <img src={shop.coverPhoto} alt="" className="w-full max-h-52 object-cover" />}
+            {shop.coverPhoto && <img src={shop.coverPhoto} alt="" className="w-full max-h-52 lg:max-h-80 object-cover" />}
             <div className="p-5">
               <div className="flex items-center gap-3">
                 {shop.profilePhoto && <img src={shop.profilePhoto} alt="" style={ringStyle(shop)} className="w-16 h-16 rounded-full object-cover border border-line shrink-0" />}
@@ -71,6 +71,7 @@ export default function ShopView() {
               <div className="flex justify-end gap-2 mt-3"><MessageButton stylistId={shop._id} /><SaveShopButton shopId={shop._id} services={shop.services} /></div>
               {shop.stats && (shop.stats.loves > 0 || shop.stats.completedJobs > 0) && (
                 <div className="text-sm text-muted-strong mt-2">
+                  {shop.stats.rating && <span className="text-amber-600 font-bold">★ {shop.stats.rating.average} <span className="font-normal text-muted">({shop.stats.rating.count} ratings)</span></span>}
                   {shop.stats.loves > 0 && <span>♥ {shop.stats.loves} {shop.stats.loves === 1 ? "like" : "likes"}</span>}
                   {shop.stats.loves > 0 && shop.stats.completedJobs > 0 && " · "}
                   {shop.stats.completedJobs > 0 && <span>{shop.stats.completedJobs} {shop.stats.completedJobs === 1 ? "job" : "jobs"} done on Sheeba</span>}
@@ -87,6 +88,8 @@ export default function ShopView() {
                 </div>
               )}
               {shop.bio && <p className="mt-3 text-sm whitespace-pre-line">{shop.bio}</p>}
+              <div className="lg:grid lg:grid-cols-[1fr_24rem] lg:gap-8 lg:items-start">
+              <div>
               <div className="text-xs font-extrabold tracking-wide text-plum uppercase mt-5 mb-2">Services</div>
               {(shop.styles || []).filter((s) => s.active !== false).map((s) => (
                 <div key={s.id} className="border border-line rounded-xl p-3 mb-2 flex gap-3">
@@ -99,7 +102,9 @@ export default function ShopView() {
                 </div>
               ))}
               <ApprenticeWorkGallery shopId={shop._id} shopName={shop.salonName || shop.name} />
-              <div id="request" className="scroll-mt-24"><RequestForm shop={shop} /></div>
+              </div>
+              <div id="request" className="scroll-mt-24 lg:sticky lg:top-24 lg:mt-5"><RequestForm shop={shop} /></div>
+              </div>
               <ReportForm stylistId={shop._id} name={shop.salonName || shop.name} country={shop.country} actor={customerToken ? "customer" : null} />
             </div>
           </div>

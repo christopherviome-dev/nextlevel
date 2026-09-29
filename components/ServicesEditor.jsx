@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { apiFetch } from "../lib/api";
 import { fitImage } from "../lib/image";
+import BulkAddServices from "./BulkAddServices";
 import { formatMoney, currencySymbol } from "../lib/money";
 import { EmptyState } from "./States";
 import { useCatalog } from "../lib/catalog";
@@ -40,12 +41,19 @@ export default function ServicesEditor({ account, onSaved }) {
     <div>
       <div className="flex items-center justify-between mb-3 gap-2">
         <div className="text-sm text-muted">{services.length} of {MAX_SERVICES} services</div>
-        {editing !== "new" && services.length < MAX_SERVICES && (
-          <button onClick={() => setEditing("new")} className="px-4 py-2 rounded-full bg-hibiscus text-white text-sm font-bold">+ Add a service</button>
+        {!editing && services.length < MAX_SERVICES && (
+          <div className="flex flex-wrap gap-2 justify-end">
+            <button onClick={() => setEditing("bulk")} className="px-4 py-2 rounded-full border border-hibiscus text-hibiscus-deep text-sm font-bold">📷 Add many at once</button>
+            <button onClick={() => setEditing("new")} className="px-4 py-2 rounded-full bg-hibiscus text-white text-sm font-bold">+ Add a service</button>
+          </div>
         )}
       </div>
       {error && <p className="text-sm text-bad-fg mb-3">{error}</p>}
 
+      {editing === "bulk" && (
+        <BulkAddServices serviceOptions={serviceOptions} room={MAX_SERVICES - services.length} currency={account.currency}
+          onCancel={() => setEditing(null)} onDone={async (all) => { if (all) setEditing(null); await onSaved(); }} />
+      )}
       {editing === "new" && (
         <ServiceForm currency={account.currency} serviceOptions={serviceOptions} defaultService={mine[0] || ""}
           onCancel={() => setEditing(null)}
@@ -55,7 +63,7 @@ export default function ServicesEditor({ account, onSaved }) {
           }} />
       )}
 
-      {services.length === 0 && editing !== "new" && (
+      {services.length === 0 && !editing && (
         <EmptyState title="No services yet"
           hint="Add what you offer, with a price and a photo of your work. Shops with real photos get approved and booked faster."
           actionLabel="Add your first service" onAction={() => setEditing("new")} />

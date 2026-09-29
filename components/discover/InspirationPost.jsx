@@ -9,7 +9,7 @@ export default function InspirationPost({ styleKey, style, onOpen }) {
   const photo = photosFor(styleKey)[0];
   if (!photo || broken) return null;
   return (
-    <article className="bg-card border border-line rounded-3xl p-3 mb-5 shadow-sm mx-3 sm:mx-0">
+    <article className="bg-card border border-line rounded-3xl p-3 mb-5 md:mb-0 shadow-sm mx-3 sm:mx-0">
             <button type="button" onClick={onOpen} className="block w-full relative rounded-2xl overflow-hidden" aria-label={`${style.name}: see details and who does it`}>
         <img src={photo.src} alt="" loading="lazy" onError={() => setBroken(true)} className="w-full aspect-[4/5] object-cover" />
         <span className="absolute top-3 left-3 text-[11px] font-bold px-2.5 py-1 rounded-full bg-card/90 text-plum">✨ Inspiration</span>

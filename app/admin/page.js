@@ -19,11 +19,12 @@ import FieldWork from "../../components/admin/FieldWork";
 import FieldCoverage from "../../components/admin/FieldCoverage";
 import AdminSources from "../../components/admin/AdminSources";
 import AuditLog from "../../components/admin/AuditLog";
+import CommunityFeedback from "../../components/admin/CommunityFeedback";
 import { roleOf, can } from "../../lib/adminRoles";
 
 const TITLES = {
   overview: "Overview", places: "Places", demand: "Demand", map: "Map", shops: "Shops to approve", ids: "IDs to check", reports: "Reports",
-  passwords: "Password help", services: "Proposed services", invites: "Invite rewards", switches: "Switches", audit: "Audit log", team: "Admin team", trips: "Field trips", coverage: "Coverage", sources: "Sources",
+  passwords: "Password help", services: "Proposed services", invites: "Invite rewards", switches: "Switches", audit: "Audit log", team: "Admin team", trips: "Field trips", coverage: "Coverage", sources: "Sources", feedback: "Community feedback",
 };
 const RANGES = [[7, "7 days"], [30, "30 days"], [90, "90 days"], [365, "1 year"]];
 
@@ -32,7 +33,7 @@ const RANGES = [[7, "7 days"], [30, "30 days"], [90, "90 days"], [365, "1 year"]
 export default function AdminPage() {
   const { authToken, isAdmin, hydrated, myAccount } = useAuth();
   const role = roleOf(myAccount);
-  const [picked, setSection] = useState(null);
+  const [picked, setSection] = useState(() => (typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("section") : null)); // a link can open a section, e.g. from a notification
   const [days, setDays] = useState(30);
   const [o, setO] = useState(null);
   const [error, setError] = useState(null);
@@ -69,6 +70,7 @@ export default function AdminPage() {
       ["shops", "Shops to approve", "shops", m.awaitingApproval], ["ids", "IDs to check", "ids", t.pendingVerifications],
       ["reports", "Reports", "reports", t.openReports, t.urgentOpen > 0], ["passwords", "Password help", "passwords", t.passwordHelp],
       ["services", "Proposed services", "services", t.serviceProposals], ["invites", "Invite rewards", "invites", o ? o.invites.UNDER_REVIEW || 0 : 0],
+      ["feedback", "Community feedback", "telegram", t.communityFeedback || 0],
     ] },
     { title: "Settings", items: [["team", "Admin team", "team"], ["switches", "Switches", "switches"], ["audit", "Audit log", "audit"]] },
   ];
@@ -100,6 +102,7 @@ export default function AdminPage() {
         {section === "ids" && <VerificationQueue onDecision={afterDecision} />}
         {section === "reports" && <ReportsQueue onDecision={afterDecision} />}
         {section === "passwords" && <PasswordResetQueue onDecision={afterDecision} />}
+        {section === "feedback" && <CommunityFeedback />}
         {section === "services" && <ServiceProposalsQueue onDecision={afterDecision} />}
         {section === "invites" && <InviteRewardsQueue onDecision={afterDecision} />}
         {section === "switches" && <AdminSwitches />}

@@ -104,7 +104,7 @@ export default function SearchPage() {
   return (
     <div>
       <Nav />
-      <div className="max-w-xl mx-auto px-4 pt-3 pb-16 space-y-4">
+      <div className="max-w-xl md:max-w-3xl lg:max-w-5xl mx-auto px-4 pt-3 pb-16 space-y-4">
         <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); askSheeba(query); }}>
           <input type="search" autoFocus value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search or ask a question"
             placeholder='Try "makeup artist in Koforidua" or "locs for 200"' className="flex-1 min-w-0 px-4 py-3 rounded-full border border-line bg-card shadow-sm" />
@@ -133,7 +133,7 @@ export default function SearchPage() {
         {!d.loading && !d.error && !active && (
           <div>
             <div className="text-xs font-extrabold tracking-wide text-plum uppercase mb-2">Explore styles</div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
               {INSPIRATION_STYLES.filter((k) => styles[k]).map((k) => (
                 <button key={k} onClick={() => openStyle(k)} className="relative rounded-xl overflow-hidden text-left" aria-label={styles[k].name}>
                   <img src={photosFor(k)[0].src} alt="" loading="lazy" className="w-full aspect-square object-cover" />
@@ -148,7 +148,7 @@ export default function SearchPage() {
           <div>
             <div role="tablist" className="flex gap-2 overflow-x-auto no-scrollbar mb-3">{tabs.map(([k, l]) => chip(tab === k, () => setTab(k), l, k))}</div>
             {tab === "looks" && (looks.length
-              ? <div className="grid grid-cols-3 gap-1">{looks.map((w) => (
+              ? <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1">{looks.map((w) => (
                   <button key={likeKey(w)} onClick={() => setLayer({ type: "work", item: w })} className="relative" aria-label={`${w.name} by ${w.shop.salonName || w.shop.name}`}>
                     <img src={w.thumb} alt="" loading="lazy" className="w-full aspect-square object-cover" />
                   </button>))}</div>

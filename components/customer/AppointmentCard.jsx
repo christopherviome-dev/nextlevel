@@ -1,4 +1,5 @@
 "use client";
+import RateVisit from "./RateVisit";
 import { useState } from "react";
 import { apiFetch } from "../../lib/api";
 import { formatMoney } from "../../lib/money";
@@ -47,6 +48,7 @@ export default function AppointmentCard({ r, onChanged }) {
       <ReportForm stylistId={r.stylistId} requestId={r._id} name={shopName} actor="customer" />
       {r.status === "completed" && (
         <>
+          <RateVisit r={r} />
           <div className="flex flex-wrap gap-2 mt-3">
             {r.shop && r.shop.bookable && <button onClick={() => toggle("again")} className={"px-3 py-1.5 rounded-full text-sm font-bold border " + (panel === "again" ? "bg-violet text-white border-violet" : "bg-card text-plum border-line")}>Book again</button>}
             <button onClick={() => toggle("style")} className={"px-3 py-1.5 rounded-full text-sm font-bold border " + (panel === "style" ? "bg-violet text-white border-violet" : "bg-card text-plum border-line")}>Save this style</button>

@@ -27,7 +27,7 @@ export default function FeedPost({ item, liked, onLike, onOpenWork, onOpenPro, f
     try { if (navigator.share) await navigator.share({ title: `${title} by ${name}`, url }); else await navigator.clipboard.writeText(url); } catch (e) { /* closed */ }
   };
   return (
-    <article className="bg-card border border-line rounded-3xl p-3 mb-5 shadow-sm mx-3 sm:mx-0">
+    <article className="bg-card border border-line rounded-3xl p-3 mb-5 md:mb-0 shadow-sm mx-3 sm:mx-0">
       <div className="relative rounded-2xl overflow-hidden bg-surface-2">
         <button type="button" onClick={() => onOpenWork(item)} className="block w-full" aria-label={`${title} by ${name}: see details`}>
           <img src={item.thumb} alt={title} loading="lazy" className="w-full aspect-[4/5] object-cover" draggable={false} />

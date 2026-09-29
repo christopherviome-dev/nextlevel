@@ -2,6 +2,7 @@
 import IdCheckedBadge from "../IdCheckedBadge";
 import { useEffect, useRef } from "react";
 import { HeartButton } from "./WorkTile";
+import SwipePhotos from "./SwipePhotos";
 import { AVAILABILITY_LABEL } from "./ProCard";
 import { workModeLabel } from "../../lib/shop";
 import { formatDistance } from "../../lib/geo";
@@ -52,10 +53,9 @@ export default function ContextPanel({ selection, onClose, onSelect, likedIds, o
         <div className="p-4 space-y-4">
           {item && (
             <div>
-              <div className="relative rounded-2xl overflow-hidden bg-surface-2">
-                <img src={item.thumb} alt={item.name} className="w-full max-h-96 object-cover" />
+              <SwipePhotos first={item.thumb} alt={item.name} reelUrl={item.reelCount >= 3 ? `/reels/service/${shop._id}/${item.id}` : null}>
                 <HeartButton large liked={likedIds.has(likeKey(item))} count={item.likeCount} onClick={() => onLike(item)} />
-              </div>
+              </SwipePhotos>
               <div className="flex items-baseline justify-between gap-3 mt-3">
                 <div className="text-lg font-bold text-ink">{item.name}</div>
                 <div className="text-lg font-bold text-hibiscus-deep whitespace-nowrap">{formatMoney(item.price, shop.currency)}</div>
