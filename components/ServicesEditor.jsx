@@ -88,7 +88,7 @@ export default function ServicesEditor({ account, onSaved }) {
               )}
             </div>
             <div className="flex flex-col sm:flex-row gap-1 shrink-0">
-              <button onClick={() => setReelFor(s)} className="px-3 py-1.5 rounded-full border border-hibiscus text-hibiscus-deep text-xs font-bold">▶ {s.reelCount ? `Angles (${s.reelCount})` : "Angles"}</button>
+              <button onClick={() => setReelFor(s)} className="px-3 py-1.5 rounded-full border border-hibiscus text-hibiscus-deep text-xs font-bold">▶ {s.reelCount ? `${s.reelCount} photos` : "More photos"}</button>
               <button onClick={() => setEditing(s.id)} disabled={busyId === s.id} className="px-3 py-1.5 rounded-full border border-line text-xs font-bold">Edit</button>
               <button onClick={() => toggle(s)} disabled={busyId === s.id} className="px-3 py-1.5 rounded-full border border-line text-xs font-bold">{s.active === false ? "Show" : "Hide"}</button>
               <button onClick={() => remove(s)} disabled={busyId === s.id} className="px-3 py-1.5 rounded-full border border-bad-line text-bad-fg text-xs font-bold">Delete</button>
@@ -97,7 +97,7 @@ export default function ServicesEditor({ account, onSaved }) {
         ))}
       </div>
       {reelFor && (
-        <Sheet title={`Angles: ${reelFor.name}`} onClose={() => setReelFor(null)}>
+        <Sheet title={`More photos: ${reelFor.name}`} onClose={() => setReelFor(null)}>
           <ReelMaker hasReel={!!reelFor.reelCount} onCancel={() => setReelFor(null)}
             onSave={async (frames) => { await apiFetch(`/reels/service/${reelFor.id}`, { method: "POST", body: JSON.stringify({ frames }) }); setReelFor(null); await onSaved(); }}
             onRemove={async () => { await apiFetch(`/reels/service/${reelFor.id}`, { method: "DELETE" }); setReelFor(null); await onSaved(); }} />

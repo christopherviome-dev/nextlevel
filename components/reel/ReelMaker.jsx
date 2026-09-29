@@ -41,7 +41,7 @@ export default function ReelMaker({ onSave, onCancel, onRemove, hasReel }) {
           </label>
         )}
       </div>
-      <div className="text-xs text-muted">{frames.length} of {MAX} angles{frames.length < MIN ? ` (at least ${MIN})` : ""}</div>
+      <div className="text-xs text-muted">{frames.length} of {MAX} photos{frames.length < MIN ? ` (at least ${MIN})` : ""}</div>
       {error && <p className="text-sm text-bad-fg">{error}</p>}
       <div className="flex flex-wrap gap-2">
         <button type="button" onClick={save} disabled={busy || frames.length < MIN} className="px-5 py-2.5 rounded-full bg-hibiscus text-white font-bold disabled:opacity-40">{busy ? "Saving…" : "Save the reel"}</button>

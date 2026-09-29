@@ -31,7 +31,7 @@ export default function TrainingEditor({ apprenticeId, onClose, onGraduated }) {
 
   return (
     <div className="space-y-4">
-      <button onClick={onClose} className="text-sm font-bold text-hibiscus-deep">‹ All apprentices</button>
+      <button onClick={onClose} className="text-sm font-bold text-hibiscus-deep">‹ All trainees</button>
       <div className="bg-card border border-line rounded-2xl p-4">
         <div className="font-display font-extrabold text-lg text-ink">{name}{graduated ? " · 🎓 Graduated" : ""}</div>
         <div className="mt-2 h-3 rounded-full bg-surface-2 overflow-hidden"><div className="h-full bg-emerald-600" style={{ width: `${progress.percent}%` }} /></div>

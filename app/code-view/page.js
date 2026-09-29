@@ -128,7 +128,7 @@ export default function CodeView() {
             <div className="flex flex-col gap-2 mt-5">
               <Link href="/requests" className="px-5 py-3 rounded-full bg-hibiscus text-white font-bold">Join as a customer</Link>
               <Link href="/login?mode=register" className="px-5 py-3 rounded-full border border-line bg-card text-plum font-bold">Join as a professional</Link>
-              <Link href="/login?mode=register&role=apprentice" className="px-5 py-3 rounded-full border border-line bg-card text-plum font-bold">I'm training (apprentice)</Link>
+              <Link href="/login?mode=register&role=apprentice" className="px-5 py-3 rounded-full border border-line bg-card text-plum font-bold">I'm a professional in training</Link>
               <Link href="/" className="text-sm text-hibiscus-deep font-semibold mt-1">Just browse for now</Link>
             </div>
           </div>

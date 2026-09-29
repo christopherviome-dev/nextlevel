@@ -25,7 +25,7 @@ export default function AgeFields({ apprentice, value, onChange, country }) {
       </div>
       {value.apprenticeAge === "MINOR" && (
         <div className="bg-surface rounded-xl p-3 space-y-2">
-          <p className="text-xs text-muted-strong">Your parent or guardian needs to agree to you joining as an apprentice.</p>
+          <p className="text-xs text-muted-strong">Your parent or guardian needs to agree to you joining as a professional in training.</p>
           <input placeholder="Parent or guardian's name" value={value.guardianName || ""} onChange={(e) => set({ guardianName: e.target.value })}
             className="w-full px-4 py-3 rounded-xl border border-line bg-card" />
           <PhoneInput country={value.guardianCountry || country} onCountryChange={(c) => set({ guardianCountry: c })}

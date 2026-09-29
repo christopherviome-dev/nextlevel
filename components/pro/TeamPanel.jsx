@@ -50,7 +50,7 @@ export default function TeamPanel({ account }) {
             <div className="flex items-center gap-3">
               {m.photo ? <img src={m.photo} alt="" className="w-10 h-10 rounded-full object-cover" /> : <span className="w-10 h-10 rounded-full bg-violet text-white font-bold flex items-center justify-center">{m.name.slice(0, 1).toUpperCase()}</span>}
               <div className="flex-1 min-w-0">
-                <div className="font-bold text-ink truncate">{m.name}{m.apprentice ? <span className="text-xs text-muted font-normal"> · apprentice</span> : null}</div>
+                <div className="font-bold text-ink truncate">{m.name}{m.apprentice ? <span className="text-xs text-muted font-normal"> · in training</span> : null}</div>
                 <div className="text-xs text-muted">{m.jobsServed} job{m.jobsServed === 1 ? "" : "s"} served{m.lastOpenedCard ? ` · last opened a card ${when(m.lastOpenedCard)}` : ""}</div>
               </div>
               <button onClick={() => remove(m)} className="text-xs font-bold text-bad-fg underline shrink-0">Remove</button>

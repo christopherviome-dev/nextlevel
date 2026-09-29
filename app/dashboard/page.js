@@ -81,7 +81,7 @@ export default function Dashboard() {
             {myAccount.role === "APPRENTICE" && (
               <div className={"rounded-2xl p-4 border " + (myAccount.supervisorStatus === "APPROVED" ? "bg-ok-bg border-ok-line text-ok-fg" : myAccount.supervisorStatus === "DECLINED" ? "bg-bad-bg border-bad-line text-bad-fg" : "bg-warn-bg border-warn-line text-warn-fg")}>
                 <div className="font-bold">
-                  {myAccount.supervisorStatus === "APPROVED" ? "You're a confirmed apprentice" : myAccount.supervisorStatus === "DECLINED" ? "Your supervisor declined your request" : "Waiting for your supervisor to confirm you"}
+                  {myAccount.supervisorStatus === "APPROVED" ? "You're a confirmed professional in training" : myAccount.supervisorStatus === "DECLINED" ? "Your supervisor declined your request" : "Waiting for your supervisor to confirm you"}
                 </div>
                 <p className="text-sm mt-1">
                   {myAccount.supervisorStatus === "APPROVED" ? "You can help with your supervisor's shop requests. Your own shop stays private while you train."

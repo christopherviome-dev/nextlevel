@@ -5,8 +5,6 @@ import Toast from "./Toast";
 import ReportForm from "./ReportForm";
 import ChairCard from "./pro/ChairCard";
 import ShareLookButton from "./ShareLookButton";
-import Sheet from "./discover/Sheet";
-import ReelMaker from "./reel/ReelMaker";
 import { fitImage } from "../lib/image";
 import { countryInfo } from "../lib/countries";
 
@@ -139,16 +137,23 @@ function RequestCard({ r, country, forShop, shopName, shopPlace, onChanged, onSt
   const doneAt = r.completedAt || (r.updatedAt ? new Date(r.updatedAt).getTime() : 0);
   const lookWindow = r.status === "completed" && r.clientId && now - doneAt < 14 * 24 * 3600 * 1000;
   const [look, setLook] = useState(null);
-  const [reel, setReel] = useState(false);
   const [lookMsg, setLookMsg] = useState(null);
+  // One button for photos of the finished work (stupidly simple): the first photo goes to the
+  // customer's styles; 3 or more also play as angles. Nobody has to learn what a "reel" is.
   const addLook = async (e) => {
-    const f = e.target.files && e.target.files[0]; e.target.value = "";
-    if (!f) return;
+    const files = Array.from(e.target.files || []).slice(0, 8); e.target.value = "";
+    if (!files.length) return;
+    const first = String(r.clientName || "their").split(" ")[0];
     setLookMsg("Adding…");
     try {
-      const [photo, thumb] = await Promise.all([fitImage(f, { maxDim: 1000, maxChars: 290 * 1024 }), fitImage(f, { maxDim: 360, maxChars: 55 * 1024 })]);
+      const [photo, thumb] = await Promise.all([fitImage(files[0], { maxDim: 1000, maxChars: 290 * 1024 }), fitImage(files[0], { maxDim: 360, maxChars: 55 * 1024 })]);
       await apiFetch(`/requests/${r._id}/look`, { method: "POST", body: JSON.stringify({ photo, thumb }) });
-      setLook(photo); setLookMsg(`✓ Added to ${String(r.clientName || "their").split(" ")[0]}'s styles`);
+      setLook(photo);
+      if (files.length >= 3) {
+        const frames = await Promise.all(files.map((f) => fitImage(f, { maxDim: 900, maxChars: 95 * 1024 })));
+        await apiFetch(`/reels/look/${r._id}`, { method: "POST", body: JSON.stringify({ frames }) });
+        setLookMsg(`✓ Added to ${first}'s styles, with all ${files.length} photos`);
+      } else setLookMsg(`✓ Added to ${first}'s styles`);
     } catch (err) { setLookMsg(err.message); }
   };
   const [error, setError] = useState(null);
@@ -171,11 +176,6 @@ function RequestCard({ r, country, forShop, shopName, shopPlace, onChanged, onSt
     <div className="bg-card border border-line rounded-2xl p-4 mb-3">
       {forShop && <div className="text-xs font-bold text-violet mb-1">For {forShop}</div>}
       {card && <ChairCard requestId={r._id} onClose={() => setCard(false)} />}
-      {reel && (
-        <Sheet title="Angles of the finished look" onClose={() => setReel(false)}>
-          <ReelMaker onCancel={() => setReel(false)} onSave={async (frames) => { await apiFetch(`/reels/look/${r._id}`, { method: "POST", body: JSON.stringify({ frames }) }); setReel(false); setLookMsg(`✓ Angles added to ${String(r.clientName || "their").split(" ")[0]}'s look`); }} />
-        </Sheet>
-      )}
       <div className="flex justify-between gap-3">
         <div>
           <div className="font-bold">{r.clientName}</div>
@@ -223,9 +223,9 @@ function RequestCard({ r, country, forShop, shopName, shopPlace, onChanged, onSt
       {lookWindow && (
         <div className="flex flex-wrap items-center gap-3 mt-3 text-xs">
           <label className="px-3 py-1.5 rounded-full border border-hibiscus text-hibiscus-deep font-bold cursor-pointer">
-            <input type="file" accept="image/*" capture="environment" onChange={addLook} className="sr-only" />📸 {look ? "Retake the finished look" : "Add the finished look"}
+            <input type="file" accept="image/*" multiple onChange={addLook} className="sr-only" />📸 {look ? "Change the photos" : "Add photos of the finished look"}
           </label>
-          <button type="button" onClick={() => setReel(true)} className="px-3 py-1.5 rounded-full border border-hibiscus text-hibiscus-deep font-bold">▶ Add angles</button>
+          {!look && !lookMsg && <span className="text-muted">1 photo, or 3 to 8 to show every side</span>}
           {lookMsg && <span className="text-muted">{lookMsg}</span>}
           {look && <ShareLookButton photo={look} title={r.serviceNameSnapshot || "Fresh look"} byline={shopName} place={shopPlace}
             link={`${window.location.origin}/shop/${r.stylistId}${r.styleId ? `?look=${encodeURIComponent(r.styleId)}` : ""}#request`} />}

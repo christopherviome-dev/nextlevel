@@ -105,7 +105,7 @@ function MySheeba() {
                         {s.shopName && <div className="text-xs text-muted truncate">by {s.shopName}</div>}
                         {s.notes && <div className="text-xs text-muted line-clamp-2">{s.notes}</div>}
                         <div className="flex flex-wrap gap-2 mt-auto pt-2">
-                          {s.reelCount >= 3 && <button type="button" onClick={() => setReel({ s, title, link })} className="px-3 py-1.5 rounded-full bg-black text-white text-xs font-bold">▶ Play angles</button>}
+                          {s.reelCount >= 3 && <button type="button" onClick={() => setReel({ s, title, link })} className="px-3 py-1.5 rounded-full bg-black text-white text-xs font-bold">▶ See all photos</button>}
                           <ShareLookButton photo={photo} title={title} byline={s.shopName} place={s.shopPlace} link={link} label="Share my look" />
                           {/* A plain link on purpose: shop pages load through the Netlify redirect rule. */}
                           <a href={link} className="px-3 py-1.5 rounded-full border border-line text-xs font-bold text-plum">Get this again</a>

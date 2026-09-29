@@ -15,6 +15,8 @@ import { useBackClose, closeLayer } from "../../lib/useBackClose";
 import { setUseLocation } from "../../lib/prefs";
 import { track } from "../../lib/track";
 import VoiceSearchButton, { parseVoice } from "../../components/discover/VoiceSearchButton";
+import AssistAnswer from "../../components/discover/AssistAnswer";
+import { apiFetch } from "../../lib/api";
 import InspirationSheet from "../../components/discover/InspirationSheet";
 import FiltersSheet from "../../components/discover/FiltersSheet";
 import ContextPanel from "../../components/discover/ContextPanel";
@@ -27,6 +29,7 @@ export default function SearchPage() {
   const d = useDiscoverData();
   const { styles, catalog, withDistance, info, where, myLocation } = d;
   const [query, setQuery] = useState("");
+  const [ask, setAsk] = useState(null); // the assistant's answer to a spoken or typed question
   const [service, setService] = useState("all");
   const [budget, setBudget] = useState("any");
   const [voiceMax, setVoiceMax] = useState(null);
@@ -65,10 +68,21 @@ export default function SearchPage() {
     (!words.length || words.every((x) => [st.name, ...(st.aliases || [])].join(" ").toLowerCase().includes(x)))).map(([k, st]) => ({ key: k, ...st })), [styles, service, words]);
 
   const onVoice = (said) => {
+    askSheeba(said); // speaking always asks the assistant
     const v = parseVoice(said);
     setQuery(v.text);
     if (v.max) { setVoiceMax(v.max); setBudget("voice"); }
     if (v.nearMe) setUseLocation(true);
+  };
+  // Ask the assistant: a plain answer plus real professionals (service, place, budget, near me).
+  const askSheeba = async (text) => {
+    const q = String(text || "").trim();
+    if (q.length < 2) return;
+    setAsk({ loading: true });
+    try {
+      const loc = d.myLocation && typeof d.myLocation.lat === "number" ? { lat: d.myLocation.lat, lng: d.myLocation.lng } : {};
+      setAsk(await apiFetch("/assist", { method: "POST", body: JSON.stringify({ q, country: d.country, ...loc }) }));
+    } catch (e) { setAsk({ error: e.message }); }
   };
   const openStyle = (k) => { learn("search", { styleKey: k, serviceKey: styles[k] && styles[k].serviceKey }); track("inspiration", k); setLayer({ type: "inspiration", styleKey: k }); };
   // What people search for teaches their own feed, and (anonymously) the admin's demand trends.
@@ -91,11 +105,13 @@ export default function SearchPage() {
     <div>
       <Nav />
       <div className="max-w-xl mx-auto px-4 pt-3 pb-16 space-y-4">
-        <div className="flex gap-2">
-          <input type="search" autoFocus value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search styles, professionals or areas"
-            placeholder="Styles, professionals, areas…" className="flex-1 min-w-0 px-4 py-3 rounded-full border border-line bg-card shadow-sm" />
+        <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); askSheeba(query); }}>
+          <input type="search" autoFocus value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search or ask a question"
+            placeholder='Try "makeup artist in Koforidua" or "locs for 200"' className="flex-1 min-w-0 px-4 py-3 rounded-full border border-line bg-card shadow-sm" />
           <VoiceSearchButton onResult={onVoice} lang={d.country === "GB" ? "en-GB" : "en-GH"} />
-        </div>
+        </form>
+        <AssistAnswer ask={ask} onClose={() => setAsk(null)} />
+        {!ask && !query && <p className="text-xs text-muted -mt-2 px-2">Tap 🎤 and ask, or type and press Enter: what you need, where, and your budget.</p>}
 
         {/* Budget appears once someone searches or picks a service: the first view is just the search box. */}
         {active && <div>

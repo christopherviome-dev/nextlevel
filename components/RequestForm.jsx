@@ -148,7 +148,7 @@ export default function RequestForm({ shop }) {
             className="w-full px-4 py-3 rounded-xl border border-line bg-card" />
         </div>
         <div>
-          <label className="block text-sm font-bold mb-1">Where?</label>
+          <label className="block text-sm font-bold mb-1">{services.length > 0 ? "3. " : ""}Where?</label>
           <select value={meet} onChange={(e) => setMeet(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line bg-card">
             <option value="provider">At the professional's place</option>
             <option value="client">At my place</option>
@@ -166,7 +166,7 @@ export default function RequestForm({ shop }) {
         ) : (
           <div className="bg-surface rounded-xl p-3 space-y-2">
             <div className="flex items-center justify-between gap-2">
-              <div className="text-sm font-bold">{services.length > 0 ? "3. " : ""}{hasAccount ? "Log in to book" : "Your details"}</div>
+              <div className="text-sm font-bold">{services.length > 0 ? "4. " : ""}{hasAccount ? "Log in to book" : "Your details"}</div>
               <button type="button" onClick={() => { setHasAccount(!hasAccount); setError(null); }} className="text-xs font-bold text-hibiscus-deep underline">
                 {hasAccount ? "I'm new here" : "I already have an account"}
               </button>

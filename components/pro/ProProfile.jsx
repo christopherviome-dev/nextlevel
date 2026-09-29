@@ -37,7 +37,7 @@ export default function ProProfile({ account, onSaved, go }) {
           {account.verified && <IdCheckedBadge label />}
           {stats && stats.founding && <span className="text-xs font-bold px-2 py-1 rounded-full bg-warn-bg text-warn-fg border border-warn-line">⭐ Founding member #{stats.memberNumber}</span>}
           {stats && !stats.founding && stats.memberNumber && <span className="text-xs font-bold px-2 py-1 rounded-full bg-surface-2 text-muted-strong">Member #{stats.memberNumber}</span>}
-          {account.role === "APPRENTICE" && <span className="text-xs font-bold px-2 py-1 rounded-full bg-surface-2 text-plum">Apprentice</span>}
+          {account.role === "APPRENTICE" && <span className="text-xs font-bold px-2 py-1 rounded-full bg-surface-2 text-plum">In training</span>}
         </div>
         {error && <p className="text-sm text-bad-fg mt-2">{error}</p>}
       </div>

@@ -34,7 +34,7 @@ export default function FeedPost({ item, liked, onLike, onOpenWork, onOpenPro, f
         </button>
         {badge && <span className="absolute top-3 left-3 text-[11px] font-bold px-2.5 py-1 rounded-full bg-card/90 text-plum">{badge}</span>}
         {item.reelCount >= 3 && onOpenReel && (
-          <button type="button" onClick={() => onOpenReel(item)} className="absolute bottom-3 left-3 text-xs font-bold px-3 py-1.5 rounded-full bg-black/60 text-white">▶ {item.reelCount} angles</button>
+          <button type="button" onClick={() => onOpenReel(item)} className="absolute bottom-3 left-3 text-xs font-bold px-3 py-1.5 rounded-full bg-black/60 text-white">▶ {item.reelCount} photos</button>
         )}
         <button type="button" onClick={() => onLike(item)} aria-pressed={liked} aria-label={liked ? "Unlike" : "Like"}
           className="absolute top-3 right-3 min-w-[3rem] h-10 px-3 rounded-full bg-card/90 flex items-center justify-center gap-1 shadow">

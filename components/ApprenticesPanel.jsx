@@ -14,7 +14,7 @@ export default function ApprenticesPanel() {
   useEffect(() => { load(); }, [load]);
 
   const answer = async (a, decision) => {
-    if (decision === "decline" && !window.confirm(`Decline ${a.name} as your apprentice?`)) return;
+    if (decision === "decline" && !window.confirm(`Decline ${a.name} as your trainee?`)) return;
     setBusy(a._id); setError(null);
     try { await apiFetch(`/stylists/me/apprentices/${a._id}/${decision}`, { method: "POST" }); load(); }
     catch (e) { setError(e.message); } finally { setBusy(null); }
@@ -27,9 +27,9 @@ export default function ApprenticesPanel() {
   const graduates = list.filter((a) => a.status === "GRADUATED");
   return (
     <div>
-      <div className="font-bold mb-2">Apprentices</div>
+      <div className="font-bold mb-2">In training</div>
       {error && <p className="text-sm text-bad-fg mb-2">{error}</p>}
-      {list.length === 0 && <p className="text-sm text-muted">No apprentices yet. An apprentice joins by entering your Sheeba code when they sign up.</p>}
+      {list.length === 0 && <p className="text-sm text-muted">No trainees yet. A professional in training joins by entering your Sheeba code when they sign up.</p>}
       {pending.map((a) => (
         <div key={a._id} className="flex items-center justify-between gap-2 bg-warn-bg border border-warn-line rounded-xl p-3 mb-2">
           <span className="text-sm text-warn-fg"><b>{a.name}</b> wants to train with you</span>

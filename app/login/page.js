@@ -90,7 +90,7 @@ export default function Login() {
     <Nav />
     <div className="max-w-md mx-auto px-5 pt-12">
       <div className="text-xs font-extrabold tracking-wide text-plum uppercase mb-3">
-        {mode === "login" ? "Log In" : isApprentice ? "Join as an Apprentice" : "Create Your Shop"}
+        {mode === "login" ? "Log In" : isApprentice ? "Join as a Professional in Training" : "Create Your Shop"}
       </div>
       <form onSubmit={submit} className="space-y-3">
         {mode === "register" && (
@@ -104,7 +104,7 @@ export default function Login() {
         {mode === "register" && (
           <label className="flex items-center gap-2 text-sm text-muted-strong">
             <input type="checkbox" checked={isApprentice} onChange={(e) => setIsApprentice(e.target.checked)} className="w-4 h-4" />
-            I'm training under a professional (apprentice)
+            I'm a professional in training (I train under someone)
           </label>
         )}
         {mode === "register" && isApprentice && (

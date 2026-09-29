@@ -16,7 +16,7 @@ export default function Terms() {
       <h2>2. Your account</h2>
       <ul>
         <li>Sheeba is for adults: customers and independent professionals should be 18 or older. Younger customers can be booked for through a parent's or guardian's account.</li>
-        <li>Apprentices may join from age 15, as Ghana's Children's Act, 1998 allows, with a parent's or guardian's agreement. Apprentices under 18 have no public profile and take no direct bookings; they help through their supervisor's shop.</li>
+        <li>Professionals in training (apprentices) may join from age 15, as Ghana's Children's Act, 1998 allows, with a parent's or guardian's agreement. Apprentices under 18 have no public profile and take no direct bookings; they help through their supervisor's shop.</li>
         <li>Use your real name and your own phone number, and keep your details accurate.</li>
         <li>One person, one account of each kind. Don't share your password; you're responsible for what happens on your account.</li>
       </ul>
@@ -29,7 +29,7 @@ export default function Terms() {
         <li>Keep your shop accurate: your services, prices, availability and location.</li>
         <li>Only upload photos of work you did yourself.</li>
         <li>An identity check is required for the "ID checked" badge. Submit only your own, genuine documents.</li>
-        <li>Apprentices join through their supervisor, who confirms them. Supervisors are responsible for the access they give.</li>
+        <li>Professionals in training (apprentices) join through their supervisor, who confirms them. Supervisors are responsible for the access they give.</li>
       </ul>
 
       <h2>5. Safety and respect</h2>

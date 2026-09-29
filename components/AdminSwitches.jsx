@@ -5,7 +5,7 @@ import { apiFetch } from "../lib/api";
 // Every switch is enforced on the server, not just hidden on screen.
 const GROUPS = [
   ["Safety", [
-    ["ageCheck", "Age check at sign-up", "18+ for customers and professionals; apprentices from 15 with a parent or guardian's consent."],
+    ["ageCheck", "Age check at sign-up", "18+ for customers and professionals; professionals in training from 15 with a parent or guardian's consent."],
     ["verifiedOnly", "Only ID-checked professionals on Discover", "Hide professionals whose ID hasn't been checked yet. Their shop links still work."],
   ]],
   ["Pauses (maintenance or emergencies)", [
@@ -15,6 +15,9 @@ const GROUPS = [
   ]],
   ["Rewards", [
     ["inviteRewards", "Invite rewards", "When off, first completed jobs earn no rewards. Who invited whom is still recorded."],
+  ]],
+  ["Assistant (the 🎤 in Search)", [
+    ["aiAssistant", "Let AI read questions", "Only works once an AI key is added on the server. Each question AI reads costs a little money; when off (or with no key), Sheeba's free built-in understanding answers."],
   ]],
 ];
 

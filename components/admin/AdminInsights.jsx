@@ -68,7 +68,7 @@ export function Overview({ o, go }) {
           <button onClick={() => go("invites")} className="w-full flex justify-between text-sm py-1.5"><span>Invites confirmed</span><b>{o.invites.VALIDATED || 0}</b></button>
         </Card>
         <Card title="Training">
-          <div className="flex justify-between text-sm py-1.5"><span>Apprentices training</span><b>{m.apprentices}</b></div>
+          <div className="flex justify-between text-sm py-1.5"><span>Professionals in training</span><b>{m.apprentices}</b></div>
           <div className="flex justify-between text-sm py-1.5"><span>Graduated</span><b>{m.graduates}</b></div>
           <div className="flex justify-between text-sm py-1.5"><span>Skills signed off</span><b>{o.training.skillsSignedOff}</b></div>
           <div className="flex justify-between text-sm py-1.5"><span>Work photos posted</span><b>{o.training.worksPosted}</b></div>

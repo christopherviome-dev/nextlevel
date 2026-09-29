@@ -53,8 +53,8 @@ function ReviewCard({ w, apprenticeId, isMinor, onDone }) {
       <div className="space-y-1 mt-1 text-sm text-muted-strong">
         {w.skillId && <label className="flex items-center gap-2"><input type="checkbox" checked={signOff} onChange={(e) => setSignOff(e.target.checked)} className="w-4 h-4" /> Also sign off "{w.skillName}"</label>}
         {isMinor
-          ? <p className="text-xs text-muted">Work by apprentices under 18 stays private: it's never shown on the shop page.</p>
-          : <label className="flex items-center gap-2"><input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} className="w-4 h-4" /> Show on our shop page (as apprentice work)</label>}
+          ? <p className="text-xs text-muted">Work by trainees under 18 stays private: it's never shown on the shop page.</p>
+          : <label className="flex items-center gap-2"><input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} className="w-4 h-4" /> Show on our shop page (as trainee work)</label>}
       </div>
       {error && <p className="text-sm text-bad-fg">{error}</p>}
       <div className="flex gap-2 mt-2">
