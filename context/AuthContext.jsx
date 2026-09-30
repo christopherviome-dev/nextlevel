@@ -99,6 +99,25 @@ export function AuthProvider({ children }) {
     chooseRole(localStorage.getItem("sheeba:customer-token") ? "customer" : null);
   }, [chooseRole]);
 
+  // Continue with Google: an existing account is stored exactly like a phone
+  // login; a new person gets { needsSignup, name, email } to finish sign-up.
+  const googleSignIn = useCallback(async (as, credential) => {
+    const data = await apiFetch(as === "pro" ? "/auth/google" : "/customers/google", { method: "POST", body: JSON.stringify({ credential }) });
+    if (data.needsSignup) return data;
+    if (as === "pro") {
+      setAuthToken(data.token); localStorage.setItem("sheeba:token", data.token);
+      setMyStylistId(data.stylist._id); localStorage.setItem("sheeba:my-stylist-id", data.stylist._id);
+      setMyAccount(data.stylist);
+      chooseRole("pro");
+      sessionStorage.setItem("sheeba:welcome", "1");
+    } else {
+      setCustomerToken(data.token); localStorage.setItem("sheeba:customer-token", data.token);
+      setCustomerName(data.customer.name); localStorage.setItem("sheeba:customer-name", data.customer.name);
+      chooseRole("customer");
+    }
+    return { done: true };
+  }, [chooseRole]);
+
   const customerLogin = useCallback(async (phone, password) => {
     const data = await apiFetch("/customers/login", { method: "POST", body: JSON.stringify({ phone, password }) });
     setCustomerToken(data.token); localStorage.setItem("sheeba:customer-token", data.token);
@@ -131,7 +150,7 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider value={{
       authToken, myStylistId, myAccount, isAdmin, hydrated, refreshMyAccount, login, register, logout,
-      customerToken, customerName, customerLogin, customerRegister, customerLogout,
+      customerToken, customerName, customerLogin, customerRegister, customerLogout, googleSignIn,
       activeRole, hasBothRoles, switchRole: chooseRole,
     }}>
       {children}

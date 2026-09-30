@@ -1,4 +1,5 @@
 "use client";
+import PhoneAlerts from "../PhoneAlerts";
 import { useEffect, useState } from "react";
 import { apiFetch } from "../../lib/api";
 import { formatMoney } from "../../lib/money";
@@ -41,6 +42,8 @@ export default function ProHome({ account, counts, go }) {
         <div className="text-2xl font-display font-extrabold text-ink">{greeting()}{first ? `, ${first}` : ""}</div>
         <div className="text-sm text-muted">{new Date(now).toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" })}</div>
       </div>
+      {/* Nudge until this phone has alerts on (then it disappears). */}
+      <PhoneAlerts as="pro" compact />
 
       {pending.length > 0 && (
         <Card title={`Needs your answer (${pending.length})`} action="Answer" onAction={() => go("requests")} tone="warn">

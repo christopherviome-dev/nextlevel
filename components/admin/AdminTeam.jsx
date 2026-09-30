@@ -48,7 +48,7 @@ export default function AdminTeam({ country = "GH", onChanged }) {
       </div>
       <div className="bg-card border border-line rounded-2xl p-4 space-y-2">
         <div className="text-sm font-bold text-ink">Add someone</div>
-        <p className="text-xs text-muted">They need their own Sheeba professional account. Enter the phone number they signed up with.</p>
+        <p className="text-xs text-muted">They need their own Mepluge professional account. Enter the phone number they signed up with.</p>
         <PhoneInput country={cc} onCountryChange={setCc} value={phone} onChange={setPhone} />
         <select value={role} onChange={(e) => setRole(e.target.value)} aria-label="Role" className="w-full px-3 py-2 rounded-xl border border-line bg-card">
           {Object.entries(ROLES).map(([k, r]) => <option key={k} value={k}>{r.label}: {r.about}</option>)}

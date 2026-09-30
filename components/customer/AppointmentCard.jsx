@@ -111,7 +111,7 @@ function SaveStyle({ r, onDone }) {
       <button disabled={busy || (!photo && !notes.trim())} onClick={() => run(async () => {
         const body = {}; if (photo) body.finishedPhoto = photo; if (notes.trim()) body.notes = notes;
         await apiFetch(`/customers/me/style-records/by-request/${r._id}`, { method: "PATCH", body: JSON.stringify(body) }, "customer");
-        onDone("Style saved to My Sheeba");
+        onDone("Style saved to Mepluge");
       })} className="px-4 py-2 rounded-full bg-hibiscus text-white text-sm font-bold disabled:opacity-40">{busy ? "Saving…" : "Save style"}</button>
     </div>
   );

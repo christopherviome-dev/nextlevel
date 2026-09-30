@@ -108,7 +108,7 @@ function Trip({ id, onBack }) {
             {v.note && <p className="text-sm text-ink mt-2 whitespace-pre-line">{v.note}</p>}
             {v.photos.length > 0 && <div className="flex gap-2 mt-2 overflow-x-auto">{v.photos.map((p, k) => <img key={k} src={p} alt={`${v.placeName}, photo ${k + 1}`} className="w-24 h-24 rounded-xl object-cover" />)}</div>}
             <div className="flex flex-wrap gap-3 mt-2 text-xs">
-              {v.signedUpStylistId ? <span className="text-ok-fg font-bold">✓ Linked to their Sheeba account</span> : <button onClick={() => link(v)} className="font-bold text-hibiscus-deep underline">They signed up: link their account</button>}
+              {v.signedUpStylistId ? <span className="text-ok-fg font-bold">✓ Linked to their account</span> : <button onClick={() => link(v)} className="font-bold text-hibiscus-deep underline">They signed up: link their account</button>}
               {v.contactPhone && <a href={`tel:${v.contactPhone}`} className="font-bold text-plum">Call {v.contactPhone}</a>}
             </div>
           </div>

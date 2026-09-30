@@ -19,10 +19,10 @@ const DUE = {
 };
 
 export default function MySheebaPage() {
-  return <CustomerGate title="My Sheeba"><MySheeba /></CustomerGate>;
+  return <CustomerGate title="Mepluge"><MySheeba /></CustomerGate>;
 }
 
-// My Sheeba: what's happening now for this customer, not a directory of features.
+// Mepluge ("my plug"): what's happening now for this customer, not a directory of features.
 function MySheeba() {
   const [history, setHistory] = useState([]);
   const [prefs, setPrefs] = useState([]);

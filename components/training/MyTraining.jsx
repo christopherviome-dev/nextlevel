@@ -31,7 +31,7 @@ export default function MyTraining({ onGoToShare }) {
       {graduated && (
         <div className="bg-ok-bg border border-ok-line rounded-2xl p-4 text-ok-fg">
           <div className="font-bold">🎓 You've graduated!</div>
-          <p className="text-sm mt-1">You're now an independent professional. Set up your own shop under "Shop page" and "Services"; Sheeba will review it before it goes public. Your training record stays here.</p>
+          <p className="text-sm mt-1">You're now an independent professional. Set up your own shop under "Shop page" and "Services"; Mepluge will review it before it goes public. Your training record stays here.</p>
         </div>
       )}
       {!graduated && (() => {
@@ -100,7 +100,7 @@ export default function MyTraining({ onGoToShare }) {
       )}
       <MyWorks skills={plan.skills} canPost={!graduated} />
       <button onClick={onGoToShare} className="w-full text-left bg-card border border-line rounded-2xl p-4 text-sm">
-        <b className="text-ink">Invite people you know</b> <span className="text-muted">· your Sheeba code and QR are under Share &amp; earn →</span>
+        <b className="text-ink">Invite people you know</b> <span className="text-muted">· your code and QR are under Share &amp; earn →</span>
       </button>
     </div>
   );

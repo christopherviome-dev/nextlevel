@@ -47,12 +47,12 @@ export default function ShopProfileEditor({ account, onSaved }) {
   const set = (k, v) => { setForm((f) => ({ ...f, [k]: v })); setSaved(false); };
   const toggleMode = (m) => set("workModes", form.workModes.includes(m) ? form.workModes.filter((x) => x !== m) : [...form.workModes, m]);
   const toggleService = (k) => set("services", form.services.includes(k) ? form.services.filter((x) => x !== k) : [...form.services, k]);
-  // A service that isn't listed: shows on your shop at once, and goes to Sheeba to approve.
+  // A service that isn't listed: shows on your shop at once, and goes to Mepluge to approve.
   const propose = async () => {
     setProposing(true); setProposalMsg(null); setError(null);
     try {
       const r = await apiFetch("/stylists/me/service-proposals", { method: "POST", body: JSON.stringify({ name: proposal }) });
-      setProposalMsg(r.added ? `"${r.name}" is already on Sheeba, so it's been added to your services.` : `"${r.name}" is on your shop now, and Sheeba will review it for everyone.`);
+      setProposalMsg(r.added ? `"${r.name}" is already on Mepluge, so it's been added to your services.` : `"${r.name}" is on your shop now, and Mepluge will review it for everyone.`);
       setProposal("");
       await onSaved();
     } catch (err) { setError(err.message); } finally { setProposing(false); }
@@ -99,7 +99,7 @@ export default function ShopProfileEditor({ account, onSaved }) {
     <div className="space-y-4">
       <div className="text-sm bg-surface rounded-xl px-3 py-2 text-muted-strong">
         {country.name} · prices in {currencySymbol(account.currency || country.currency)}
-        <span className="text-muted"> · to change your country, contact Sheeba</span>
+        <span className="text-muted"> · to change your country, contact Mepluge</span>
       </div>
       <div>
         <label className="block text-sm font-bold mb-1">Profile photo</label>

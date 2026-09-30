@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { apiFetch } from "../lib/api";
 
 // Admin: services professionals proposed that aren't listed yet. Approving
-// adds it to Sheeba for everyone (and to every shop waiting on it).
+// adds it to Mepluge for everyone (and to every shop waiting on it).
 export default function ServiceProposalsQueue({ onDecision }) {
   const [list, setList] = useState(null);
   const [error, setError] = useState(null);

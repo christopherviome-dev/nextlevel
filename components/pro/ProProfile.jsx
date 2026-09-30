@@ -53,7 +53,7 @@ export default function ProProfile({ account, onSaved, go }) {
           {tile(stats.followers, "people saved your shop")}
         </div>
       )}
-      {stats && stats.joinedAt && <p className="text-xs text-muted text-center">On Sheeba since {new Date(stats.joinedAt).toLocaleDateString(undefined, { month: "long", year: "numeric" })}</p>}
+      {stats && stats.joinedAt && <p className="text-xs text-muted text-center">On Mepluge since {new Date(stats.joinedAt).toLocaleDateString(undefined, { month: "long", year: "numeric" })}</p>}
       <div className="grid sm:grid-cols-3 gap-2">
         {/* A plain link on purpose: shop pages load through the Netlify redirect rule. */}
         <a href={`/shop/${account._id}`} className="text-center px-4 py-3 rounded-full border border-line bg-card font-bold text-plum text-sm">View public page</a>

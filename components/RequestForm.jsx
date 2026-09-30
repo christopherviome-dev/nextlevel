@@ -186,7 +186,7 @@ export default function RequestForm({ shop }) {
             <p className="text-xs text-muted">
               {hasAccount
                 ? <Link href="/forgot-password?type=customer" className="underline">Forgot password?</Link>
-                : <>This creates your free Sheeba account so you can follow your booking. By continuing you agree to the <Link href="/terms" className="underline">Terms</Link> and <Link href="/privacy" className="underline">Privacy notice</Link>.</>}
+                : <>This creates your free Mepluge account so you can follow your booking. By continuing you agree to the <Link href="/terms" className="underline">Terms</Link> and <Link href="/privacy" className="underline">Privacy notice</Link>.</>}
             </p>
           </div>
         )}

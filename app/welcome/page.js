@@ -7,7 +7,7 @@ import CustomerGate from "../../components/customer/CustomerGate";
 import { useCatalog, photosFor } from "../../lib/catalog";
 
 export default function WelcomePage() {
-  return <CustomerGate title="Welcome to Sheeba"><Welcome /></CustomerGate>;
+  return <CustomerGate title="Welcome to Mepluge"><Welcome /></CustomerGate>;
 }
 
 const SHOW_FOR = [["MEN", "Men's grooming"], ["WOMEN", "Women's styles"], ["BOTH", "Both"], [null, "Prefer not to say"]];
@@ -22,7 +22,7 @@ function Welcome() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
 
-  // Editing later from My Sheeba: start from their current choices.
+  // Editing later from the Mepluge page: start from their current choices.
   useEffect(() => {
     apiFetch("/customers/me", {}, "customer").then((me) => {
       if (me.onboardedAt) { setFeedFor(me.feedFor === undefined ? null : me.feedFor); setFavs(me.favourites || []); }
@@ -62,7 +62,7 @@ function Welcome() {
         {step === 2 && (
           <>
             <h1 className="font-display font-extrabold text-2xl text-ink mt-1">Pick up to 3 favourites</h1>
-            <p className="text-sm text-muted mt-1">{favs.length}/3 chosen. Photos are inspiration, not a Sheeba professional's work.</p>
+            <p className="text-sm text-muted mt-1">{favs.length}/3 chosen. Photos are inspiration, not a Mepluge professional's work.</p>
             <div className="grid grid-cols-3 gap-2 mt-4">
               {withPhotos.map((st) => (
                 <button key={st.key} onClick={() => toggle(st.key)} aria-pressed={favs.includes(st.key)}

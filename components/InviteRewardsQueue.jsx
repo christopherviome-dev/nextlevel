@@ -30,7 +30,7 @@ export default function InviteRewardsQueue({ onDecision }) {
       </div>
       {error && <div className="text-bad-fg">{error}</div>}
       {!data && !error && <div className="text-muted">Loading…</div>}
-      <p className="text-xs text-muted mb-2">No cash is paid while Sheeba takes no payments; confirmed rewards become coupons once Sheeba is monetised. Rewards are checked for 7 days and confirmed automatically unless there's a warning sign; those wait here for you.</p>
+      <p className="text-xs text-muted mb-2">No cash is paid while Mepluge takes no payments; confirmed rewards become coupons once Mepluge is monetised. Rewards are checked for 7 days and confirmed automatically unless there's a warning sign; those wait here for you.</p>
       <div className="flex gap-2 overflow-x-auto no-scrollbar mb-3">
         {VIEWS.map(([k, label]) => (
           <button key={k} onClick={() => { setData(null); setView(k); }} aria-pressed={view === k}

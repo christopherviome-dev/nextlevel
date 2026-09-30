@@ -49,7 +49,7 @@ export function Overview({ o, go }) {
         </Card>
         <Card title="Recorded service value">
           <div className="text-2xl font-extrabold text-ink">{money(b.valueInWindow)}</div>
-          <div className="text-xs text-muted mb-3">in the last {o.days} days · {money(b.valueAllTime)} all time. From prices recorded at booking; Sheeba takes no payments.</div>
+          <div className="text-xs text-muted mb-3">in the last {o.days} days · {money(b.valueAllTime)} all time. From prices recorded at booking; Mepluge takes no payments.</div>
           <div className="text-xs font-bold text-plum mb-2">Most requested this period</div>
           <RankList items={b.topServices} empty="No bookings in this period." />
         </Card>

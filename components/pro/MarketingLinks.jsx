@@ -5,7 +5,7 @@ import { apiFetch } from "../../lib/api";
 export const CHANNELS = [["WHATSAPP", "WhatsApp"], ["INSTAGRAM", "Instagram"], ["TIKTOK", "TikTok"], ["FACEBOOK", "Facebook"], ["QR_POSTER", "Flyer or poster"], ["OTHER", "Somewhere else"]];
 const NAME = { ...Object.fromEntries(CHANNELS), BUSINESS_CARD: "Business card", DIRECT_LINK: "Direct message" };
 
-// Stupidly simple: tap where you'll share your shop. Sheeba makes (or reuses) a
+// Stupidly simple: tap where you'll share your shop. Mepluge makes (or reuses) a
 // link for that place and opens sharing; each place's visits and bookings are counted.
 export default function MarketingLinks({ account }) {
   const [links, setLinks] = useState(null);

@@ -22,7 +22,7 @@ export default function ReportForm({ targetType = "stylist", stylistId, requestI
   const [done, setDone] = useState(false);
   const emergency = EMERGENCY[country] || "112";
 
-  if (done) return <p className="text-sm text-ok-fg mt-2">✓ Thank you. Sheeba will look into it{contact || actor ? " and may contact you" : ""}.</p>;
+  if (done) return <p className="text-sm text-ok-fg mt-2">✓ Thank you. Mepluge will look into it{contact || actor ? " and may contact you" : ""}.</p>;
   if (!open) return <button type="button" onClick={() => setOpen(true)} className="text-xs text-muted underline mt-2">{label || "Report a problem"}</button>;
 
   const send = async () => {
@@ -48,7 +48,7 @@ export default function ReportForm({ targetType = "stylist", stylistId, requestI
       </div>
       <textarea value={detail} onChange={(e) => setDetail(e.target.value)} rows={3} maxLength={2000}
         placeholder="What happened? Include dates and details that will help." className="w-full px-3 py-2 rounded-lg border border-line bg-card" />
-      {!actor && <input value={contact} onChange={(e) => setContact(e.target.value)} maxLength={100} placeholder="Your phone (optional, so Sheeba can follow up)" className="w-full px-3 py-2 rounded-lg border border-line bg-card" />}
+      {!actor && <input value={contact} onChange={(e) => setContact(e.target.value)} maxLength={100} placeholder="Your phone (optional, so Mepluge can follow up)" className="w-full px-3 py-2 rounded-lg border border-line bg-card" />}
       <label className="flex items-center gap-2 text-muted-strong">
         <input type="checkbox" checked={urgent} onChange={(e) => setUrgent(e.target.checked)} className="w-4 h-4" /> This is urgent (someone's safety)
       </label>
@@ -57,7 +57,7 @@ export default function ReportForm({ targetType = "stylist", stylistId, requestI
         <button type="button" onClick={send} disabled={busy || detail.trim().length < 10} className="px-4 py-2 rounded-full bg-hibiscus text-white font-bold disabled:opacity-40">{busy ? "Sending…" : "Send report"}</button>
         <button type="button" onClick={() => setOpen(false)} className="px-4 py-2 rounded-full border border-line font-bold">Cancel</button>
       </div>
-      <p className="text-xs text-muted">Only Sheeba's team sees reports.{targetType === "customer" ? "" : ` ${name || "They"} won't see who reported.`}</p>
+      <p className="text-xs text-muted">Only Mepluge's team sees reports.{targetType === "customer" ? "" : ` ${name || "They"} won't see who reported.`}</p>
     </div>
   );
 }

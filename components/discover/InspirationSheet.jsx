@@ -23,7 +23,7 @@ export default function InspirationSheet({ styleKey, style, shops, currency, whe
           <figure key={p.id} className="shrink-0 w-[85%] snap-center">
             <img src={p.src} alt={style.name} className="w-full aspect-[4/5] object-cover rounded-2xl" />
             <figcaption className="text-[11px] text-muted mt-1">
-              <a href={p.page} target="_blank" rel="noopener noreferrer" className="underline">Photo: {p.photographer} on {p.site}</a> · Inspiration, not a Sheeba professional's work
+              <a href={p.page} target="_blank" rel="noopener noreferrer" className="underline">Photo: {p.photographer} on {p.site}</a> · Inspiration, not a Mepluge professional's work
             </figcaption>
           </figure>
         ))}

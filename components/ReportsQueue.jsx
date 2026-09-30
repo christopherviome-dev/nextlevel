@@ -60,7 +60,7 @@ function ReportCard({ r, onDone }) {
         {t ? (
           <div><span className="text-muted">About:</span> <b className="text-ink">{t.name}</b> <span className="text-muted">({t.type === "customer" ? "customer" : "professional"}{t.accountStatus !== "ACTIVE" ? ` · ${t.accountStatus.toLowerCase()}` : ""})</span>
             {t.phone && <> · <a href={`tel:${t.phone}`} className="text-hibiscus-deep font-semibold">{t.phone}</a></>}</div>
-        ) : <div className="text-muted">A general report about Sheeba</div>}
+        ) : <div className="text-muted">A general report about Mepluge</div>}
         <div><span className="text-muted">From:</span> {r.reporter ? <>{r.reporter.name} {r.reporter.phone && <a href={`tel:${r.reporter.phone}`} className="text-hibiscus-deep font-semibold">{r.reporter.phone}</a>}</> : r.contact ? <>a visitor · {r.contact}</> : "a visitor (no contact left)"}</div>
         {r.booking && <div><span className="text-muted">Booking:</span> {r.booking.service} · {r.booking.status}</div>}
       </div>

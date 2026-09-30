@@ -119,7 +119,7 @@ export default function Discover() {
           </div>
           {newPros.length > 0 && (
             <div>
-              <div className="text-xs font-bold text-muted mb-1">New on Sheeba</div>
+              <div className="text-xs font-bold text-muted mb-1">New on Mepluge</div>
               <ServiceRoller services={newPros} selected={null} onSelect={(id) => { const shop = d.shops.find((x) => String(x._id) === id); if (shop) openPro(shop); }} />
             </div>
           )}

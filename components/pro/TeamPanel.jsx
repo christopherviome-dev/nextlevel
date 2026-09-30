@@ -63,7 +63,7 @@ export default function TeamPanel({ account }) {
         ))}
         <div className="border-t border-line pt-3 mt-1">
           <div className="text-sm font-bold text-ink mb-2">Add a helper</div>
-          <p className="text-xs text-muted mb-2">They need their own Sheeba professional account. Enter the phone number they signed up with.</p>
+          <p className="text-xs text-muted mb-2">They need their own Mepluge professional account. Enter the phone number they signed up with.</p>
           <PhoneInput country={country} onCountryChange={setCountry} value={phone} onChange={setPhone} />
           {msg && <p className="text-sm mt-2 text-muted-strong">{msg}</p>}
           <button onClick={add} disabled={busy || !phone.trim()} className="mt-2 px-4 py-2 rounded-full bg-violet text-white text-sm font-bold disabled:opacity-40">{busy ? "Adding…" : "Add to my team"}</button>

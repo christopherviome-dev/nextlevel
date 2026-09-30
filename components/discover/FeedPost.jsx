@@ -12,7 +12,7 @@ const Pin = () => (
   </svg>
 );
 
-// Sheeba's own post: a "look card". You're not scrolling videos, you're
+// Mepluge's own post: a "look card". You're not scrolling videos, you're
 // choosing a look to book, so the card shows what a customer needs: the
 // look, its price, where it is, who does it, and "Book this look" (which
 // opens the booking form with this exact service already chosen).
@@ -77,7 +77,7 @@ export default function FeedPost({ item, liked, onLike, onOpenWork, onOpenPro, f
 
         <div className="flex gap-2 mt-3">
           {/* A plain link on purpose: shop pages load through the Netlify redirect rule. */}
-          <a href={`/shop/${shop._id}?look=${encodeURIComponent(item.id)}#request`} className="flex-1 text-center py-3 rounded-full bg-hibiscus text-white text-sm font-bold">Book this look</a>
+          <a href={`/shop/${shop._id}?look=${encodeURIComponent(item.id)}#request`} className="flex-1 text-center py-3 rounded-full bg-hibiscus text-white text-sm font-bold">{item.serviceKey === "photography" ? "Book this shoot" : "Book this look"}</a>
           <button type="button" onClick={() => onMessage(shop)} aria-label={`Message ${name}`} className="w-12 h-12 rounded-full border border-line bg-card text-plum flex items-center justify-center">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden><path d="M4 5h16v11H9l-5 4V5Z" /></svg>
           </button>

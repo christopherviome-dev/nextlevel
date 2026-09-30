@@ -1,4 +1,5 @@
 "use client";
+import GoogleSignIn from "../../components/GoogleSignIn";
 import { useDraft } from "../../lib/useDraft";
 import { useState, useEffect } from "react";
 import { pendingInviteInfo } from "../../lib/invite";
@@ -31,7 +32,7 @@ export default function Login() {
   const [ageCheck, setAgeCheck] = useState(false);
   const [age, setAge] = useState({});
   useEffect(() => { getPublicSettings().then((st) => setAgeCheck(!!st.ageCheck)); }, []);
-  // Professionals in training: they name their supervisor by Sheeba code.
+  // Professionals in training: they name their supervisor by Mepluge code.
   const [isApprentice, setIsApprentice] = useState(false);
   const [supervisorCode, setSupervisorCode] = useState("");
   const [country, setCountry] = useState(null); // worked out in the browser
@@ -92,6 +93,7 @@ export default function Login() {
       <div className="text-xs font-extrabold tracking-wide text-plum uppercase mb-3">
         {mode === "login" ? "Log In" : isApprentice ? "Join as a Professional in Training" : "Create Your Shop"}
       </div>
+      <div className="mb-3"><GoogleSignIn as="pro" invite={invite} onDone={() => router.push("/dashboard")} /></div>
       <form onSubmit={submit} className="space-y-3">
         {mode === "register" && (
           <input placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line" />
@@ -109,7 +111,7 @@ export default function Login() {
         )}
         {mode === "register" && isApprentice && (
           <div>
-            <input placeholder="Your supervisor's Sheeba code" value={supervisorCode} onChange={(e) => setSupervisorCode(e.target.value.toUpperCase())} maxLength={8}
+            <input placeholder="Your supervisor's Mepluge code" value={supervisorCode} onChange={(e) => setSupervisorCode(e.target.value.toUpperCase())} maxLength={8}
               className="w-full px-4 py-3 rounded-xl border border-line font-mono tracking-widest" />
             <p className="text-xs text-muted mt-1">Ask them for it: it's under My Shop → Share &amp; earn. They'll confirm you before you can help with their shop.</p>
           </div>

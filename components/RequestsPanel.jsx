@@ -105,7 +105,7 @@ export default function RequestsPanel({ account }) {
         <form onSubmit={(e) => { e.preventDefault(); if (code.trim()) window.location.href = `/u/${encodeURIComponent(code.trim())}`; }}
           className="flex gap-2 mb-3 bg-card border border-line rounded-xl p-3">
           <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} maxLength={8} placeholder="Customer's code, e.g. K7M 2QX"
-            aria-label="Check in a customer by their Sheeba code" className="flex-1 min-w-0 px-3 py-2 rounded-lg border border-line bg-surface font-mono tracking-widest" />
+            aria-label="Check in a customer by their code" className="flex-1 min-w-0 px-3 py-2 rounded-lg border border-line bg-surface font-mono tracking-widest" />
           <button type="submit" disabled={!code.trim()} className="px-4 py-2 rounded-full bg-violet text-white text-sm font-bold disabled:opacity-40">Check in</button>
         </form>
       )}

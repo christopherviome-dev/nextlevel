@@ -56,7 +56,7 @@ export default function Nav() {
     <>
       <nav className="flex items-center justify-between gap-2 px-4 sm:px-5 py-3 border-b border-line bg-card sticky top-0 z-20">
         <Link href="/" className="font-display font-extrabold text-lg text-hibiscus-deep shrink-0">
-          SHEE<span className="text-violet">BA</span>
+          ME<span className="text-violet">PLUGE</span>
         </Link>
 
         {/* Larger screens: tabs in the top bar */}

@@ -48,7 +48,7 @@ export default function AdminPage() {
     return (
       <div>
         <Nav />
-        <ProLoginForm title="Sheeba Admin" note="Log in with your Sheeba account. Only accounts with admin permission can open this area." />
+        <ProLoginForm title="Mepluge Admin" note="Log in with your account. Only accounts with admin permission can open this area." />
       </div>
     );
   }

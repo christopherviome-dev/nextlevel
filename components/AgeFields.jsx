@@ -32,7 +32,7 @@ export default function AgeFields({ apprentice, value, onChange, country }) {
             value={value.guardianPhoneRaw || ""} onChange={(v) => set({ guardianPhoneRaw: v })} autoComplete="off" />
           <label className="flex items-start gap-2 text-sm text-muted-strong">
             <input type="checkbox" checked={!!value.guardianConsent} onChange={(e) => set({ guardianConsent: e.target.checked })} className="w-4 h-4 mt-0.5" />
-            My parent or guardian agrees to me joining Sheeba as an apprentice
+            My parent or guardian agrees to me joining Mepluge as an apprentice
           </label>
         </div>
       )}

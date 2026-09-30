@@ -29,7 +29,7 @@ export default function ApprenticesPanel() {
     <div>
       <div className="font-bold mb-2">In training</div>
       {error && <p className="text-sm text-bad-fg mb-2">{error}</p>}
-      {list.length === 0 && <p className="text-sm text-muted">No trainees yet. A professional in training joins by entering your Sheeba code when they sign up.</p>}
+      {list.length === 0 && <p className="text-sm text-muted">No trainees yet. A professional in training joins by entering your code when they sign up.</p>}
       {pending.map((a) => (
         <div key={a._id} className="flex items-center justify-between gap-2 bg-warn-bg border border-warn-line rounded-xl p-3 mb-2">
           <span className="text-sm text-warn-fg"><b>{a.name}</b> wants to train with you</span>

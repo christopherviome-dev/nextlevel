@@ -1,4 +1,8 @@
 "use client";
+import PhoneAlerts from "../../components/PhoneAlerts";
+import { GoogleConnect } from "../../components/GoogleSignIn";
+import { googleClientId } from "../../lib/google";
+import { confirmLogout } from "../../lib/confirmLogout";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Nav from "../../components/Nav";
@@ -42,6 +46,8 @@ function Switch({ on, onChange, label }) {
 // One tidy place for everything that doesn't need to be on the main screens.
 export default function SettingsPage() {
   const { hydrated, activeRole, hasBothRoles, switchRole, myAccount, customerName, logout, customerLogout, refreshMyAccount } = useAuth();
+  const [googleOn, setGoogleOn] = useState(false); // "Connect Google" shows only once Google sign-in is set up
+  useEffect(() => { googleClientId().then((id) => setGoogleOn(!!id)); }, []);
   const country = useCountryPref();
   const useLocation = useLocationPref();
   const [learned, setLearned] = useState(false);
@@ -88,11 +94,13 @@ export default function SettingsPage() {
                 <button onClick={saveName} className="px-4 rounded-full border border-line text-sm font-bold">Save</button>
               </div>
               {nameMsg && <div className="text-xs text-muted">{nameMsg}</div>}
-              <div className="text-xs text-muted">Phone: {me.phone} · to change it, contact Sheeba</div>
+              <div className="text-xs text-muted">Phone: {me.phone} · to change it, contact Mepluge</div>
             </div>
           )}
-          {activeRole === "pro" && myAccount && <Row label="Phone" hint="To change it, contact Sheeba"><span className="text-sm text-muted-strong">{myAccount.phone}</span></Row>}
-          {activeRole && <Row label="Your Sheeba code and invites"><Link href={activeRole === "pro" ? "/dashboard" : "/my-sheeba"} className="text-sm font-bold text-hibiscus-deep">Open ›</Link></Row>}
+          {activeRole === "pro" && myAccount && <Row label="Phone" hint="To change it, contact Mepluge"><span className="text-sm text-muted-strong">{myAccount.phone}</span></Row>}
+          {activeRole && <Row label="Phone alerts" hint="A real alert with sound, even when Mepluge is closed."><PhoneAlerts as={activeRole === "customer" ? "customer" : "pro"} /></Row>}
+          {activeRole && googleOn && <Row label="Google" hint="Log in with one tap, no password to remember."><GoogleConnect as={activeRole} /></Row>}
+          {activeRole && <Row label="Your code and invites"><Link href={activeRole === "pro" ? "/dashboard" : "/my-sheeba"} className="text-sm font-bold text-hibiscus-deep">Open ›</Link></Row>}
           {activeRole && (
             <div className="px-4 py-3">
               <button onClick={() => setPw(!pw)} className="text-sm font-semibold text-ink">Change password {pw ? "▴" : "▾"}</button>
@@ -104,7 +112,7 @@ export default function SettingsPage() {
               <Link href={activeRole === "pro" ? "/my-sheeba" : "/dashboard"} onClick={() => switchRole(activeRole === "pro" ? "customer" : "pro")} className="text-sm font-bold text-hibiscus-deep">Switch ›</Link>
             </Row>
           )}
-          {activeRole && <div className="px-4 py-3"><button onClick={activeRole === "pro" ? logout : customerLogout} className="text-sm font-bold text-bad-fg">Log out</button></div>}
+          {activeRole && <div className="px-4 py-3"><button onClick={() => confirmLogout(activeRole === "pro" ? logout : customerLogout)} className="px-4 py-2 rounded-full border border-line text-sm font-bold text-plum">Log out</button></div>}
         </Section>
 
         <Section title="Appearance">
@@ -120,7 +128,7 @@ export default function SettingsPage() {
 
         <Section title="Your feed">
           {activeRole === "customer" && <Row label="What to show first" hint="Men's or women's styles, and your favourites"><Link href="/welcome" className="text-sm font-bold text-hibiscus-deep">Change ›</Link></Row>}
-          <Row label="What Sheeba has learned" hint="From what you look at, like, save and book. Kept only on this phone.">
+          <Row label="What Mepluge has learned" hint="From what you look at, like, save and book. Kept only on this phone.">
             {learned ? <button onClick={() => { forgetInterests(); setLearned(false); }} className="text-sm font-bold text-plum underline">Clear</button> : <span className="text-xs text-muted">Nothing yet</span>}
           </Row>
         </Section>
@@ -138,7 +146,7 @@ export default function SettingsPage() {
         <Section title="Privacy and terms">
           <Row label="Terms of Use"><Link href="/terms" className="text-sm font-bold text-hibiscus-deep">Read ›</Link></Row>
           <Row label="Privacy notice"><Link href="/privacy" className="text-sm font-bold text-hibiscus-deep">Read ›</Link></Row>
-          <Row label="Delete my account" hint="Ask the Sheeba team in the community, and we'll remove it"><a href={COMMUNITY.telegram} target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-hibiscus-deep">Ask ›</a></Row>
+          <Row label="Delete my account" hint="Ask the Mepluge team in the community, and we'll remove it"><a href={COMMUNITY.telegram} target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-hibiscus-deep">Ask ›</a></Row>
         </Section>
       </div>
       <SiteFooter />

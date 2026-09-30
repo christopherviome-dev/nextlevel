@@ -10,7 +10,7 @@ function Brand({ href, src, name }) {
   const [broken, setBroken] = useState(false);
   if (!href) return null;
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" aria-label={`Join the Sheeba community on ${name}`} title={`Join us on ${name}`}
+    <a href={href} target="_blank" rel="noopener noreferrer" aria-label={`Join the Mepluge community on ${name}`} title={`Join us on ${name}`}
       className="w-9 h-9 rounded-full flex items-center justify-center border border-line bg-card overflow-hidden">
       {broken ? <span className="text-[10px] font-bold text-plum">{name}</span> : <img src={src} alt="" className="w-6 h-6" onError={() => setBroken(true)} />}
     </a>

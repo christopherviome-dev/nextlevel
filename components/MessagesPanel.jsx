@@ -99,7 +99,7 @@ function Thread({ id, side, actor, title, onBack, onRead }) {
         <div className="font-bold text-ink truncate">{title}</div>
       </div>
       <div className="flex-1 overflow-y-auto p-3 space-y-2 max-h-[60vh]">
-        <p className="text-[11px] text-muted text-center">Keep it about the booking. Sheeba will never ask for your password or ID number.</p>
+        <p className="text-[11px] text-muted text-center">Keep it about the booking. Mepluge will never ask for your password or ID number.</p>
         {!messages && <p className="text-sm text-muted">Loading…</p>}
         {messages && messages.map((m, i) => {
           if (m.messageType === "structured" || m.senderType === "system") {

@@ -1,4 +1,4 @@
-// "ID checked": the professional's identity was confirmed by Sheeba. A safety
+// "ID checked": the professional's identity was confirmed by Mepluge. A safety
 // signal, never something bought (a future paid tier gets a different badge).
 export default function IdCheckedBadge({ label = false, className = "" }) {
   const shield = (
@@ -8,6 +8,6 @@ export default function IdCheckedBadge({ label = false, className = "" }) {
     </svg>
   );
   return label
-    ? <span className={"inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full bg-ok-bg text-ok-fg border border-ok-line " + className} title="Sheeba checked this professional's ID">{shield} ID checked</span>
-    : <span className={"text-emerald-600 " + className} title="ID checked by Sheeba" aria-label="ID checked">{shield}</span>;
+    ? <span className={"inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full bg-ok-bg text-ok-fg border border-ok-line " + className} title="Mepluge checked this professional's ID">{shield} ID checked</span>
+    : <span className={"text-emerald-600 " + className} title="ID checked by Mepluge" aria-label="ID checked">{shield}</span>;
 }

@@ -11,7 +11,7 @@ export const OUTCOME = {
 const esc = (t) => String(t || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 // Field stops on free OpenStreetMap: coloured by outcome, with the trip's
-// route joining them in order. Optional grey dots for shops already on Sheeba.
+// route joining them in order. Optional grey dots for shops already on Mepluge.
 export default function FieldMap({ stops, route = false, shops = [], height = "55vh" }) {
   const box = useRef(null), map = useRef(null), layer = useRef(null), L = useRef(null);
   useEffect(() => {
@@ -30,7 +30,7 @@ export default function FieldMap({ stops, route = false, shops = [], height = "5
     if (!layer.current || !L.current) return;
     layer.current.clearLayers();
     const pts = stops.filter((s) => typeof s.lat === "number" && typeof s.lng === "number").sort((a, b) => a.at - b.at);
-    shops.forEach((s) => L.current.circleMarker([s.lat, s.lng], { radius: 4, color: "#6b7280", weight: 1, fillColor: "#9ca3af", fillOpacity: 0.6 }).bindPopup(`${esc(s.name)} (on Sheeba)`).addTo(layer.current));
+    shops.forEach((s) => L.current.circleMarker([s.lat, s.lng], { radius: 4, color: "#6b7280", weight: 1, fillColor: "#9ca3af", fillOpacity: 0.6 }).bindPopup(`${esc(s.name)} (on Mepluge)`).addTo(layer.current));
     if (route && pts.length > 1) L.current.polyline(pts.map((p) => [p.lat, p.lng]), { color: "#7c3aed", weight: 3, opacity: 0.7, dashArray: "6 6" }).addTo(layer.current);
     pts.forEach((p, i) => L.current.circleMarker([p.lat, p.lng], { radius: 8, color: "#fff", weight: 2, fillColor: (OUTCOME[p.outcome] || {}).color || "#999", fillOpacity: 0.95 })
       .bindPopup(`<b>${route ? `${i + 1}. ` : ""}${esc(p.placeName)}</b><br>${esc(p.area)}<br>${(OUTCOME[p.outcome] || {}).label || ""}<br>${new Date(p.at).toLocaleString()}`).addTo(layer.current));

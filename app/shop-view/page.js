@@ -43,11 +43,11 @@ export default function ShopView() {
   return (
     <div className="pb-24 sm:pb-0">
       <div className="flex items-center justify-between px-5 py-4 bg-card border-b border-line">
-        <div className="font-display font-extrabold text-lg text-hibiscus-deep">SHEE<span className="text-violet">BA</span></div>
+        <div className="font-display font-extrabold text-lg text-hibiscus-deep">ME<span className="text-violet">PLUGE</span></div>
         {/* Deliberately a plain link, not next/link: this page is served through a Netlify rewrite,
             and Next.js navigation from here breaks (the bug fixed in commit ad6f851). */}
         {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-        <div className="flex items-center gap-2"><ThemeToggle /><a href="/" className="hidden sm:inline-block px-4 py-2 rounded-full bg-violet text-white text-sm font-bold">✨ Explore Sheeba</a></div>
+        <div className="flex items-center gap-2"><ThemeToggle /><a href="/" className="hidden sm:inline-block px-4 py-2 rounded-full bg-violet text-white text-sm font-bold">✨ Explore Mepluge</a></div>
       </div>
       <div className="max-w-xl lg:max-w-5xl mx-auto px-5 pt-6">
         {error && <div className="text-muted py-6">This shop isn't currently available.</div>}
@@ -75,7 +75,7 @@ export default function ShopView() {
                   {shop.stats.rating && <span className="text-amber-600 font-bold">★ {shop.stats.rating.average} <span className="font-normal text-muted">({shop.stats.rating.count} ratings)</span></span>}
                   {shop.stats.loves > 0 && <span>♥ {shop.stats.loves} {shop.stats.loves === 1 ? "like" : "likes"}</span>}
                   {shop.stats.loves > 0 && shop.stats.completedJobs > 0 && " · "}
-                  {shop.stats.completedJobs > 0 && <span>{shop.stats.completedJobs} {shop.stats.completedJobs === 1 ? "job" : "jobs"} done on Sheeba</span>}
+                  {shop.stats.completedJobs > 0 && <span>{shop.stats.completedJobs} {shop.stats.completedJobs === 1 ? "job" : "jobs"} done on Mepluge</span>}
                 </div>
               )}
               {(shop.pendingServices || []).length > 0 && (

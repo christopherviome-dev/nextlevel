@@ -1,4 +1,5 @@
 "use client";
+import PhoneAlerts from "../../components/PhoneAlerts";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Nav from "../../components/Nav";
@@ -32,6 +33,7 @@ export default function Notifications() {
           {unread > 0 && <button onClick={readAll} className="text-sm font-bold text-hibiscus-deep">Mark all read</button>}
         </div>
         {hydrated && !activeRole && <p className="text-muted">Sign in to see your notifications.</p>}
+        {activeRole && <div className="mb-4"><PhoneAlerts as={activeRole === "customer" ? "customer" : "pro"} /></div>}
         {error && <p className="text-bad-fg">{error}</p>}
         {activeRole && !list && !error && <p className="text-muted">Loading…</p>}
         {list && list.length === 0 && <p className="text-muted">Nothing yet. Bookings, messages and updates will show here.</p>}

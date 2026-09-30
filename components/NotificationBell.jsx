@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { apiFetch } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 
-// The bell: unread notifications for whoever is using Sheeba right now.
+// The bell: unread notifications for whoever is using Mepluge right now.
 export default function NotificationBell() {
   const { activeRole } = useAuth();
   const pathname = usePathname();

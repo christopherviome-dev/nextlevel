@@ -24,7 +24,7 @@ export default function ShopChecklist({ account, goTo }) {
       <p className="text-sm text-muted-strong mt-1">
         {live
           ? "Customers can find and book you. A complete shop gets more bookings."
-          : "Sheeba reviews every new shop before customers can see it. Completing these helps it get approved faster."}
+          : "Mepluge reviews every new shop before customers can see it. Completing these helps it get approved faster."}
       </p>
       <div className="h-2 bg-surface-2 rounded-full mt-3 overflow-hidden">
         <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.round((done / checks.length) * 100)}%` }} />

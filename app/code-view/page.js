@@ -117,13 +117,13 @@ export default function CodeView() {
         {state.status === "invalid" && (
           <div className="bg-card border border-line rounded-2xl p-6">
             <div className="font-bold text-ink">This code didn't work</div>
-            <p className="text-sm text-muted mt-1">Check the code and try again, or explore Sheeba anyway.</p>
-            <Link href="/" className="inline-block mt-4 px-5 py-2.5 rounded-full bg-hibiscus text-white font-bold">Explore Sheeba</Link>
+            <p className="text-sm text-muted mt-1">Check the code and try again, or explore Mepluge anyway.</p>
+            <Link href="/" className="inline-block mt-4 px-5 py-2.5 rounded-full bg-hibiscus text-white font-bold">Explore Mepluge</Link>
           </div>
         )}
         {state.status === "member" && (
           <div className="bg-card border border-line rounded-2xl p-6">
-            <div className="font-display font-extrabold text-xl text-ink">You've been invited to Sheeba</div>
+            <div className="font-display font-extrabold text-xl text-ink">You've been invited to Mepluge</div>
             <p className="text-sm text-muted-strong mt-2">Find trusted beauty professionals near you, or grow your own beauty business.</p>
             <div className="flex flex-col gap-2 mt-5">
               <Link href="/requests" className="px-5 py-3 rounded-full bg-hibiscus text-white font-bold">Join as a customer</Link>

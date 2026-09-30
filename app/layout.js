@@ -1,10 +1,11 @@
+import { API_ORIGIN } from "../lib/serverAddress";
 import AnnouncementBanner from "../components/AnnouncementBanner";
 import SourceCapture from "../components/SourceCapture";
 import "./globals.css";
 import { AuthProvider } from "../context/AuthContext";
 
 export const metadata = {
-  title: "Sheeba",
+  title: "Mepluge",
   description: "Beauty, wherever you are.",
 };
 
@@ -17,6 +18,16 @@ export default function RootLayout({ children }) {
     // suppressHydrationWarning: the theme script changes this tag before React loads, on purpose.
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Start the secure connection to the server while the page loads, not on the first tap (it is far away). */}
+        <link rel="preconnect" href={API_ORIGIN} crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href={API_ORIGIN} />
+        {/* Add to Home Screen: opens like an app, with its own icon (needed for alerts on iPhone). */}
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content="Mepluge" />
+        <meta name="theme-color" content="#4b2069" />
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body className="min-h-screen bg-surface text-ink font-body">

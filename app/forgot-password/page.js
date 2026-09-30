@@ -42,7 +42,7 @@ export default function ForgotPassword() {
           <div className="bg-card border border-line rounded-2xl p-4 space-y-2">
             <div className="font-bold text-ok-fg">Request received</div>
             <p className="text-sm text-muted-strong">{done}</p>
-            <p className="text-sm text-muted-strong">Keep your phone nearby. Sheeba will only ever call the number on your account, and will never ask for your old password.</p>
+            <p className="text-sm text-muted-strong">Keep your phone nearby. Mepluge will only ever call the number on your account, and will never ask for your old password.</p>
           </div>
         ) : (
           <form onSubmit={submit} className="space-y-3">
@@ -58,9 +58,9 @@ export default function ForgotPassword() {
             {error && <p className="text-hibiscus-deep text-sm">{error}</p>}
             <button type="submit" disabled={busy || phone.replace(/\D/g, "").length < 9}
               className="w-full py-3 rounded-full bg-hibiscus text-white font-bold disabled:opacity-40">
-              {busy ? "Sending…" : "Ask Sheeba for help"}
+              {busy ? "Sending…" : "Ask Mepluge for help"}
             </button>
-            <p className="text-xs text-muted">Sheeba will call the number on your account to confirm it's you, then give you a temporary password.</p>
+            <p className="text-xs text-muted">Mepluge will call the number on your account to confirm it's you, then give you a temporary password.</p>
           </form>
         )}
       </div>

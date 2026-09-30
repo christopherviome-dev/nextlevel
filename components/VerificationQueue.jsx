@@ -14,7 +14,7 @@ const QUICK_REASONS = [
   "The document photo is unclear or unreadable. Please upload a sharper photo.",
   "The document number you typed doesn't match the photo.",
   "Please resubmit with your full legal name exactly as on your document.",
-  "This document is already linked to another Sheeba account.",
+  "This document is already linked to another Mepluge account.",
 ];
 
 export default function VerificationQueue({ onDecision }) {

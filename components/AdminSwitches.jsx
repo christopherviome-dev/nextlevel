@@ -17,7 +17,7 @@ const GROUPS = [
     ["inviteRewards", "Invite rewards", "When off, first completed jobs earn no rewards. Who invited whom is still recorded."],
   ]],
   ["Assistant (the 🎤 in Search)", [
-    ["aiAssistant", "Let AI read questions", "Only works once an AI key is added on the server. Each question AI reads costs a little money; when off (or with no key), Sheeba's free built-in understanding answers."],
+    ["aiAssistant", "Let AI read questions", "Only works once an AI key is added on the server. Each question AI reads costs a little money; when off (or with no key), Mepluge's free built-in understanding answers."],
   ]],
 ];
 

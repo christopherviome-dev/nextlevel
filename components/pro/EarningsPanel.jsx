@@ -6,7 +6,7 @@ import { formatMoney } from "../../lib/money";
 const PERIODS = [["today", "Today"], ["week", "7 days"], ["month", "This month"], ["lastMonth", "Last month"], ["year", "This year"], ["all", "All time"]];
 
 // What completed services were worth, from the price recorded at booking.
-// Customers pay professionals directly: Sheeba doesn't hold or process money,
+// Customers pay professionals directly: Mepluge doesn't hold or process money,
 // so this is a record, not a bank balance.
 export default function EarningsPanel() {
   const [period, setPeriod] = useState("month");
@@ -50,7 +50,7 @@ export default function EarningsPanel() {
               ))}
             </div>
           )}
-          <p className="text-xs text-muted">Worked out from the price recorded when each booking was made, dated by when the service was completed. Customers pay you directly: Sheeba doesn't hold or process money, so this is a record, not a balance.</p>
+          <p className="text-xs text-muted">Worked out from the price recorded when each booking was made, dated by when the service was completed. Customers pay you directly: Mepluge doesn't hold or process money, so this is a record, not a balance.</p>
         </>
       )}
     </div>

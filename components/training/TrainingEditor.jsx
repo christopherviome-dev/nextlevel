@@ -116,7 +116,7 @@ export default function TrainingEditor({ apprenticeId, onClose, onGraduated }) {
       {!graduated && (
         <div className="bg-card border border-line rounded-2xl p-4">
           <div className="font-bold text-ink">Ready to work independently?</div>
-          <p className="text-sm text-muted mt-1">Graduating makes {name} an independent professional. They keep their Sheeba code and history, and their own shop goes to Sheeba for approval.</p>
+          <p className="text-sm text-muted mt-1">Graduating makes {name} an independent professional. They keep their code and history, and their own shop goes to Mepluge for approval.</p>
           {isMinor ? <p className="text-sm text-warn-fg mt-2">{name} is under 18, so they can graduate once they turn 18.</p> : (
             <button onClick={() => window.confirm(`Graduate ${name}? This makes them an independent professional.`) && run(async () => { await apiFetch(`${base}/graduate`, { method: "POST" }); if (onGraduated) onGraduated(); })}
               disabled={busy} className="mt-2 px-5 py-2.5 rounded-full bg-emerald-600 text-white font-bold">🎓 Graduate {name}</button>

@@ -1,4 +1,6 @@
 "use client";
+import GoogleSignIn from "../../components/GoogleSignIn";
+import { confirmLogout } from "../../lib/confirmLogout";
 import { useDraft } from "../../lib/useDraft";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -103,7 +105,7 @@ export default function Requests() {
           <>
             <div className="flex items-center justify-between bg-surface-2 rounded-xl px-4 py-3 mb-4">
               <span>Logged in as <b>{customerName}</b></span>
-              <button className="px-3 py-1.5 rounded-full border border-line text-sm font-bold bg-card" onClick={customerLogout}>Log Out</button>
+              <button className="px-3 py-1.5 rounded-full border border-line text-sm font-bold bg-card" onClick={() => confirmLogout(customerLogout)}>Log out</button>
             </div>
             {me && me.mustChangePassword && (
               <div className="bg-warn-bg border border-warn-line rounded-2xl p-4 mb-4">
@@ -126,11 +128,12 @@ export default function Requests() {
             {tab === "past" && (past.length
               ? past.map((r) => <AppointmentCard key={r._id} r={r} onChanged={changed} />)
               : <EmptyState title="No past appointments yet" hint="Once a service is done, you can book it again, save the style, or set a reminder here." />)}
-            <p className="text-sm text-muted mt-6">Your saved styles, reminders and invite code are in <Link href="/my-sheeba" className="text-hibiscus-deep font-bold underline">My Sheeba</Link>.</p>
+            <p className="text-sm text-muted mt-6">Your saved styles, reminders and invite code are in <Link href="/my-sheeba" className="text-hibiscus-deep font-bold underline">Mepluge</Link>.</p>
           </>
         ) : (
           <div className="bg-surface-2 rounded-xl p-4">
             <div className="font-bold mb-3">Log in to see your requests</div>
+            <div className="mb-3"><GoogleSignIn as="customer" invite={invite} onDone={(kind) => { if (kind === "register") router.push("/welcome"); }} /></div>
             <form onSubmit={submit} className="space-y-3">
               {mode === "register" && <input placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-line" />}
               {mode === "register" && country && (

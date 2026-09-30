@@ -83,7 +83,7 @@ export default function VerificationCard({ account, onUpdated }) {
       {status === "NOT_SUBMITTED" && (
         <p className="text-sm text-muted-strong mb-3">
           Customers are trusting a stranger when they book. An "ID checked" badge shows them you're who you say you are.
-          Only Sheeba's review team sees your ID details.
+          Only Mepluge's review team sees your ID details.
         </p>
       )}
 

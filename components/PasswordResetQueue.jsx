@@ -53,7 +53,7 @@ function HelpRequest({ item, onDone }) {
         <div className="text-ok-fg font-bold">Temporary password for {issued.name}</div>
         <div className="text-3xl font-mono tracking-wider text-ink select-all">{issued.tempPassword}</div>
         <p className="text-sm text-muted">
-          Read it out on the call to {issued.phone}. It won't be shown again. When they log in, Sheeba will make them choose their own password straight away.
+          Read it out on the call to {issued.phone}. It won't be shown again. When they log in, Mepluge will make them choose their own password straight away.
         </p>
         <button onClick={onDone} className="px-5 py-2 rounded-full bg-emerald-600 text-white font-bold">Done, I've given it to them</button>
       </div>

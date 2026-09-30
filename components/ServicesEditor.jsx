@@ -20,7 +20,7 @@ export default function ServicesEditor({ account, onSaved }) {
   const [reelFor, setReelFor] = useState(null); // the service whose Look Reel is being made
   const services = account.styles || [];
   const catalog = useCatalog();
-  // The shop's own services first in the picker, then everything else on Sheeba.
+  // The shop's own services first in the picker, then everything else on Mepluge.
   const mine = account.services && account.services.length ? account.services : [];
   const serviceOptions = [...catalog.filter((c) => mine.includes(c.key)), ...catalog.filter((c) => !mine.includes(c.key))];
   const [editing, setEditing] = useState(null); // a service id, "new", or null
@@ -169,7 +169,7 @@ function ServiceForm({ initial, onSubmit, onCancel, currency, serviceOptions = [
           {styleOptions.map((st) => <option key={st.key} value={st.key}>{st.name}</option>)}
         </select>
       </div>
-      <p className="text-xs text-muted">Choosing a style helps customers find you from Sheeba's inspiration photos.</p>
+      <p className="text-xs text-muted">Choosing a style helps customers find you from Mepluge's inspiration photos.</p>
       <textarea value={desc} onChange={(e) => setDesc(e.target.value)} maxLength={300} rows={2} placeholder="Short description (optional)" className="w-full px-4 py-3 rounded-xl border border-line" />
       <div>
         <div className="text-sm font-bold mb-1">Photo of your work</div>

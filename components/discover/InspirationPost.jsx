@@ -3,7 +3,7 @@ import { useState } from "react";
 import { photosFor } from "../../lib/catalog";
 
 // An inspiration style in the feed. Always labelled: these are credited
-// photos from free photo sites, never a Sheeba professional's work.
+// photos from free photo sites, never a Mepluge professional's work.
 export default function InspirationPost({ styleKey, style, onOpen }) {
   const [broken, setBroken] = useState(false);
   const photo = photosFor(styleKey)[0];

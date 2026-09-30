@@ -16,7 +16,7 @@ function Status() {
       <div className="font-bold text-warn-fg">Telegram isn't connected yet.</div>
       {missing.length > 0
         ? <div className="text-muted-strong">Add {missing.join(" and ")} on Render (Environment), then come back and press Connect.</div>
-        : <div className="text-muted-strong">Everything is set. Press Connect to link the bot to Sheeba.{s.lastError ? ` (Last problem: ${s.lastError})` : ""}</div>}
+        : <div className="text-muted-strong">Everything is set. Press Connect to link the bot to Mepluge.{s.lastError ? ` (Last problem: ${s.lastError})` : ""}</div>}
       {missing.length === 0 && <button onClick={connect} className="px-4 py-2 rounded-full bg-violet text-white font-bold">Connect</button>}
       {msg && <div className="text-muted-strong">{msg}</div>}
     </div>
@@ -53,7 +53,7 @@ function Item({ f, onChange }) {
   );
 }
 
-// What people post in the Sheeba Telegram community, answered from here.
+// What people post in the Mepluge Telegram community, answered from here.
 export default function CommunityFeedback() {
   const [list, setList] = useState(null);
   const [error, setError] = useState(null);
@@ -66,7 +66,7 @@ export default function CommunityFeedback() {
   return (
     <div className="space-y-4">
       <Status />
-      <p className="text-sm text-muted">Questions and comments from the Sheeba Telegram group. Your answer is posted in the group as a reply to that person.</p>
+      <p className="text-sm text-muted">Questions and comments from the Mepluge Telegram group. Your answer is posted in the group as a reply to that person.</p>
       {open.length === 0 ? <p className="text-muted">Nothing waiting. 🎉</p> : <div className="bg-card border border-line rounded-2xl divide-y divide-line">{open.map((f) => <Item key={f._id} f={f} onChange={load} />)}</div>}
       {handled.length > 0 && <button onClick={() => setShowDone((x) => !x)} className="text-sm font-bold text-hibiscus-deep">{showDone ? "Hide" : "Show"} answered ({handled.length})</button>}
       {showDone && <div className="bg-card border border-line rounded-2xl divide-y divide-line opacity-80">{handled.map((f) => <Item key={f._id} f={f} onChange={load} />)}</div>}

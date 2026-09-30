@@ -19,7 +19,7 @@ function Table({ title, rows }) {
   );
 }
 
-// Every stop from every trip on one map (with shops already on Sheeba for
+// Every stop from every trip on one map (with shops already on Mepluge for
 // comparison), and results by region and area: where you've been, what
 // worked, and where to go next.
 export default function FieldCoverage({ canSeeShops }) {
@@ -43,14 +43,14 @@ export default function FieldCoverage({ canSeeShops }) {
       </div>
       <div className="flex flex-wrap gap-3 text-xs text-muted-strong">
         {Object.values(OUTCOME).map((x) => <span key={x.label} className="flex items-center gap-1"><span className="w-3 h-3 rounded-full" style={{ background: x.color }} />{x.label}</span>)}
-        {canSeeShops && <label className="flex items-center gap-1"><input type="checkbox" checked={showShops} onChange={(e) => setShowShops(e.target.checked)} /> Shops already on Sheeba ({shops.length})</label>}
+        {canSeeShops && <label className="flex items-center gap-1"><input type="checkbox" checked={showShops} onChange={(e) => setShowShops(e.target.checked)} /> Shops already on Mepluge ({shops.length})</label>}
       </div>
       <FieldMap stops={o.stops} shops={showShops ? shops : []} height="60vh" />
       <div className="grid lg:grid-cols-2 gap-4">
         <Table title="By region" rows={o.byRegion} />
         <Table title="By area" rows={o.byArea} />
       </div>
-      <p className="text-xs text-muted">{o.linkedAccounts} of the shops signed up in person are linked to their Sheeba account, so you can follow how they do.</p>
+      <p className="text-xs text-muted">{o.linkedAccounts} of the shops signed up in person are linked to their account on Mepluge, so you can follow how they do.</p>
     </div>
   );
 }

@@ -12,7 +12,7 @@ const STATUS = {
   VOID: ["Not eligible", "bg-bad-bg text-bad-fg border-bad-line"],
 };
 
-// Your Sheeba code, its link and QR, and the invites you've earned from.
+// Your code, its link and QR, and the invites you've earned from.
 // `actor` = "customer" for customer accounts, null for professionals.
 export default function MyCodeCard({ actor = null, shareName }) {
   const [data, setData] = useState(null);
@@ -33,7 +33,7 @@ export default function MyCodeCard({ actor = null, shareName }) {
   if (error) return <p className="text-sm text-bad-fg">{error}</p>;
   if (!data) return <p className="text-sm text-muted">Loading your code…</p>;
 
-  const message = shareName ? `Book with ${shareName} on Sheeba: ${link}` : `Join me on Sheeba: ${link}`;
+  const message = shareName ? `Book with ${shareName} on Mepluge: ${link}` : `Join me on Mepluge: ${link}`;
   const copy = async () => {
     try { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch (e) { /* older phones */ }
   };
@@ -41,7 +41,7 @@ export default function MyCodeCard({ actor = null, shareName }) {
   // email… whatever is installed. (Computers without it keep the buttons.)
   const canShare = typeof navigator !== "undefined" && !!navigator.share;
   const share = async () => {
-    try { await navigator.share({ title: shareName ? `Book with ${shareName} on Sheeba` : "Join me on Sheeba", text: message, url: link }); }
+    try { await navigator.share({ title: shareName ? `Book with ${shareName} on Mepluge` : "Join me on Mepluge", text: message, url: link }); }
     catch (e) { /* they closed the menu: nothing to do */ }
   };
   const reward = formatMinor(data.reward.amountMinor, data.reward.currency);
@@ -58,7 +58,7 @@ export default function MyCodeCard({ actor = null, shareName }) {
             {data.founding ? `⭐ Founding member #${data.memberNumber}` : `Member #${data.memberNumber}`}
           </div>
         )}
-        <div className="text-xs font-extrabold tracking-wide text-plum uppercase">Your Sheeba code</div>
+        <div className="text-xs font-extrabold tracking-wide text-plum uppercase">Your code</div>
         <div className="font-mono text-3xl font-bold tracking-[0.2em] text-ink mt-1">{shown}</div>
         {qr && <img src={qr} alt={`QR code for ${link}`} className="w-48 h-48 mx-auto mt-3 rounded-lg bg-white p-2" />}
         {shareName && <div className="text-sm font-bold text-ink mt-2 print-only">Scan to book with {shareName}</div>}
@@ -79,7 +79,7 @@ export default function MyCodeCard({ actor = null, shareName }) {
         <div className="font-bold text-ink">Invite people: each is worth {reward}{approx(data.rewardLocal)}</div>
         <p className="text-sm text-muted-strong mt-1">
           It counts when someone joins with your code and completes a genuine first job. Each one is checked for about a week, then confirmed.
-          Confirmed rewards build up here and become a coupon for a free or discounted service once Sheeba starts taking payments.
+          Confirmed rewards build up here and become a coupon for a free or discounted service once Mepluge starts taking payments.
         </p>
         <div className="grid grid-cols-3 gap-2 mt-3 text-center">
           <div className="bg-surface rounded-xl p-2"><div className="text-xl font-bold text-ink">{data.counts.joined}</div><div className="text-xs text-muted">joined</div></div>
