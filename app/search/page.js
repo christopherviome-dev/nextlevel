@@ -119,11 +119,12 @@ export default function SearchPage() {
             <div className="text-xs font-extrabold tracking-wide text-plum uppercase">Your budget</div>
             <button onClick={() => setLayer({ type: "filters" })} className="text-xs font-bold text-hibiscus-deep">Compare prices ›</button>
           </div>
-          <div className="flex gap-2 overflow-x-auto no-scrollbar">{budgets.map(([k, l]) => chip(budget === k, () => setBudget(k), l, k))}</div>
+          <div className="flex flex-wrap gap-2">{budgets.map(([k, l]) => chip(budget === k, () => setBudget(k), l, k))}</div>
           <p className="text-xs text-muted mt-1">{local.enough ? `Typical ${where}: ${formatMoney(local.low, info.currency)}–${formatMoney(local.high, info.currency)}` : `Not enough prices ${where} yet to suggest a budget.`}</p>
         </div>}
 
-        <div className="flex gap-2 overflow-x-auto no-scrollbar">
+        {/* Wraps onto more lines, so every service is always visible (no hidden sideways scroll). */}
+        <div className="flex flex-wrap gap-2">
           {[["all", "All services"], ...catalog.map((c) => [c.key, c.name])].map(([k, l]) => chip(service === k, () => setService(k), l, k))}
         </div>
 

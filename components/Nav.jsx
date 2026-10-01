@@ -13,6 +13,7 @@ import LocationToggle from "./LocationToggle";
 
 const Icon = {
   search: <path d="M11 4a7 7 0 1 0 4.4 12.4l4.1 4.1 1.4-1.4-4.1-4.1A7 7 0 0 0 11 4Zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z" />,
+  home: <path d="M11.3 3.3a1 1 0 0 1 1.4 0l8 7.2a1 1 0 0 1-.7 1.7H19v7.3a1.5 1.5 0 0 1-1.5 1.5H14v-5.5h-4V21H6.5A1.5 1.5 0 0 1 5 19.5v-7.3H4a1 1 0 0 1-.7-1.7l8-7.2Z" />,
   discover: <path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm4.2 3.8-2.4 6-6 2.4 2.4-6 6-2.4ZM12 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z" />,
   requests: <path d="M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm0 2v14h10V5H7Zm2 3h6v2H9V8Zm0 4h6v2H9v-2Z" />,
   shop: <path d="M4 4h16l1 5a3 3 0 0 1-2 2.8V20H5v-8.2A3 3 0 0 1 3 9l1-5Zm1.6 2-.6 3a1 1 0 0 0 2 .2L7.4 6H5.6Zm3.8 0L9 9.2a1 1 0 0 0 2 .1V6H9.4Zm3.6 0v3.3a1 1 0 0 0 2-.1L14.6 6H13Zm3.6 0 .4 3.2a1 1 0 0 0 2-.2l-.6-3h-1.8ZM7 12v6h10v-6a3 3 0 0 1-2-.8 3 3 0 0 1-3 .8 3 3 0 0 1-3-.8 3 3 0 0 1-2 .8Z" />,
@@ -27,7 +28,8 @@ const Icon = {
 //  - professionals: their shop (plus Admin for admins)
 //  - visitors: Discover and a way in
 function tabsFor({ isAdmin, activeRole }) {
-  const discover = { href: "/", label: "Discover", icon: Icon.discover };
+  // "Home": the feed. Tapping it again anywhere brings you back to the top.
+  const discover = { href: "/", label: "Home", icon: Icon.home };
   const search = { href: "/search", label: "Search", icon: Icon.search };
   if (activeRole === "customer") {
     return [discover, search,

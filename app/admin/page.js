@@ -19,12 +19,14 @@ import FieldWork from "../../components/admin/FieldWork";
 import FieldCoverage from "../../components/admin/FieldCoverage";
 import AdminSources from "../../components/admin/AdminSources";
 import AuditLog from "../../components/admin/AuditLog";
+import ClientErrors from "../../components/admin/ClientErrors";
+import Capacity from "../../components/admin/Capacity";
 import CommunityFeedback from "../../components/admin/CommunityFeedback";
 import { roleOf, can } from "../../lib/adminRoles";
 
 const TITLES = {
   overview: "Overview", places: "Places", demand: "Demand", map: "Map", shops: "Shops to approve", ids: "IDs to check", reports: "Reports",
-  passwords: "Password help", services: "Proposed services", invites: "Invite rewards", switches: "Switches", audit: "Audit log", team: "Admin team", trips: "Field trips", coverage: "Coverage", sources: "Sources", feedback: "Community feedback",
+  passwords: "Password help", services: "Proposed services", invites: "Invite rewards", switches: "Switches", audit: "Audit log", team: "Admin team", trips: "Field trips", coverage: "Coverage", sources: "Sources", feedback: "Community feedback", errors: "Errors", capacity: "Growth & capacity",
 };
 const RANGES = [[7, "7 days"], [30, "30 days"], [90, "90 days"], [365, "1 year"]];
 
@@ -72,7 +74,7 @@ export default function AdminPage() {
       ["services", "Proposed services", "services", t.serviceProposals], ["invites", "Invite rewards", "invites", o ? o.invites.UNDER_REVIEW || 0 : 0],
       ["feedback", "Community feedback", "telegram", t.communityFeedback || 0],
     ] },
-    { title: "Settings", items: [["team", "Admin team", "team"], ["switches", "Switches", "switches"], ["audit", "Audit log", "audit"]] },
+    { title: "Settings", items: [["team", "Admin team", "team"], ["switches", "Switches", "switches"], ["audit", "Audit log", "audit"], ["errors", "Errors", "audit"], ["capacity", "Growth & capacity", "analytics"]] },
   ];
   const groups = all.map((g) => ({ title: g.title, items: g.items.filter((i) => can(role, i[2])).map(([key, label, , badge, urgent]) => ({ key, label, badge, urgent })) })).filter((g) => g.items.length);
   const allowed = groups.flatMap((g) => g.items.map((i) => i.key));
@@ -110,6 +112,8 @@ export default function AdminPage() {
         {section === "trips" && <FieldWork />}
         {section === "coverage" && <FieldCoverage canSeeShops={can(role, "analytics")} />}
         {section === "audit" && <AuditLog audit={audit} />}
+        {section === "errors" && <ClientErrors />}
+        {section === "capacity" && <Capacity />}
       </AdminShell>
     </div>
   );
